@@ -31,8 +31,7 @@ jobs:
         run: dotnet format SA.Inbetween.sln --no-restore --verify-no-changes
       - name: Architecture tests
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Architecture.Tests
-      - name: Required spec tests (merged packets)
-        run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests --filter-trait "Packet=P02"
-      - name: Pending spec tests (not-implemented packets, informational)
-        continue-on-error: true
+      - name: Tests
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests
+      - name: ONNX tests
+        run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Onnx.Tests
