@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Default</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <IsCoreProject>false</IsCoreProject>
+    <IsCoreProject Condition="$(MSBuildProjectDirectory.Replace('\','/').Contains('/src/'))">true</IsCoreProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsCoreProject)' == 'true'">
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+    <LangVersion>10.0</LangVersion>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsCoreProject)' == 'true'">
+    <Compile Include="$(RepoRoot)build/IsExternalInit.cs" Link="Polyfills/IsExternalInit.cs" />
+    <AdditionalFiles Include="$(RepoRoot)build/BannedSymbols.txt" Link="BannedSymbols.txt" />
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

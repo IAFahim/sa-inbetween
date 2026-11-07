@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../SA.Inbetween.Contract/SA.Inbetween.Contract.csproj" />
+    <InternalsVisibleTo Include="SA.Inbetween.Tests" />
+  </ItemGroup>
+</Project>

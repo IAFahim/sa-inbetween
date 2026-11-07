@@ -1,0 +1,25 @@
+P:System.DateTime.Now;Law 5: no wall clock in the core
+P:System.DateTime.UtcNow;Law 5: no wall clock in the core
+P:System.DateTime.Today;Law 5: no wall clock in the core
+P:System.DateTimeOffset.Now;Law 5: no wall clock in the core
+P:System.DateTimeOffset.UtcNow;Law 5: no wall clock in the core
+M:System.Guid.NewGuid;Law 5: no random identifiers
+M:System.Random.#ctor;Law 5: seed every Random
+P:System.Random.Shared;Law 5: seed every Random
+T:System.Environment;Law 8: no ambient context
+P:System.Globalization.CultureInfo.CurrentCulture;Law 5: use CultureInfo.InvariantCulture
+P:System.Globalization.CultureInfo.CurrentUICulture;Law 5: use CultureInfo.InvariantCulture
+M:System.Single.ToString;Law 5: pass CultureInfo.InvariantCulture
+M:System.Single.ToString(System.String);Law 5: pass CultureInfo.InvariantCulture
+M:System.Double.ToString;Law 5: pass CultureInfo.InvariantCulture
+M:System.Double.ToString(System.String);Law 5: pass CultureInfo.InvariantCulture
+M:System.Int32.ToString;Law 5: pass CultureInfo.InvariantCulture
+M:System.Single.Parse(System.String);Law 5: pass CultureInfo.InvariantCulture
+M:System.Double.Parse(System.String);Law 5: pass CultureInfo.InvariantCulture
+M:System.Int32.Parse(System.String);Law 5: pass CultureInfo.InvariantCulture
+M:System.Single.TryParse(System.String,System.Single@);Law 5: pass CultureInfo.InvariantCulture
+M:System.Double.TryParse(System.String,System.Double@);Law 5: pass CultureInfo.InvariantCulture
+M:System.Int32.TryParse(System.String,System.Int32@);Law 5: pass CultureInfo.InvariantCulture
+M:System.Threading.Tasks.Parallel.For(System.Int32,System.Int32,System.Action{System.Int32});Law 5: no unordered parallel reductions
+M:System.Linq.ParallelEnumerable.AsParallel``1(System.Collections.Generic.IEnumerable{``0});Law 5: no unordered parallel reductions
+M:System.HashCode.Combine``2(``0,``1);Law 5: hash codes are per-process; never persist or order by them

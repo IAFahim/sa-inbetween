@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../SA.Inbetween.Engine/SA.Inbetween.Engine.csproj" />
+    <InternalsVisibleTo Include="SA.Inbetween.Tests" />
+  </ItemGroup>
+</Project>
