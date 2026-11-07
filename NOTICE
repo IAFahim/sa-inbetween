@@ -1,0 +1,14 @@
+sa-inbetween
+Copyright (c) 2026 Fahim. All rights reserved.
+
+This repository contains no NVIDIA code, weights or motion data.
+
+Third-party components referenced at build or test time (not redistributed here):
+- MotionBricks (NVIDIA CORPORATION & AFFILIATES), https://github.com/NVlabs/motionbricks
+  Code: Apache-2.0. Model weights (mmm_v6_soma_fp32.onnx, pinned by sha256 in
+  SA.Inbetween.Contract.ModelPins): NVIDIA Open Model Agreement. Sample motions:
+  evaluation and testing only; never shipped (see AGENTS.md and testdata/eval-only/README.md).
+- xUnit.net v3 (Apache-2.0), CsCheck (Apache-2.0), Microsoft.CodeAnalysis.BannedApiAnalyzers
+  and Microsoft.CodeAnalysis.PublicApiAnalyzers (MIT): build and test only.
+
+Data formats documented in docs/contract.md (wire schema after docs/reports/L5-schema.md).

@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore
+        run: dotnet restore SA.Inbetween.sln
+      - name: Build (warnings as errors)
+        run: dotnet build SA.Inbetween.sln --no-restore -c Release -warnaserror
+      - name: Format
+        run: dotnet format SA.Inbetween.sln --no-restore --verify-no-changes
+      - name: Architecture tests
+        run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Architecture.Tests
+      - name: Required spec tests (merged packets)
+        run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests --filter-trait "Packet=P02"
+      - name: Pending spec tests (not-implemented packets, informational)
+        continue-on-error: true
+        run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests
