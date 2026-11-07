@@ -12,12 +12,16 @@ Spec test counts at the end of P02 (`dotnet test`, project `tests/SA.Inbetween.T
 | P02 | 60 | 0 | 60 | 0 | done (types, Parse, Pose parse, joints) |
 | P04 | 41 | 35 | 6 | 0 | wire codec, sha256, recipe, motion file |
 | P06 | 2 | 1 | 0 | 1 | sidecar client |
-| P07 | 22 | 21 | 1 | 0 | units, rotations, spaces, pose mapping |
-| P09 | 6 | 5 | 0 | 1 | engine encode (Smart) |
-| P10 | 6 | 5 | 0 | 1 | engine decode (Smart) |
-| P11 | 4 | 3 | 1 | 0 | network tensor shapes |
+| P07 | 22 | 0 | 22 | 0 | done (Smart, packet/engine) |
+| P09 | 13 | 0 | 12 | 1 | done (Smart, packet/engine); 7 eval-only golden tests |
+| P10 | 19 | 0 | 18 | 1 | done (Smart, packet/engine); 8 eval-only golden tests, 4 allocation tests |
+| P11 | 4 | 0 | 4 | 0 | `NetworkTensors` done in packet/engine; OnnxNetwork still open |
 | P12 | 2 | 2 | 0 | 0 | ported generator |
-| all | 143 | 72 | 68 | 3 | |
+
+Counts are with `testdata/eval-only/goldens/` present. Without it the 15 eval-only tests report
+Skipped ("eval-only goldens not present"). The two `Golden_corpus_*` placeholders in `EngineSpec.cs`
+skip until the P03 corpus (`testdata/eval-only/manifest.sha256`) exists; the engine golden parity
+lives in `tests/SA.Inbetween.Tests/EngineGoldenSpec.cs` (see docs/engine/status.md).
 
 Architecture tests: 6 of 6 pass (`tests/SA.Inbetween.Architecture.Tests`). The P04 tests that already
 pass are totality tests (random bytes never throw) and constants; they must keep passing.
@@ -85,39 +89,11 @@ Done when: `--filter-trait "Packet=P04"` shows 41 passed, 0 failed; P02 still 60
 0 warnings. Allocation-free steady state is measured later in P19 (encode into caller buffers only;
 do not allocate in `Write*` except through `Block` reads).
 
-## P07 easy half · Units, rotations, spaces, pose mapping
+## P07 · done, not a small-agent packet
 
-Files you may change: `src/SA.Inbetween.Soma/Units.cs`, `Rotations.cs`, `Poses.cs` (only
-`ToModelPose` and `WithModelPose`). Heading, alignment and IK stay with the Smart half of P07.
-
-1. `dotnet test --project tests/SA.Inbetween.Tests --filter-trait "Packet=P07"`; confirm 21 failed, 1 passed.
-2. `Units`: centimetres = metres x 100; metres = centimetres / 100; degrees = radians x (180 / pi);
-   radians = degrees x (pi / 180). Use `float` arithmetic and the `(float)Math.PI` constant (not
-   `MathF`, which netstandard2.1 lacks).
-3. `Rotations` (quaternions are XYZW, Hamilton):
-   - `Multiply(a, b)`: `x = aw*bx + ax*bw + ay*bz - az*by`, `y = aw*by - ax*bz + ay*bw + az*bx`,
-     `z = aw*bz + ax*by - ay*bx + az*bw`, `w = aw*bw - ax*bx - ay*by - az*bz`.
-   - `Conjugate`: `(-x, -y, -z, w)`.
-   - `Normalize`: divide by `sqrt(x²+y²+z²+w²)` computed in `double`; a zero quaternion returns `Identity`.
-   - `Rotate(q, v)`: `t = 2 * cross(q.xyz, v)`; `v' = v + w*t + cross(q.xyz, t)`.
-   - `FromAxisAngle(axis, angle)`: `(axis * sin(angle/2), cos(angle/2))`.
-   - `AngleBetween(a, b)`: `2 * acos(min(1, |dot(a, b)|))` in `double`, returned as `Radians`.
-   - `ToRotation6D(q)`: `XAxis = Rotate(q, (1,0,0))`, `YAxis = Rotate(q, (0,1,0))`.
-   - `FromRotation6D(r)`: `x = normalize(XAxis)`, `z = normalize(cross(x, YAxis))`, `y = cross(z, x)`;
-     matrix columns (x, y, z) to quaternion with the standard trace method (Shepperd); if `w < 0`
-     negate all four components.
-4. `SpaceConversions` (formulas in docs/contract.md, Soma): `ModelToRuntime` vector `(x, -z, y)`,
-   quaternion `Multiply(c, q)` with `c = (sqrt(0.5), 0, 0, sqrt(0.5))`; `RuntimeToModel` vector
-   `(x, z, -y)`, quaternion `Multiply(conjugate(c), q)`; `ModelToUnity` and `UnityToModel` both
-   `(-x, y, z)` and `(qx, -qy, -qz, qw)`. The phantom type parameter changes, so build new structs;
-   do not cast.
-5. `Poses.ToModelPose`: copy 7 floats for each model joint i from skeleton joint
-   `SomaJoints.ToSkeleton(i)` into slot i; `WithModelPose`: copy the reference floats, then write each
-   model joint's 7 floats back to its skeleton slot. Build results with `Poses.Parse`/`ParseModel`
-   (inside `Poses.cs` you may call the internal constructors directly instead, after the copy).
-6. Run the filter: 22 passed, 0 failed. Then build `-warnaserror`, architecture tests, format.
-
-Done when: `--filter-trait "Packet=P07"` shows 22 passed; P02 still 60 passed.
+P07 (units, rotations, 6D, spaces, mirror, pose mapping) was implemented by the Smart engine packet
+together with P09/P10 (branch `packet/engine`). Do not reimplement it. Shared double-precision maths
+for the engine lives in `src/SA.Inbetween.Soma/RotationMath.cs` (internal, visible to Engine and Tests).
 
 ## P11 · OnnxNetwork on the sha-pinned ONNX (tests and tools only)
 
@@ -271,6 +247,65 @@ Files you may create: `unity/com.sa.inbetween/**`, `build/pack-unity.sh`. Unity 
 
 Done when: batchmode EditMode tests 4 of 4 pass on 7000.0.0a12 with zero `error CS`; C# version
 recorded in the PR; `SHA256SUMS` matches a second `build/pack-unity.sh` run (deterministic build).
+
+## P12 · PortedGenerator around the engine kernels
+
+Files you may change: `src/SA.Inbetween.Generators/Generators.cs` (only `PortedGenerator` bodies,
+plus private helpers in that file). Read `src/SA.Inbetween.Engine/Network.cs` first; do not edit Engine.
+
+1. `dotnet test --project tests/SA.Inbetween.Tests --filter-trait "Packet=P12"`; confirm 2 failed.
+2. `GenerateAsync(request, ct)`:
+   - If `ct.IsCancellationRequested`, return `Fault(Cancelled, 0, 0)` before any work.
+   - `context = request.Request.Context`. For `k = 0 .. Targets.Length - 1` in order:
+     a. `EngineEncoder.Encode(request, k, context)`; on fault return it.
+     b. `await Network.RunAsync(inputs, ct)`; on fault return it. Then check `ct` again (Cancelled).
+     c. `EngineDecoder.Decode(request, k, context, outputs)`; on fault return it.
+     d. Append the result; `context = EngineDecoder.NextContext(result)`.
+   - Return `Blocks.Of(results)`.
+   - Wrap the body so that `OperationCanceledException` becomes `Fault(Cancelled, 0, 0)`; no other
+     catch. Use `ConfigureAwait(false)` on every await.
+3. The test `Same_request_gives_same_result_and_one_network_call_per_target` expects 6 network calls
+   for 3 targets over two runs: one call per target per run.
+4. Run P12: 2 passed. Run P09, P10, P07 filters: unchanged counts. Build `-warnaserror`, format,
+   architecture tests.
+
+Done when: P12 2 passed; no other count changes.
+
+## P19 · Benchmarks (BenchmarkDotNet, allocation proof)
+
+Files you may create: `bench/SA.Inbetween.Bench/**`, `SA.Inbetween.sln` (add the project).
+Package: `BenchmarkDotNet` 0.15.2 only; if your brief does not approve it, stop and report.
+
+1. Create `bench/SA.Inbetween.Bench/SA.Inbetween.Bench.csproj` (net10.0, Exe, references
+   `src/SA.Inbetween.Engine`). The kernels are internal, so add the line
+   `<InternalsVisibleTo Include="SA.Inbetween.Bench" />` to `src/SA.Inbetween.Engine/SA.Inbetween.Engine.csproj`
+   and `src/SA.Inbetween.Soma/SA.Inbetween.Soma.csproj` in this packet; that is the only src edit allowed).
+2. One class `EngineBenchmarks` with `[MemoryDiagnoser]` and buffers allocated in `[GlobalSetup]`, copying
+   the setup of `tests/SA.Inbetween.Tests/EngineAllocationSpec.cs` (`KernelBuffers`). Benchmarks:
+   `Encode` (`EngineKernels.Encode` + `Conditions`), `Decode58` (`EngineKernels.Decode` with 58 frames),
+   `Correct58` (`EndpointDeltas` + `ApplyEndpointDeltas`), `Ik` (`IkKernels.Apply`, mask 15, weight 0.5),
+   and the public `EngineEncoder.Encode` / `EngineDecoder.Decode` as `PublicEncode` / `PublicDecode`.
+3. Run `dotnet run -c Release --project bench/SA.Inbetween.Bench -- --filter '*'`.
+4. Record mean and `Allocated` per benchmark in `docs/engine/status.md` under "Benchmarks".
+   STOP if any kernel benchmark (not Public*) shows Allocated other than `-` or `0 B`.
+
+Done when: table recorded; kernels allocate 0 B.
+
+## P20 · Mutation run on the engine
+
+Tool: `dotnet-stryker` 4.x as a local tool (`dotnet new tool-manifest`, `dotnet tool install dotnet-stryker`).
+If your brief does not approve it, stop and report.
+
+1. Make sure `testdata/eval-only/goldens/` is present (docs/engine/small-agent-steps.md, section A); without it
+   most engine mutants survive.
+2. Run from `tests/SA.Inbetween.Tests`:
+   `dotnet stryker --project SA.Inbetween.Engine.csproj --mutate "**/Kernels.cs" --mutate "**/IkKernels.cs" --mutate "**/Network.cs" --reporter json --reporter cleartext`.
+   Repeat with `--project SA.Inbetween.Soma.csproj --mutate "**/Rotations.cs" --mutate "**/RotationMath.cs" --mutate "**/Units.cs" --mutate "**/Poses.cs"`.
+3. Record the mutation score per file and list every surviving mutant (file:line, mutator) in
+   `docs/engine/status.md` under "Mutation". Do not add or change tests; a Smart agent triages survivors.
+4. Do not commit `StrykerOutput/`.
+
+Done when: scores and survivor list recorded.
 
 ## STOP-AND-REPORT
 

@@ -1,5 +1,11 @@
 # Small-agent steps: engine unit tests and parity harness (P09/P10)
 
+STATUS: done by the Smart engine packet (branch `packet/engine`). The harness is
+`tests/SA.Inbetween.Tests/EngineGoldenSpec.cs` (T1-T13, plus public-API checks) and lives in the
+existing test project, not a new `SA.Inbetween.Engine.Tests`. Do not redo sections E1-E7.
+Remaining small-agent work: section E step 8 (network parity) once P11 lands. Results:
+docs/engine/status.md.
+
 Read `docs/engine/spec.md` first. Section numbers (E1, D4, C3, K2 ...) refer to it.
 Do these steps in order. Do not change the spec, the goldens, `tools/`, or public API.
 If any STOP condition fires, stop and report: step number, request id, file, field,
