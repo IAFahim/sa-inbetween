@@ -452,3 +452,243 @@ internal static class PublicRequest
     private static Pose[] Split(float[] values, int count) =>
         Enumerable.Range(0, count).Select(i => Ok.Value(Poses.Parse(values.AsSpan(i * EngineKernels.PoseFloats, EngineKernels.PoseFloats)))).ToArray();
 }
+
+[Trait(Packets.Name, Packets.P10)]
+[Trait("Category", "EvalOnly")]
+public class EngineDecodeGoldenSpec
+{
+    private const int P = EngineKernels.PoseFloats;
+
+    [Fact]
+    public void T6_rotation_from_6d_within_0_01_deg()
+    {
+        var worst = new Worst("T6 rot6d deg");
+        foreach (var g in Goldens.All())
+        {
+            var trimmed = g.F("trimmed_pred");
+            var expected = g.F("ref_global_rotations");
+            var n = trimmed.Length / EngineKernels.Features;
+            var actual = new float[n * 30 * 4];
+            for (var f = 0; f < n; f++)
+            {
+                for (var m = 0; m < 30; m++)
+                {
+                    var q = EngineKernels.ReadRotation(trimmed.AsSpan(f * EngineKernels.Features, EngineKernels.Features), m);
+                    var o = ((f * 30) + m) * 4;
+                    actual[o] = (float)q.X;
+                    actual[o + 1] = (float)q.Y;
+                    actual[o + 2] = (float)q.Z;
+                    actual[o + 3] = (float)q.W;
+                }
+            }
+
+            worst.Add(g.Id, Metrics.Rotations(actual, expected));
+        }
+
+        worst.AtMost(0.01);
+    }
+
+    [Fact]
+    public void T7_decode_within_0_01_mm_and_deg_and_contacts_match()
+    {
+        var mm = new Worst("T7 decode mm");
+        var deg = new Worst("T7 decode deg");
+        var contacts = new Worst("T7 contacts abs");
+        foreach (var g in Goldens.All())
+        {
+            var d = EngineRun.Decode(g, EngineRun.GoldenAlignment(g));
+            Assert.Equal(g.ValidFrames, d.N);
+            var (p, r) = Metrics.Transforms(d.Frames, g.F("decoded_frames"));
+            mm.Add(g.Id, p);
+            deg.Add(g.Id, r);
+            contacts.Add(g.Id, Metrics.MaxAbs(d.Contacts, g.F("contacts")));
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+        contacts.AtMost(1e-6);
+    }
+
+    [Fact]
+    public void T8_endpoint_deltas_within_0_01_mm_and_deg()
+    {
+        var mm = new Worst("T8 deltas mm");
+        var deg = new Worst("T8 deltas deg");
+        foreach (var g in Goldens.All().Where(g => g.Correct))
+        {
+            var decoded = g.F("decoded_frames");
+            var start = new float[P];
+            var end = new float[P];
+            EngineKernels.EndpointDeltas(decoded, g.ValidFrames, g.F("context_token").AsSpan(3 * P, P), g.F("target_token").AsSpan(0, P), start, end);
+            foreach (var (a, b) in new[] { (start, g.F("start_deltas")), (end, g.F("end_deltas")) })
+            {
+                var (p, r) = Metrics.Transforms(a, b);
+                mm.Add(g.Id, p);
+                deg.Add(g.Id, r);
+            }
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+    }
+
+    [Fact]
+    public void T9_endpoint_apply_within_0_01_mm_and_deg()
+    {
+        var mm = new Worst("T9 apply mm");
+        var deg = new Worst("T9 apply deg");
+        foreach (var g in Goldens.All().Where(g => g.Correct))
+        {
+            var frames = g.F("decoded_frames");
+            EngineKernels.ApplyEndpointDeltas(frames, g.ValidFrames, g.F("start_deltas"), g.F("end_deltas"));
+            var (p, r) = Metrics.Transforms(frames, g.F("final_frames"));
+            mm.Add(g.Id, p);
+            deg.Add(g.Id, r);
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+    }
+
+    [Fact]
+    public void T10_engine_end_to_end_from_golden_network_outputs()
+    {
+        var mm = new Worst("T10 final mm");
+        var deg = new Worst("T10 final deg");
+        var contacts = new Worst("T10 final contacts abs");
+        foreach (var g in Goldens.All())
+        {
+            var e = EngineRun.Encode(g);
+            var d = EngineRun.Decode(g, e.Alignment);
+            if (g.Correct)
+            {
+                var start = new float[P];
+                var end = new float[P];
+                EngineKernels.EndpointDeltas(d.Frames, d.N, g.F("context_local").AsSpan(3 * P, P), g.F("target_local").AsSpan(0, P), start, end);
+                EngineKernels.ApplyEndpointDeltas(d.Frames, d.N, start, end);
+            }
+
+            var (p, r) = Metrics.Transforms(d.Frames, g.F("final_frames"));
+            mm.Add(g.Id, p);
+            deg.Add(g.Id, r);
+            contacts.Add(g.Id, Metrics.MaxAbs(d.Contacts, g.F("final_contacts")));
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+        contacts.AtMost(1e-6);
+    }
+
+    [Fact]
+    public void T11_chaining_uses_the_last_four_frames_exactly()
+    {
+        foreach (var g in Goldens.All().Where(g => g.Chain >= 0))
+        {
+            var previous = Goldens.One(g.Chain);
+            var final = previous.F("final_frames");
+            var n = previous.ValidFrames;
+            var expected = final.AsSpan((n - 4) * P, 4 * P).ToArray();
+            Assert.True(Blocks.BitwiseEqual(Blocks.Of(expected), Blocks.Of(g.F("context_local"))), $"req{g.Id}");
+            var frames = Enumerable.Range(0, n).Select(f => Ok.Value(Poses.Parse(final.AsSpan(f * P, P)))).ToArray();
+            var result = Ok.Value(GenerationResults.Parse(Blocks.Of(frames), Blocks.Of(Enumerable.Repeat(new FootContacts(0f, 0f, 0f, 0f), n).ToArray()), new Timing(0, 0f, 0f)));
+            var next = EngineDecoder.NextContext(result).Span.ToArray().SelectMany(pose => pose.Values.Span.ToArray()).ToArray();
+            Assert.True(Blocks.BitwiseEqual(Blocks.Of(expected), Blocks.Of(next)), $"req{g.Id}");
+        }
+    }
+
+    [Fact]
+    public void T13_endpoints_equal_context_and_target()
+    {
+        var mm = new Worst("T13 endpoints mm");
+        var deg = new Worst("T13 endpoints deg");
+        foreach (var g in Goldens.All().Where(g => g.Correct))
+        {
+            var final = g.F("final_frames");
+            var n = g.ValidFrames;
+            foreach (var (a, b) in new[] { (final.AsSpan(0, P).ToArray(), g.F("context_token").AsSpan(3 * P, P).ToArray()), (final.AsSpan((n - 1) * P, P).ToArray(), g.F("target_token").AsSpan(0, P).ToArray()) })
+            {
+                var (p, r) = Metrics.Transforms(a, b);
+                mm.Add(g.Id, p);
+                deg.Add(g.Id, r);
+            }
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+    }
+
+    [Fact]
+    public void Public_decode_matches_goldens_on_model_joints_for_identity_space_requests()
+    {
+        var mm = new Worst("public Decode decoded-model-joints mm");
+        var deg = new Worst("public Decode decoded-model-joints deg");
+        var all = new Worst("public Decode all joints deg (fingers use context pose as reference)");
+        var contacts = new Worst("public Decode contacts abs");
+        var decodedJoints = Enumerable.Range(0, SkeletonJoints.Count).Where(j => j == 0 || SomaSkeleton.PoseToModel[j] >= 0).ToArray();
+        foreach (var g in Goldens.All().Where(g => g.ModelToRuntimeKey == "identity"))
+        {
+            var (request, context) = PublicRequest.From(g);
+            var outputs = new NetworkOutputs(Blocks.Of(g.F("net_pred_global_motions")), g.I("net_pred_num_tokens")[0]);
+            var result = Ok.Value(EngineDecoder.Decode(request, 0, context, outputs));
+            Assert.Equal(g.ValidFrames, result.Frames.Length);
+            Assert.Equal(g.TokenCount, result.Timing.TokensChosen);
+            var actual = result.Frames.Span.ToArray().SelectMany(p => p.Values.Span.ToArray()).ToArray();
+            var expected = g.F("final_frames");
+            var (_, allDeg) = Metrics.Transforms(actual, expected);
+            all.Add(g.Id, allDeg);
+            foreach (var f in Enumerable.Range(0, g.ValidFrames))
+            {
+                foreach (var j in decodedJoints)
+                {
+                    var o = (f * P) + (j * 7);
+                    var (p, r) = Metrics.Transforms(actual.AsSpan(o, 7), expected.AsSpan(o, 7));
+                    mm.Add(g.Id, p);
+                    deg.Add(g.Id, r);
+                }
+            }
+
+            var c = result.Contacts.Span.ToArray().SelectMany(x => new[] { x.LeftHeel, x.LeftToe, x.RightHeel, x.RightToe }).ToArray();
+            contacts.Add(g.Id, Metrics.MaxAbs(c, g.F("final_contacts")));
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+        contacts.AtMost(1e-6);
+        all.AtMost(180.0);
+    }
+}
+
+[Trait(Packets.Name, Packets.P10)]
+[Trait("Category", "EvalOnly")]
+public class IkGoldenSpec
+{
+    [Fact]
+    public void T12_two_bone_ik_within_0_01_mm_and_deg()
+    {
+        const int P = EngineKernels.PoseFloats;
+        var mm = new Worst("T12 IK mm");
+        var deg = new Worst("T12 IK deg");
+        foreach (var g in Goldens.All().Where(g => g.Ik))
+        {
+            var world = new float[P];
+            var pinned = new float[IkKernels.Chains * 7];
+            IkKernels.Capture(g.F("target_local").AsSpan(0, P), world, pinned);
+            var input = g.F("ik_input");
+            var output = g.F("ik_output");
+            var weights = g.F("ik_weights");
+            var mask = g.I("ik_pin_mask")[0];
+            Assert.Equal(15, mask);
+            for (var i = 0; i < weights.Length; i++)
+            {
+                var pose = input.AsSpan(i * P, P).ToArray();
+                IkKernels.Apply(pose, weights[i], mask, pinned, world);
+                var (p, r) = Metrics.Transforms(pose, output.AsSpan(i * P, P));
+                mm.Add(g.Id, p);
+                deg.Add(g.Id, r);
+            }
+        }
+
+        mm.AtMost(0.01);
+        deg.AtMost(0.01);
+    }
+}
