@@ -1,0 +1,59 @@
+#nullable enable
+const SA.Inbetween.Engine.NetworkShapes.BoundaryFrames = 3 -> int
+const SA.Inbetween.Engine.NetworkShapes.Frames = 8 -> int
+const SA.Inbetween.Engine.NetworkShapes.GlobalRootWidth = 5 -> int
+const SA.Inbetween.Engine.NetworkShapes.LocalPoseWidth = 267 -> int
+const SA.Inbetween.Engine.NetworkShapes.LocalRootWidth = 4 -> int
+const SA.Inbetween.Engine.NetworkShapes.OutputFrames = 64 -> int
+const SA.Inbetween.Engine.NetworkShapes.OutputWidth = 366 -> int
+const SA.Inbetween.Engine.NetworkShapes.TokenSlots = 11 -> int
+override SA.Inbetween.Engine.NetworkInputs.GetHashCode() -> int
+override SA.Inbetween.Engine.NetworkOutputs.GetHashCode() -> int
+SA.Inbetween.Engine.EngineDecoder
+SA.Inbetween.Engine.EngineEncoder
+SA.Inbetween.Engine.INetwork
+SA.Inbetween.Engine.INetwork.RunAsync(SA.Inbetween.Engine.NetworkInputs inputs, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<SA.Inbetween.Soma.Result<SA.Inbetween.Engine.NetworkOutputs, SA.Inbetween.Soma.Fault>>
+SA.Inbetween.Engine.NetworkInputs
+SA.Inbetween.Engine.NetworkInputs.AllowedPredNumTokens.get -> SA.Inbetween.Soma.Block<int>
+SA.Inbetween.Engine.NetworkInputs.AllowedPredNumTokens.init -> void
+SA.Inbetween.Engine.NetworkInputs.Deconstruct(out SA.Inbetween.Soma.Block<float> GlobalRootValues, out SA.Inbetween.Soma.Block<int> HasGlobalRootValues, out SA.Inbetween.Soma.Block<float> LocalRootValues, out SA.Inbetween.Soma.Block<int> HasLocalRootValues, out SA.Inbetween.Soma.Block<float> LocalPoses, out SA.Inbetween.Soma.Block<int> HasLocalPoses, out SA.Inbetween.Soma.Block<int> AllowedPredNumTokens) -> void
+SA.Inbetween.Engine.NetworkInputs.Equals(SA.Inbetween.Engine.NetworkInputs other) -> bool
+SA.Inbetween.Engine.NetworkInputs.GlobalRootValues.get -> SA.Inbetween.Soma.Block<float>
+SA.Inbetween.Engine.NetworkInputs.GlobalRootValues.init -> void
+SA.Inbetween.Engine.NetworkInputs.HasGlobalRootValues.get -> SA.Inbetween.Soma.Block<int>
+SA.Inbetween.Engine.NetworkInputs.HasGlobalRootValues.init -> void
+SA.Inbetween.Engine.NetworkInputs.HasLocalPoses.get -> SA.Inbetween.Soma.Block<int>
+SA.Inbetween.Engine.NetworkInputs.HasLocalPoses.init -> void
+SA.Inbetween.Engine.NetworkInputs.HasLocalRootValues.get -> SA.Inbetween.Soma.Block<int>
+SA.Inbetween.Engine.NetworkInputs.HasLocalRootValues.init -> void
+SA.Inbetween.Engine.NetworkInputs.LocalPoses.get -> SA.Inbetween.Soma.Block<float>
+SA.Inbetween.Engine.NetworkInputs.LocalPoses.init -> void
+SA.Inbetween.Engine.NetworkInputs.LocalRootValues.get -> SA.Inbetween.Soma.Block<float>
+SA.Inbetween.Engine.NetworkInputs.LocalRootValues.init -> void
+SA.Inbetween.Engine.NetworkInputs.NetworkInputs() -> void
+SA.Inbetween.Engine.NetworkInputs.NetworkInputs(SA.Inbetween.Soma.Block<float> GlobalRootValues, SA.Inbetween.Soma.Block<int> HasGlobalRootValues, SA.Inbetween.Soma.Block<float> LocalRootValues, SA.Inbetween.Soma.Block<int> HasLocalRootValues, SA.Inbetween.Soma.Block<float> LocalPoses, SA.Inbetween.Soma.Block<int> HasLocalPoses, SA.Inbetween.Soma.Block<int> AllowedPredNumTokens) -> void
+SA.Inbetween.Engine.NetworkOutputs
+SA.Inbetween.Engine.NetworkOutputs.Deconstruct(out SA.Inbetween.Soma.Block<float> PredGlobalMotions, out int PredNumTokens) -> void
+SA.Inbetween.Engine.NetworkOutputs.Equals(SA.Inbetween.Engine.NetworkOutputs other) -> bool
+SA.Inbetween.Engine.NetworkOutputs.NetworkOutputs() -> void
+SA.Inbetween.Engine.NetworkOutputs.NetworkOutputs(SA.Inbetween.Soma.Block<float> PredGlobalMotions, int PredNumTokens) -> void
+SA.Inbetween.Engine.NetworkOutputs.PredGlobalMotions.get -> SA.Inbetween.Soma.Block<float>
+SA.Inbetween.Engine.NetworkOutputs.PredGlobalMotions.init -> void
+SA.Inbetween.Engine.NetworkOutputs.PredNumTokens.get -> int
+SA.Inbetween.Engine.NetworkOutputs.PredNumTokens.init -> void
+SA.Inbetween.Engine.NetworkShapes
+SA.Inbetween.Engine.NetworkTensors
+static SA.Inbetween.Engine.EngineDecoder.Decode(SA.Inbetween.Contract.ValidRequest request, int targetIndex, SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> context, SA.Inbetween.Engine.NetworkOutputs outputs) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.GenerationResult, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Engine.EngineDecoder.NextContext(SA.Inbetween.Contract.GenerationResult result) -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose>
+static SA.Inbetween.Engine.EngineEncoder.Encode(SA.Inbetween.Contract.ValidRequest request, int targetIndex, SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> context) -> SA.Inbetween.Soma.Result<SA.Inbetween.Engine.NetworkInputs, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Engine.NetworkInputs.operator !=(SA.Inbetween.Engine.NetworkInputs left, SA.Inbetween.Engine.NetworkInputs right) -> bool
+static SA.Inbetween.Engine.NetworkInputs.operator ==(SA.Inbetween.Engine.NetworkInputs left, SA.Inbetween.Engine.NetworkInputs right) -> bool
+static SA.Inbetween.Engine.NetworkOutputs.operator !=(SA.Inbetween.Engine.NetworkOutputs left, SA.Inbetween.Engine.NetworkOutputs right) -> bool
+static SA.Inbetween.Engine.NetworkOutputs.operator ==(SA.Inbetween.Engine.NetworkOutputs left, SA.Inbetween.Engine.NetworkOutputs right) -> bool
+static SA.Inbetween.Engine.NetworkTensors.FrameCountFor(int tokens) -> int
+static SA.Inbetween.Engine.NetworkTensors.ParseInputs(SA.Inbetween.Engine.NetworkInputs inputs) -> SA.Inbetween.Soma.Result<SA.Inbetween.Engine.NetworkInputs, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Engine.NetworkTensors.ParseOutputs(SA.Inbetween.Engine.NetworkOutputs outputs) -> SA.Inbetween.Soma.Result<SA.Inbetween.Engine.NetworkOutputs, SA.Inbetween.Soma.Fault>
+~override SA.Inbetween.Engine.NetworkInputs.Equals(object obj) -> bool
+~override SA.Inbetween.Engine.NetworkInputs.ToString() -> string
+~override SA.Inbetween.Engine.NetworkOutputs.Equals(object obj) -> bool
+~override SA.Inbetween.Engine.NetworkOutputs.ToString() -> string

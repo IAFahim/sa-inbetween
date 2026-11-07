@@ -1,0 +1,325 @@
+#nullable enable
+const SA.Inbetween.Soma.Poses.FloatsPerJoint = 7 -> int
+const SA.Inbetween.Soma.Poses.ModelFloatCount = 210 -> int
+const SA.Inbetween.Soma.Poses.SkeletonFloatCount = 539 -> int
+const SA.Inbetween.Soma.Poses.UnitQuaternionTolerance = 0.001 -> float
+const SA.Inbetween.Soma.SkeletonJoints.Count = 77 -> int
+const SA.Inbetween.Soma.SomaJoints.Count = 30 -> int
+override SA.Inbetween.Soma.Block<T>.Equals(object? obj) -> bool
+override SA.Inbetween.Soma.Block<T>.GetHashCode() -> int
+override SA.Inbetween.Soma.Centimeters.GetHashCode() -> int
+override SA.Inbetween.Soma.Degrees.GetHashCode() -> int
+override SA.Inbetween.Soma.Fault.GetHashCode() -> int
+override SA.Inbetween.Soma.Meters.GetHashCode() -> int
+override SA.Inbetween.Soma.ModelPose.GetHashCode() -> int
+override SA.Inbetween.Soma.Pose.GetHashCode() -> int
+override SA.Inbetween.Soma.Quaternion<TSpace>.GetHashCode() -> int
+override SA.Inbetween.Soma.Radians.GetHashCode() -> int
+override SA.Inbetween.Soma.Result<T, TFault>.Equals(object? obj) -> bool
+override SA.Inbetween.Soma.Result<T, TFault>.GetHashCode() -> int
+override SA.Inbetween.Soma.RigidTransform<TSpace>.GetHashCode() -> int
+override SA.Inbetween.Soma.Rotation6D<TSpace>.GetHashCode() -> int
+override SA.Inbetween.Soma.SkeletonJoint.GetHashCode() -> int
+override SA.Inbetween.Soma.SomaJoint.GetHashCode() -> int
+override SA.Inbetween.Soma.Vector3<TSpace>.GetHashCode() -> int
+SA.Inbetween.Soma.Block<T>
+SA.Inbetween.Soma.Block<T>.Block() -> void
+SA.Inbetween.Soma.Block<T>.Equals(SA.Inbetween.Soma.Block<T> other) -> bool
+SA.Inbetween.Soma.Block<T>.Length.get -> int
+SA.Inbetween.Soma.Block<T>.Span.get -> System.ReadOnlySpan<T>
+SA.Inbetween.Soma.Blocks
+SA.Inbetween.Soma.Centimeters
+SA.Inbetween.Soma.Centimeters.Centimeters() -> void
+SA.Inbetween.Soma.Centimeters.Centimeters(float Value) -> void
+SA.Inbetween.Soma.Centimeters.Deconstruct(out float Value) -> void
+SA.Inbetween.Soma.Centimeters.Equals(SA.Inbetween.Soma.Centimeters other) -> bool
+SA.Inbetween.Soma.Centimeters.Value.get -> float
+SA.Inbetween.Soma.Centimeters.Value.init -> void
+SA.Inbetween.Soma.Degrees
+SA.Inbetween.Soma.Degrees.Deconstruct(out float Value) -> void
+SA.Inbetween.Soma.Degrees.Degrees() -> void
+SA.Inbetween.Soma.Degrees.Degrees(float Value) -> void
+SA.Inbetween.Soma.Degrees.Equals(SA.Inbetween.Soma.Degrees other) -> bool
+SA.Inbetween.Soma.Degrees.Value.get -> float
+SA.Inbetween.Soma.Degrees.Value.init -> void
+SA.Inbetween.Soma.Fault
+SA.Inbetween.Soma.Fault.Code.get -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.Fault.Code.init -> void
+SA.Inbetween.Soma.Fault.Deconstruct(out SA.Inbetween.Soma.FaultCode Code, out int Index, out int Value) -> void
+SA.Inbetween.Soma.Fault.Equals(SA.Inbetween.Soma.Fault other) -> bool
+SA.Inbetween.Soma.Fault.Fault() -> void
+SA.Inbetween.Soma.Fault.Fault(SA.Inbetween.Soma.FaultCode Code, int Index, int Value) -> void
+SA.Inbetween.Soma.Fault.Index.get -> int
+SA.Inbetween.Soma.Fault.Index.init -> void
+SA.Inbetween.Soma.Fault.Value.get -> int
+SA.Inbetween.Soma.Fault.Value.init -> void
+SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.AllowedTokenMaxOutOfRange = 21 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.AllowedTokenMinOutOfRange = 20 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.BackendUnavailable = 80 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.Cancelled = 82 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.ContactCountMismatch = 41 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.ContactOutOfRange = 42 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.ContextPoseCount = 23 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.ContextPoseLength = 24 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.FrameCountOutOfRange = 40 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.FramePoseLength = 43 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.HeadingAlignmentInvalid = 22 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.IkPinMaskInvalid = 31 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.JointIndexOutOfRange = 10 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.MotionFileBadMagic = 60 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.MotionFileFieldOutOfRange = 63 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.MotionFileTruncated = 62 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.MotionFileUnsupportedVersion = 61 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.NetworkShapeMismatch = 83 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.None = 0 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.NotImplemented = 1 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.PoseLength = 11 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.PoseQuaternionNotUnit = 13 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.PosesToUseOutOfRange = 28 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.PoseValueNotFinite = 12 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.RecipeHashMismatch = 64 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.RemoteBadRequest = 70 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.RemoteCancelled = 74 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.RemoteGpuOutOfMemory = 72 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.RemoteInternal = 73 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.RemoteNotReady = 71 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.Sha256Invalid = 65 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.TargetCount = 25 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.TargetIndexOutOfRange = 84 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.TargetPoseCount = 26 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.TargetPoseLength = 27 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.Timeout = 81 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.TokenCountOverrideOutOfRange = 30 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.TransitionEarlyOutOfRange = 29 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireBadMagic = 51 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireBodyLengthMismatch = 54 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireBufferTooSmall = 55 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireFieldOutOfRange = 56 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireTruncated = 50 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireUnexpectedMessageType = 57 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireUnknownMessageType = 53 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.FaultCode.WireUnsupportedVersion = 52 -> SA.Inbetween.Soma.FaultCode
+SA.Inbetween.Soma.Faults
+SA.Inbetween.Soma.ISpace
+SA.Inbetween.Soma.Meters
+SA.Inbetween.Soma.Meters.Deconstruct(out float Value) -> void
+SA.Inbetween.Soma.Meters.Equals(SA.Inbetween.Soma.Meters other) -> bool
+SA.Inbetween.Soma.Meters.Meters() -> void
+SA.Inbetween.Soma.Meters.Meters(float Value) -> void
+SA.Inbetween.Soma.Meters.Value.get -> float
+SA.Inbetween.Soma.Meters.Value.init -> void
+SA.Inbetween.Soma.ModelPose
+SA.Inbetween.Soma.ModelPose.Equals(SA.Inbetween.Soma.ModelPose other) -> bool
+SA.Inbetween.Soma.ModelPose.ModelPose() -> void
+SA.Inbetween.Soma.ModelPose.Values.get -> SA.Inbetween.Soma.Block<float>
+SA.Inbetween.Soma.Pose
+SA.Inbetween.Soma.Pose.Equals(SA.Inbetween.Soma.Pose other) -> bool
+SA.Inbetween.Soma.Pose.Pose() -> void
+SA.Inbetween.Soma.Pose.Values.get -> SA.Inbetween.Soma.Block<float>
+SA.Inbetween.Soma.Poses
+SA.Inbetween.Soma.Quaternion<TSpace>
+SA.Inbetween.Soma.Quaternion<TSpace>.Deconstruct(out float X, out float Y, out float Z, out float W) -> void
+SA.Inbetween.Soma.Quaternion<TSpace>.Equals(SA.Inbetween.Soma.Quaternion<TSpace> other) -> bool
+SA.Inbetween.Soma.Quaternion<TSpace>.Quaternion() -> void
+SA.Inbetween.Soma.Quaternion<TSpace>.Quaternion(float X, float Y, float Z, float W) -> void
+SA.Inbetween.Soma.Quaternion<TSpace>.W.get -> float
+SA.Inbetween.Soma.Quaternion<TSpace>.W.init -> void
+SA.Inbetween.Soma.Quaternion<TSpace>.X.get -> float
+SA.Inbetween.Soma.Quaternion<TSpace>.X.init -> void
+SA.Inbetween.Soma.Quaternion<TSpace>.Y.get -> float
+SA.Inbetween.Soma.Quaternion<TSpace>.Y.init -> void
+SA.Inbetween.Soma.Quaternion<TSpace>.Z.get -> float
+SA.Inbetween.Soma.Quaternion<TSpace>.Z.init -> void
+SA.Inbetween.Soma.Radians
+SA.Inbetween.Soma.Radians.Deconstruct(out float Value) -> void
+SA.Inbetween.Soma.Radians.Equals(SA.Inbetween.Soma.Radians other) -> bool
+SA.Inbetween.Soma.Radians.Radians() -> void
+SA.Inbetween.Soma.Radians.Radians(float Value) -> void
+SA.Inbetween.Soma.Radians.Value.get -> float
+SA.Inbetween.Soma.Radians.Value.init -> void
+SA.Inbetween.Soma.Result
+SA.Inbetween.Soma.Result<T, TFault>
+SA.Inbetween.Soma.Result<T, TFault>.Equals(SA.Inbetween.Soma.Result<T, TFault> other) -> bool
+SA.Inbetween.Soma.Result<T, TFault>.IsOk.get -> bool
+SA.Inbetween.Soma.Result<T, TFault>.Match<TResult>(System.Func<T, TResult>! ok, System.Func<TFault, TResult>! error) -> TResult
+SA.Inbetween.Soma.Result<T, TFault>.Result() -> void
+SA.Inbetween.Soma.Result<T, TFault>.TryGetFault(out TFault fault) -> bool
+SA.Inbetween.Soma.Result<T, TFault>.TryGetValue(out T value) -> bool
+SA.Inbetween.Soma.RigidTransform<TSpace>
+SA.Inbetween.Soma.RigidTransform<TSpace>.Deconstruct(out SA.Inbetween.Soma.Vector3<TSpace> Translation, out SA.Inbetween.Soma.Quaternion<TSpace> Rotation) -> void
+SA.Inbetween.Soma.RigidTransform<TSpace>.Equals(SA.Inbetween.Soma.RigidTransform<TSpace> other) -> bool
+SA.Inbetween.Soma.RigidTransform<TSpace>.RigidTransform() -> void
+SA.Inbetween.Soma.RigidTransform<TSpace>.RigidTransform(SA.Inbetween.Soma.Vector3<TSpace> Translation, SA.Inbetween.Soma.Quaternion<TSpace> Rotation) -> void
+SA.Inbetween.Soma.RigidTransform<TSpace>.Rotation.get -> SA.Inbetween.Soma.Quaternion<TSpace>
+SA.Inbetween.Soma.RigidTransform<TSpace>.Rotation.init -> void
+SA.Inbetween.Soma.RigidTransform<TSpace>.Translation.get -> SA.Inbetween.Soma.Vector3<TSpace>
+SA.Inbetween.Soma.RigidTransform<TSpace>.Translation.init -> void
+SA.Inbetween.Soma.Rotation6D<TSpace>
+SA.Inbetween.Soma.Rotation6D<TSpace>.Deconstruct(out SA.Inbetween.Soma.Vector3<TSpace> XAxis, out SA.Inbetween.Soma.Vector3<TSpace> YAxis) -> void
+SA.Inbetween.Soma.Rotation6D<TSpace>.Equals(SA.Inbetween.Soma.Rotation6D<TSpace> other) -> bool
+SA.Inbetween.Soma.Rotation6D<TSpace>.Rotation6D() -> void
+SA.Inbetween.Soma.Rotation6D<TSpace>.Rotation6D(SA.Inbetween.Soma.Vector3<TSpace> XAxis, SA.Inbetween.Soma.Vector3<TSpace> YAxis) -> void
+SA.Inbetween.Soma.Rotation6D<TSpace>.XAxis.get -> SA.Inbetween.Soma.Vector3<TSpace>
+SA.Inbetween.Soma.Rotation6D<TSpace>.XAxis.init -> void
+SA.Inbetween.Soma.Rotation6D<TSpace>.YAxis.get -> SA.Inbetween.Soma.Vector3<TSpace>
+SA.Inbetween.Soma.Rotation6D<TSpace>.YAxis.init -> void
+SA.Inbetween.Soma.Rotations
+SA.Inbetween.Soma.SkeletonJoint
+SA.Inbetween.Soma.SkeletonJoint.Equals(SA.Inbetween.Soma.SkeletonJoint other) -> bool
+SA.Inbetween.Soma.SkeletonJoint.Index.get -> int
+SA.Inbetween.Soma.SkeletonJoint.SkeletonJoint() -> void
+SA.Inbetween.Soma.SkeletonJoints
+SA.Inbetween.Soma.SomaJoint
+SA.Inbetween.Soma.SomaJoint.Equals(SA.Inbetween.Soma.SomaJoint other) -> bool
+SA.Inbetween.Soma.SomaJoint.Index.get -> int
+SA.Inbetween.Soma.SomaJoint.SomaJoint() -> void
+SA.Inbetween.Soma.SomaJoints
+SA.Inbetween.Soma.SomaModel
+SA.Inbetween.Soma.SomaModel.SomaModel() -> void
+SA.Inbetween.Soma.SomaRuntimeZUp
+SA.Inbetween.Soma.SomaRuntimeZUp.SomaRuntimeZUp() -> void
+SA.Inbetween.Soma.SpaceConversions
+SA.Inbetween.Soma.Units
+SA.Inbetween.Soma.UnityWorld
+SA.Inbetween.Soma.UnityWorld.UnityWorld() -> void
+SA.Inbetween.Soma.Vector3<TSpace>
+SA.Inbetween.Soma.Vector3<TSpace>.Deconstruct(out float X, out float Y, out float Z) -> void
+SA.Inbetween.Soma.Vector3<TSpace>.Equals(SA.Inbetween.Soma.Vector3<TSpace> other) -> bool
+SA.Inbetween.Soma.Vector3<TSpace>.Vector3() -> void
+SA.Inbetween.Soma.Vector3<TSpace>.Vector3(float X, float Y, float Z) -> void
+SA.Inbetween.Soma.Vector3<TSpace>.X.get -> float
+SA.Inbetween.Soma.Vector3<TSpace>.X.init -> void
+SA.Inbetween.Soma.Vector3<TSpace>.Y.get -> float
+SA.Inbetween.Soma.Vector3<TSpace>.Y.init -> void
+SA.Inbetween.Soma.Vector3<TSpace>.Z.get -> float
+SA.Inbetween.Soma.Vector3<TSpace>.Z.init -> void
+static readonly SA.Inbetween.Soma.Faults.NotImplemented -> SA.Inbetween.Soma.Fault
+static readonly SA.Inbetween.Soma.SkeletonJoints.Root -> SA.Inbetween.Soma.SkeletonJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Chest -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Head -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Hips -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Jaw -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftArm -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftEye -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftFoot -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftForeArm -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftHand -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftHandMiddleEnd -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftHandThumbEnd -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftLeg -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftShin -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftShoulder -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.LeftToeBase -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Neck1 -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Neck2 -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightArm -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightEye -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightFoot -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightForeArm -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightHand -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightHandMiddleEnd -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightHandThumbEnd -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightLeg -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightShin -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightShoulder -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.RightToeBase -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Spine1 -> SA.Inbetween.Soma.SomaJoint
+static readonly SA.Inbetween.Soma.SomaJoints.Spine2 -> SA.Inbetween.Soma.SomaJoint
+static SA.Inbetween.Soma.Block<T>.operator !=(SA.Inbetween.Soma.Block<T> left, SA.Inbetween.Soma.Block<T> right) -> bool
+static SA.Inbetween.Soma.Block<T>.operator ==(SA.Inbetween.Soma.Block<T> left, SA.Inbetween.Soma.Block<T> right) -> bool
+static SA.Inbetween.Soma.Blocks.BitwiseEqual(SA.Inbetween.Soma.Block<float> left, SA.Inbetween.Soma.Block<float> right) -> bool
+static SA.Inbetween.Soma.Blocks.Copy<T>(System.ReadOnlySpan<T> items) -> SA.Inbetween.Soma.Block<T>
+static SA.Inbetween.Soma.Blocks.Empty<T>() -> SA.Inbetween.Soma.Block<T>
+static SA.Inbetween.Soma.Blocks.Of<T>(params T[]! items) -> SA.Inbetween.Soma.Block<T>
+static SA.Inbetween.Soma.Centimeters.operator !=(SA.Inbetween.Soma.Centimeters left, SA.Inbetween.Soma.Centimeters right) -> bool
+static SA.Inbetween.Soma.Centimeters.operator ==(SA.Inbetween.Soma.Centimeters left, SA.Inbetween.Soma.Centimeters right) -> bool
+static SA.Inbetween.Soma.Degrees.operator !=(SA.Inbetween.Soma.Degrees left, SA.Inbetween.Soma.Degrees right) -> bool
+static SA.Inbetween.Soma.Degrees.operator ==(SA.Inbetween.Soma.Degrees left, SA.Inbetween.Soma.Degrees right) -> bool
+static SA.Inbetween.Soma.Fault.operator !=(SA.Inbetween.Soma.Fault left, SA.Inbetween.Soma.Fault right) -> bool
+static SA.Inbetween.Soma.Fault.operator ==(SA.Inbetween.Soma.Fault left, SA.Inbetween.Soma.Fault right) -> bool
+static SA.Inbetween.Soma.Faults.Of(SA.Inbetween.Soma.FaultCode code, int index, int value) -> SA.Inbetween.Soma.Fault
+static SA.Inbetween.Soma.Meters.operator !=(SA.Inbetween.Soma.Meters left, SA.Inbetween.Soma.Meters right) -> bool
+static SA.Inbetween.Soma.Meters.operator ==(SA.Inbetween.Soma.Meters left, SA.Inbetween.Soma.Meters right) -> bool
+static SA.Inbetween.Soma.ModelPose.operator !=(SA.Inbetween.Soma.ModelPose left, SA.Inbetween.Soma.ModelPose right) -> bool
+static SA.Inbetween.Soma.ModelPose.operator ==(SA.Inbetween.Soma.ModelPose left, SA.Inbetween.Soma.ModelPose right) -> bool
+static SA.Inbetween.Soma.Pose.operator !=(SA.Inbetween.Soma.Pose left, SA.Inbetween.Soma.Pose right) -> bool
+static SA.Inbetween.Soma.Pose.operator ==(SA.Inbetween.Soma.Pose left, SA.Inbetween.Soma.Pose right) -> bool
+static SA.Inbetween.Soma.Poses.Joint(SA.Inbetween.Soma.ModelPose pose, SA.Inbetween.Soma.SomaJoint joint) -> SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel>
+static SA.Inbetween.Soma.Poses.Joint(SA.Inbetween.Soma.Pose pose, SA.Inbetween.Soma.SkeletonJoint joint) -> SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel>
+static SA.Inbetween.Soma.Poses.Parse(System.ReadOnlySpan<float> values) -> SA.Inbetween.Soma.Result<SA.Inbetween.Soma.Pose, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Soma.Poses.ParseModel(System.ReadOnlySpan<float> values) -> SA.Inbetween.Soma.Result<SA.Inbetween.Soma.ModelPose, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Soma.Poses.ToModelPose(SA.Inbetween.Soma.Pose pose) -> SA.Inbetween.Soma.ModelPose
+static SA.Inbetween.Soma.Poses.WithModelPose(SA.Inbetween.Soma.Pose reference, SA.Inbetween.Soma.ModelPose model) -> SA.Inbetween.Soma.Pose
+static SA.Inbetween.Soma.Quaternion<TSpace>.operator !=(SA.Inbetween.Soma.Quaternion<TSpace> left, SA.Inbetween.Soma.Quaternion<TSpace> right) -> bool
+static SA.Inbetween.Soma.Quaternion<TSpace>.operator ==(SA.Inbetween.Soma.Quaternion<TSpace> left, SA.Inbetween.Soma.Quaternion<TSpace> right) -> bool
+static SA.Inbetween.Soma.Radians.operator !=(SA.Inbetween.Soma.Radians left, SA.Inbetween.Soma.Radians right) -> bool
+static SA.Inbetween.Soma.Radians.operator ==(SA.Inbetween.Soma.Radians left, SA.Inbetween.Soma.Radians right) -> bool
+static SA.Inbetween.Soma.Result.Error<T, TFault>(TFault fault) -> SA.Inbetween.Soma.Result<T, TFault>
+static SA.Inbetween.Soma.Result.Ok<T, TFault>(T value) -> SA.Inbetween.Soma.Result<T, TFault>
+static SA.Inbetween.Soma.Result.Select<T, TOut, TFault>(this SA.Inbetween.Soma.Result<T, TFault> result, System.Func<T, TOut>! map) -> SA.Inbetween.Soma.Result<TOut, TFault>
+static SA.Inbetween.Soma.Result.SelectMany<T, TMid, TOut, TFault>(this SA.Inbetween.Soma.Result<T, TFault> result, System.Func<T, SA.Inbetween.Soma.Result<TMid, TFault>>! bind, System.Func<T, TMid, TOut>! project) -> SA.Inbetween.Soma.Result<TOut, TFault>
+static SA.Inbetween.Soma.Result.SelectMany<T, TOut, TFault>(this SA.Inbetween.Soma.Result<T, TFault> result, System.Func<T, SA.Inbetween.Soma.Result<TOut, TFault>>! bind) -> SA.Inbetween.Soma.Result<TOut, TFault>
+static SA.Inbetween.Soma.Result<T, TFault>.operator !=(SA.Inbetween.Soma.Result<T, TFault> left, SA.Inbetween.Soma.Result<T, TFault> right) -> bool
+static SA.Inbetween.Soma.Result<T, TFault>.operator ==(SA.Inbetween.Soma.Result<T, TFault> left, SA.Inbetween.Soma.Result<T, TFault> right) -> bool
+static SA.Inbetween.Soma.RigidTransform<TSpace>.operator !=(SA.Inbetween.Soma.RigidTransform<TSpace> left, SA.Inbetween.Soma.RigidTransform<TSpace> right) -> bool
+static SA.Inbetween.Soma.RigidTransform<TSpace>.operator ==(SA.Inbetween.Soma.RigidTransform<TSpace> left, SA.Inbetween.Soma.RigidTransform<TSpace> right) -> bool
+static SA.Inbetween.Soma.Rotation6D<TSpace>.operator !=(SA.Inbetween.Soma.Rotation6D<TSpace> left, SA.Inbetween.Soma.Rotation6D<TSpace> right) -> bool
+static SA.Inbetween.Soma.Rotation6D<TSpace>.operator ==(SA.Inbetween.Soma.Rotation6D<TSpace> left, SA.Inbetween.Soma.Rotation6D<TSpace> right) -> bool
+static SA.Inbetween.Soma.Rotations.AngleBetween<TSpace>(SA.Inbetween.Soma.Quaternion<TSpace> left, SA.Inbetween.Soma.Quaternion<TSpace> right) -> SA.Inbetween.Soma.Radians
+static SA.Inbetween.Soma.Rotations.Conjugate<TSpace>(SA.Inbetween.Soma.Quaternion<TSpace> rotation) -> SA.Inbetween.Soma.Quaternion<TSpace>
+static SA.Inbetween.Soma.Rotations.FromAxisAngle<TSpace>(SA.Inbetween.Soma.Vector3<TSpace> unitAxis, SA.Inbetween.Soma.Radians angle) -> SA.Inbetween.Soma.Quaternion<TSpace>
+static SA.Inbetween.Soma.Rotations.FromRotation6D<TSpace>(SA.Inbetween.Soma.Rotation6D<TSpace> rotation) -> SA.Inbetween.Soma.Quaternion<TSpace>
+static SA.Inbetween.Soma.Rotations.Identity<TSpace>() -> SA.Inbetween.Soma.Quaternion<TSpace>
+static SA.Inbetween.Soma.Rotations.Multiply<TSpace>(SA.Inbetween.Soma.Quaternion<TSpace> left, SA.Inbetween.Soma.Quaternion<TSpace> right) -> SA.Inbetween.Soma.Quaternion<TSpace>
+static SA.Inbetween.Soma.Rotations.Normalize<TSpace>(SA.Inbetween.Soma.Quaternion<TSpace> rotation) -> SA.Inbetween.Soma.Quaternion<TSpace>
+static SA.Inbetween.Soma.Rotations.Rotate<TSpace>(SA.Inbetween.Soma.Quaternion<TSpace> rotation, SA.Inbetween.Soma.Vector3<TSpace> vector) -> SA.Inbetween.Soma.Vector3<TSpace>
+static SA.Inbetween.Soma.Rotations.ToRotation6D<TSpace>(SA.Inbetween.Soma.Quaternion<TSpace> rotation) -> SA.Inbetween.Soma.Rotation6D<TSpace>
+static SA.Inbetween.Soma.SkeletonJoint.operator !=(SA.Inbetween.Soma.SkeletonJoint left, SA.Inbetween.Soma.SkeletonJoint right) -> bool
+static SA.Inbetween.Soma.SkeletonJoint.operator ==(SA.Inbetween.Soma.SkeletonJoint left, SA.Inbetween.Soma.SkeletonJoint right) -> bool
+static SA.Inbetween.Soma.SkeletonJoints.FromIndex(int index) -> SA.Inbetween.Soma.Result<SA.Inbetween.Soma.SkeletonJoint, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Soma.SomaJoint.operator !=(SA.Inbetween.Soma.SomaJoint left, SA.Inbetween.Soma.SomaJoint right) -> bool
+static SA.Inbetween.Soma.SomaJoint.operator ==(SA.Inbetween.Soma.SomaJoint left, SA.Inbetween.Soma.SomaJoint right) -> bool
+static SA.Inbetween.Soma.SomaJoints.FromIndex(int index) -> SA.Inbetween.Soma.Result<SA.Inbetween.Soma.SomaJoint, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Soma.SomaJoints.Name(SA.Inbetween.Soma.SomaJoint joint) -> string!
+static SA.Inbetween.Soma.SomaJoints.ToSkeleton(SA.Inbetween.Soma.SomaJoint joint) -> SA.Inbetween.Soma.SkeletonJoint
+static SA.Inbetween.Soma.SpaceConversions.ModelToRuntime(SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.SomaModel> rotation) -> SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.SomaRuntimeZUp>
+static SA.Inbetween.Soma.SpaceConversions.ModelToRuntime(SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.SomaModel> vector) -> SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.SomaRuntimeZUp>
+static SA.Inbetween.Soma.SpaceConversions.ModelToUnity(SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.SomaModel> rotation) -> SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.UnityWorld>
+static SA.Inbetween.Soma.SpaceConversions.ModelToUnity(SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.SomaModel> vector) -> SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.UnityWorld>
+static SA.Inbetween.Soma.SpaceConversions.RuntimeToModel(SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.SomaRuntimeZUp> rotation) -> SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.SomaModel>
+static SA.Inbetween.Soma.SpaceConversions.RuntimeToModel(SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.SomaRuntimeZUp> vector) -> SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.SomaModel>
+static SA.Inbetween.Soma.SpaceConversions.UnityToModel(SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.UnityWorld> rotation) -> SA.Inbetween.Soma.Quaternion<SA.Inbetween.Soma.SomaModel>
+static SA.Inbetween.Soma.SpaceConversions.UnityToModel(SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.UnityWorld> vector) -> SA.Inbetween.Soma.Vector3<SA.Inbetween.Soma.SomaModel>
+static SA.Inbetween.Soma.Units.ToCentimeters(SA.Inbetween.Soma.Meters meters) -> SA.Inbetween.Soma.Centimeters
+static SA.Inbetween.Soma.Units.ToDegrees(SA.Inbetween.Soma.Radians radians) -> SA.Inbetween.Soma.Degrees
+static SA.Inbetween.Soma.Units.ToMeters(SA.Inbetween.Soma.Centimeters centimeters) -> SA.Inbetween.Soma.Meters
+static SA.Inbetween.Soma.Units.ToRadians(SA.Inbetween.Soma.Degrees degrees) -> SA.Inbetween.Soma.Radians
+static SA.Inbetween.Soma.Vector3<TSpace>.operator !=(SA.Inbetween.Soma.Vector3<TSpace> left, SA.Inbetween.Soma.Vector3<TSpace> right) -> bool
+static SA.Inbetween.Soma.Vector3<TSpace>.operator ==(SA.Inbetween.Soma.Vector3<TSpace> left, SA.Inbetween.Soma.Vector3<TSpace> right) -> bool
+~override SA.Inbetween.Soma.Centimeters.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Centimeters.ToString() -> string
+~override SA.Inbetween.Soma.Degrees.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Degrees.ToString() -> string
+~override SA.Inbetween.Soma.Fault.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Fault.ToString() -> string
+~override SA.Inbetween.Soma.Meters.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Meters.ToString() -> string
+~override SA.Inbetween.Soma.ModelPose.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.ModelPose.ToString() -> string
+~override SA.Inbetween.Soma.Pose.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Pose.ToString() -> string
+~override SA.Inbetween.Soma.Quaternion<TSpace>.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Quaternion<TSpace>.ToString() -> string
+~override SA.Inbetween.Soma.Radians.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Radians.ToString() -> string
+~override SA.Inbetween.Soma.RigidTransform<TSpace>.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.RigidTransform<TSpace>.ToString() -> string
+~override SA.Inbetween.Soma.Rotation6D<TSpace>.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Rotation6D<TSpace>.ToString() -> string
+~override SA.Inbetween.Soma.SkeletonJoint.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.SkeletonJoint.ToString() -> string
+~override SA.Inbetween.Soma.SomaJoint.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.SomaJoint.ToString() -> string
+~override SA.Inbetween.Soma.Vector3<TSpace>.Equals(object obj) -> bool
+~override SA.Inbetween.Soma.Vector3<TSpace>.ToString() -> string

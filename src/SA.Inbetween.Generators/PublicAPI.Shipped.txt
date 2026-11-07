@@ -1,0 +1,26 @@
+#nullable enable
+override SA.Inbetween.Generators.SidecarOptions.GetHashCode() -> int
+SA.Inbetween.Generators.PortedGenerator
+SA.Inbetween.Generators.PortedGenerator.GenerateAsync(SA.Inbetween.Contract.ValidRequest request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<SA.Inbetween.Soma.Result<SA.Inbetween.Soma.Block<SA.Inbetween.Contract.GenerationResult>, SA.Inbetween.Soma.Fault>>
+SA.Inbetween.Generators.PortedGenerator.Network.get -> SA.Inbetween.Engine.INetwork!
+SA.Inbetween.Generators.PortedGenerator.PortedGenerator(SA.Inbetween.Engine.INetwork! network) -> void
+SA.Inbetween.Generators.SidecarGenerator
+SA.Inbetween.Generators.SidecarGenerator.Dispose() -> void
+SA.Inbetween.Generators.SidecarGenerator.GenerateAsync(SA.Inbetween.Contract.ValidRequest request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<SA.Inbetween.Soma.Result<SA.Inbetween.Soma.Block<SA.Inbetween.Contract.GenerationResult>, SA.Inbetween.Soma.Fault>>
+SA.Inbetween.Generators.SidecarGenerator.Options.get -> SA.Inbetween.Generators.SidecarOptions
+SA.Inbetween.Generators.SidecarGenerator.SidecarGenerator(SA.Inbetween.Generators.SidecarOptions options) -> void
+SA.Inbetween.Generators.SidecarOptions
+SA.Inbetween.Generators.SidecarOptions.ConnectTimeoutMilliseconds.get -> int
+SA.Inbetween.Generators.SidecarOptions.ConnectTimeoutMilliseconds.init -> void
+SA.Inbetween.Generators.SidecarOptions.Deconstruct(out int Port, out int ConnectTimeoutMilliseconds, out int RequestTimeoutMilliseconds) -> void
+SA.Inbetween.Generators.SidecarOptions.Equals(SA.Inbetween.Generators.SidecarOptions other) -> bool
+SA.Inbetween.Generators.SidecarOptions.Port.get -> int
+SA.Inbetween.Generators.SidecarOptions.Port.init -> void
+SA.Inbetween.Generators.SidecarOptions.RequestTimeoutMilliseconds.get -> int
+SA.Inbetween.Generators.SidecarOptions.RequestTimeoutMilliseconds.init -> void
+SA.Inbetween.Generators.SidecarOptions.SidecarOptions() -> void
+SA.Inbetween.Generators.SidecarOptions.SidecarOptions(int Port, int ConnectTimeoutMilliseconds, int RequestTimeoutMilliseconds) -> void
+static SA.Inbetween.Generators.SidecarOptions.operator !=(SA.Inbetween.Generators.SidecarOptions left, SA.Inbetween.Generators.SidecarOptions right) -> bool
+static SA.Inbetween.Generators.SidecarOptions.operator ==(SA.Inbetween.Generators.SidecarOptions left, SA.Inbetween.Generators.SidecarOptions right) -> bool
+~override SA.Inbetween.Generators.SidecarOptions.Equals(object obj) -> bool
+~override SA.Inbetween.Generators.SidecarOptions.ToString() -> string

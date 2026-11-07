@@ -1,0 +1,453 @@
+#nullable enable
+const SA.Inbetween.Contract.Limits.ContextPoseCount = 4 -> int
+const SA.Inbetween.Contract.Limits.FramesPerSecond = 30 -> int
+const SA.Inbetween.Contract.Limits.IkPinMaskBits = 15 -> int
+const SA.Inbetween.Contract.Limits.MaxFrames = 58 -> int
+const SA.Inbetween.Contract.Limits.MaxTargetPoses = 4 -> int
+const SA.Inbetween.Contract.Limits.MaxTargets = 4 -> int
+const SA.Inbetween.Contract.Limits.MaxTokenCount = 16 -> int
+const SA.Inbetween.Contract.Limits.MaxTransitionEarlyByFrames = 58 -> int
+const SA.Inbetween.Contract.Limits.MinFrames = 18 -> int
+const SA.Inbetween.Contract.Limits.MinTargetPoses = 1 -> int
+const SA.Inbetween.Contract.Limits.MinTargets = 1 -> int
+const SA.Inbetween.Contract.Limits.MinTokenCount = 6 -> int
+const SA.Inbetween.Contract.ModelPins.MotionBricksCommit = "54fc563aeaaf819a753d72cc9fdc6713989cdd43" -> string!
+const SA.Inbetween.Contract.ModelPins.SomaFp32OnnxBytes = 757864273 -> long
+const SA.Inbetween.Contract.ModelPins.SomaFp32OnnxSha256 = "856419dc72aeb14e591eebf4dd0ea05734a2506ddb00bcd39dd6dac2ad60f4fb" -> string!
+const SA.Inbetween.Contract.ModelPins.SomaN1JsonSha256 = "ed41ab5bf481383fa46bdf0322b0c1b96426973e5038b731bc31276121051aaa" -> string!
+const SA.Inbetween.Contract.MotionFiles.HeaderSize = 48 -> int
+const SA.Inbetween.Contract.MotionFiles.Magic = 1112097107 -> uint
+const SA.Inbetween.Contract.MotionFiles.Version = 1 -> ushort
+const SA.Inbetween.Contract.Sha256s.ByteCount = 32 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.F16ResponseFlag = 2 -> byte
+const SA.Inbetween.Contract.Wire.WireFormat.FrameSize = 884 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.GenerateResultFixedSize = 13 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.HeaderSize = 12 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.HelloAckBodySize = 9 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.HelloBodySize = 8 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.Magic = 19778 -> ushort
+const SA.Inbetween.Contract.Wire.WireFormat.PoseSize = 840 -> int
+const SA.Inbetween.Contract.Wire.WireFormat.Version = 1 -> byte
+const SA.Inbetween.Contract.Wire.WireFormat.WantTimingFlag = 1 -> byte
+const SA.Inbetween.Contract.Wire.WireFormat.WireConfigSize = 12 -> int
+override SA.Inbetween.Contract.FootContacts.GetHashCode() -> int
+override SA.Inbetween.Contract.GenerationConfig.GetHashCode() -> int
+override SA.Inbetween.Contract.GenerationRequest.GetHashCode() -> int
+override SA.Inbetween.Contract.GenerationResult.GetHashCode() -> int
+override SA.Inbetween.Contract.MotionFile.GetHashCode() -> int
+override SA.Inbetween.Contract.Recipe.GetHashCode() -> int
+override SA.Inbetween.Contract.Sha256.GetHashCode() -> int
+override SA.Inbetween.Contract.TargetSpec.GetHashCode() -> int
+override SA.Inbetween.Contract.Timing.GetHashCode() -> int
+override SA.Inbetween.Contract.ValidRequest.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.ErrorMessage.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.Generate.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.GenerateResult.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.Hello.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.HelloAck.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.WireConfig.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.WireFrame.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.WireHeader.GetHashCode() -> int
+override SA.Inbetween.Contract.Wire.WireTarget.GetHashCode() -> int
+SA.Inbetween.Contract.AxisConvention
+SA.Inbetween.Contract.AxisConvention.SomaModelYUpRightHanded = 0 -> SA.Inbetween.Contract.AxisConvention
+SA.Inbetween.Contract.Backend
+SA.Inbetween.Contract.Backend.Ported = 1 -> SA.Inbetween.Contract.Backend
+SA.Inbetween.Contract.Backend.Sidecar = 0 -> SA.Inbetween.Contract.Backend
+SA.Inbetween.Contract.FootContacts
+SA.Inbetween.Contract.FootContacts.Deconstruct(out float LeftHeel, out float LeftToe, out float RightHeel, out float RightToe) -> void
+SA.Inbetween.Contract.FootContacts.Equals(SA.Inbetween.Contract.FootContacts other) -> bool
+SA.Inbetween.Contract.FootContacts.FootContacts() -> void
+SA.Inbetween.Contract.FootContacts.FootContacts(float LeftHeel, float LeftToe, float RightHeel, float RightToe) -> void
+SA.Inbetween.Contract.FootContacts.LeftHeel.get -> float
+SA.Inbetween.Contract.FootContacts.LeftHeel.init -> void
+SA.Inbetween.Contract.FootContacts.LeftToe.get -> float
+SA.Inbetween.Contract.FootContacts.LeftToe.init -> void
+SA.Inbetween.Contract.FootContacts.RightHeel.get -> float
+SA.Inbetween.Contract.FootContacts.RightHeel.init -> void
+SA.Inbetween.Contract.FootContacts.RightToe.get -> float
+SA.Inbetween.Contract.FootContacts.RightToe.init -> void
+SA.Inbetween.Contract.GenerationConfig
+SA.Inbetween.Contract.GenerationConfig.AllowedTokenMax.get -> int
+SA.Inbetween.Contract.GenerationConfig.AllowedTokenMax.init -> void
+SA.Inbetween.Contract.GenerationConfig.AllowedTokenMin.get -> int
+SA.Inbetween.Contract.GenerationConfig.AllowedTokenMin.init -> void
+SA.Inbetween.Contract.GenerationConfig.CorrectGeneratedDiff.get -> bool
+SA.Inbetween.Contract.GenerationConfig.CorrectGeneratedDiff.init -> void
+SA.Inbetween.Contract.GenerationConfig.Deconstruct(out int AllowedTokenMin, out int AllowedTokenMax, out bool CorrectGeneratedDiff, out bool WantTiming, out float HeadingAlignmentX, out float HeadingAlignmentZ) -> void
+SA.Inbetween.Contract.GenerationConfig.Equals(SA.Inbetween.Contract.GenerationConfig other) -> bool
+SA.Inbetween.Contract.GenerationConfig.GenerationConfig() -> void
+SA.Inbetween.Contract.GenerationConfig.GenerationConfig(int AllowedTokenMin, int AllowedTokenMax, bool CorrectGeneratedDiff, bool WantTiming, float HeadingAlignmentX, float HeadingAlignmentZ) -> void
+SA.Inbetween.Contract.GenerationConfig.HeadingAlignmentX.get -> float
+SA.Inbetween.Contract.GenerationConfig.HeadingAlignmentX.init -> void
+SA.Inbetween.Contract.GenerationConfig.HeadingAlignmentZ.get -> float
+SA.Inbetween.Contract.GenerationConfig.HeadingAlignmentZ.init -> void
+SA.Inbetween.Contract.GenerationConfig.WantTiming.get -> bool
+SA.Inbetween.Contract.GenerationConfig.WantTiming.init -> void
+SA.Inbetween.Contract.GenerationConfigs
+SA.Inbetween.Contract.GenerationRequest
+SA.Inbetween.Contract.GenerationRequest.Config.get -> SA.Inbetween.Contract.GenerationConfig
+SA.Inbetween.Contract.GenerationRequest.Config.init -> void
+SA.Inbetween.Contract.GenerationRequest.Context.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose>
+SA.Inbetween.Contract.GenerationRequest.Context.init -> void
+SA.Inbetween.Contract.GenerationRequest.Deconstruct(out SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> Context, out SA.Inbetween.Soma.Block<SA.Inbetween.Contract.TargetSpec> Targets, out SA.Inbetween.Contract.GenerationConfig Config) -> void
+SA.Inbetween.Contract.GenerationRequest.Equals(SA.Inbetween.Contract.GenerationRequest other) -> bool
+SA.Inbetween.Contract.GenerationRequest.GenerationRequest() -> void
+SA.Inbetween.Contract.GenerationRequest.GenerationRequest(SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> Context, SA.Inbetween.Soma.Block<SA.Inbetween.Contract.TargetSpec> Targets, SA.Inbetween.Contract.GenerationConfig Config) -> void
+SA.Inbetween.Contract.GenerationRequest.Targets.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Contract.TargetSpec>
+SA.Inbetween.Contract.GenerationRequest.Targets.init -> void
+SA.Inbetween.Contract.GenerationResult
+SA.Inbetween.Contract.GenerationResult.Contacts.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Contract.FootContacts>
+SA.Inbetween.Contract.GenerationResult.Equals(SA.Inbetween.Contract.GenerationResult other) -> bool
+SA.Inbetween.Contract.GenerationResult.Frames.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose>
+SA.Inbetween.Contract.GenerationResult.GenerationResult() -> void
+SA.Inbetween.Contract.GenerationResult.Timing.get -> SA.Inbetween.Contract.Timing
+SA.Inbetween.Contract.GenerationResults
+SA.Inbetween.Contract.IMotionGenerator
+SA.Inbetween.Contract.IMotionGenerator.GenerateAsync(SA.Inbetween.Contract.ValidRequest request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<SA.Inbetween.Soma.Result<SA.Inbetween.Soma.Block<SA.Inbetween.Contract.GenerationResult>, SA.Inbetween.Soma.Fault>>
+SA.Inbetween.Contract.LengthUnit
+SA.Inbetween.Contract.LengthUnit.Meters = 0 -> SA.Inbetween.Contract.LengthUnit
+SA.Inbetween.Contract.Limits
+SA.Inbetween.Contract.ModelPins
+SA.Inbetween.Contract.MotionFile
+SA.Inbetween.Contract.MotionFile.Axes.get -> SA.Inbetween.Contract.AxisConvention
+SA.Inbetween.Contract.MotionFile.Axes.init -> void
+SA.Inbetween.Contract.MotionFile.Contacts.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Contract.FootContacts>
+SA.Inbetween.Contract.MotionFile.Contacts.init -> void
+SA.Inbetween.Contract.MotionFile.Deconstruct(out SA.Inbetween.Contract.Recipe Recipe, out SA.Inbetween.Contract.Sha256 RecipeHash, out int FramesPerSecond, out SA.Inbetween.Contract.AxisConvention Axes, out SA.Inbetween.Contract.LengthUnit Units, out SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> Frames, out SA.Inbetween.Soma.Block<SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel>> RootWorld, out SA.Inbetween.Soma.Block<SA.Inbetween.Contract.FootContacts> Contacts) -> void
+SA.Inbetween.Contract.MotionFile.Equals(SA.Inbetween.Contract.MotionFile other) -> bool
+SA.Inbetween.Contract.MotionFile.Frames.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose>
+SA.Inbetween.Contract.MotionFile.Frames.init -> void
+SA.Inbetween.Contract.MotionFile.FramesPerSecond.get -> int
+SA.Inbetween.Contract.MotionFile.FramesPerSecond.init -> void
+SA.Inbetween.Contract.MotionFile.MotionFile() -> void
+SA.Inbetween.Contract.MotionFile.MotionFile(SA.Inbetween.Contract.Recipe Recipe, SA.Inbetween.Contract.Sha256 RecipeHash, int FramesPerSecond, SA.Inbetween.Contract.AxisConvention Axes, SA.Inbetween.Contract.LengthUnit Units, SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> Frames, SA.Inbetween.Soma.Block<SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel>> RootWorld, SA.Inbetween.Soma.Block<SA.Inbetween.Contract.FootContacts> Contacts) -> void
+SA.Inbetween.Contract.MotionFile.Recipe.get -> SA.Inbetween.Contract.Recipe
+SA.Inbetween.Contract.MotionFile.Recipe.init -> void
+SA.Inbetween.Contract.MotionFile.RecipeHash.get -> SA.Inbetween.Contract.Sha256
+SA.Inbetween.Contract.MotionFile.RecipeHash.init -> void
+SA.Inbetween.Contract.MotionFile.RootWorld.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel>>
+SA.Inbetween.Contract.MotionFile.RootWorld.init -> void
+SA.Inbetween.Contract.MotionFile.Units.get -> SA.Inbetween.Contract.LengthUnit
+SA.Inbetween.Contract.MotionFile.Units.init -> void
+SA.Inbetween.Contract.MotionFiles
+SA.Inbetween.Contract.Precision
+SA.Inbetween.Contract.Precision.Fp16Mixed = 1 -> SA.Inbetween.Contract.Precision
+SA.Inbetween.Contract.Precision.Fp32 = 0 -> SA.Inbetween.Contract.Precision
+SA.Inbetween.Contract.Recipe
+SA.Inbetween.Contract.Recipe.Backend.get -> SA.Inbetween.Contract.Backend
+SA.Inbetween.Contract.Recipe.Backend.init -> void
+SA.Inbetween.Contract.Recipe.Deconstruct(out SA.Inbetween.Contract.Backend Backend, out SA.Inbetween.Contract.Precision Precision, out SA.Inbetween.Contract.Sha256 Model, out SA.Inbetween.Contract.GenerationRequest Inputs) -> void
+SA.Inbetween.Contract.Recipe.Equals(SA.Inbetween.Contract.Recipe other) -> bool
+SA.Inbetween.Contract.Recipe.Inputs.get -> SA.Inbetween.Contract.GenerationRequest
+SA.Inbetween.Contract.Recipe.Inputs.init -> void
+SA.Inbetween.Contract.Recipe.Model.get -> SA.Inbetween.Contract.Sha256
+SA.Inbetween.Contract.Recipe.Model.init -> void
+SA.Inbetween.Contract.Recipe.Precision.get -> SA.Inbetween.Contract.Precision
+SA.Inbetween.Contract.Recipe.Precision.init -> void
+SA.Inbetween.Contract.Recipe.Recipe() -> void
+SA.Inbetween.Contract.Recipe.Recipe(SA.Inbetween.Contract.Backend Backend, SA.Inbetween.Contract.Precision Precision, SA.Inbetween.Contract.Sha256 Model, SA.Inbetween.Contract.GenerationRequest Inputs) -> void
+SA.Inbetween.Contract.Recipes
+SA.Inbetween.Contract.Requests
+SA.Inbetween.Contract.Sha256
+SA.Inbetween.Contract.Sha256.Bytes.get -> SA.Inbetween.Soma.Block<byte>
+SA.Inbetween.Contract.Sha256.Equals(SA.Inbetween.Contract.Sha256 other) -> bool
+SA.Inbetween.Contract.Sha256.Sha256() -> void
+SA.Inbetween.Contract.Sha256s
+SA.Inbetween.Contract.TargetSpec
+SA.Inbetween.Contract.TargetSpec.Deconstruct(out SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> Poses, out int PosesToUse, out int TransitionEarlyByFrames, out int TokenCountOverride, out int IkPinMask) -> void
+SA.Inbetween.Contract.TargetSpec.Equals(SA.Inbetween.Contract.TargetSpec other) -> bool
+SA.Inbetween.Contract.TargetSpec.IkPinMask.get -> int
+SA.Inbetween.Contract.TargetSpec.IkPinMask.init -> void
+SA.Inbetween.Contract.TargetSpec.Poses.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose>
+SA.Inbetween.Contract.TargetSpec.Poses.init -> void
+SA.Inbetween.Contract.TargetSpec.PosesToUse.get -> int
+SA.Inbetween.Contract.TargetSpec.PosesToUse.init -> void
+SA.Inbetween.Contract.TargetSpec.TargetSpec() -> void
+SA.Inbetween.Contract.TargetSpec.TargetSpec(SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> Poses, int PosesToUse, int TransitionEarlyByFrames, int TokenCountOverride, int IkPinMask) -> void
+SA.Inbetween.Contract.TargetSpec.TokenCountOverride.get -> int
+SA.Inbetween.Contract.TargetSpec.TokenCountOverride.init -> void
+SA.Inbetween.Contract.TargetSpec.TransitionEarlyByFrames.get -> int
+SA.Inbetween.Contract.TargetSpec.TransitionEarlyByFrames.init -> void
+SA.Inbetween.Contract.Timing
+SA.Inbetween.Contract.Timing.Deconstruct(out int TokensChosen, out float GenerationMilliseconds, out float TotalMilliseconds) -> void
+SA.Inbetween.Contract.Timing.Equals(SA.Inbetween.Contract.Timing other) -> bool
+SA.Inbetween.Contract.Timing.GenerationMilliseconds.get -> float
+SA.Inbetween.Contract.Timing.GenerationMilliseconds.init -> void
+SA.Inbetween.Contract.Timing.Timing() -> void
+SA.Inbetween.Contract.Timing.Timing(int TokensChosen, float GenerationMilliseconds, float TotalMilliseconds) -> void
+SA.Inbetween.Contract.Timing.TokensChosen.get -> int
+SA.Inbetween.Contract.Timing.TokensChosen.init -> void
+SA.Inbetween.Contract.Timing.TotalMilliseconds.get -> float
+SA.Inbetween.Contract.Timing.TotalMilliseconds.init -> void
+SA.Inbetween.Contract.ValidRequest
+SA.Inbetween.Contract.ValidRequest.Equals(SA.Inbetween.Contract.ValidRequest other) -> bool
+SA.Inbetween.Contract.ValidRequest.Request.get -> SA.Inbetween.Contract.GenerationRequest
+SA.Inbetween.Contract.ValidRequest.ValidRequest() -> void
+SA.Inbetween.Contract.Wire.ChainMode
+SA.Inbetween.Contract.Wire.ChainMode.ServiceChained = 1 -> SA.Inbetween.Contract.Wire.ChainMode
+SA.Inbetween.Contract.Wire.ChainMode.Single = 0 -> SA.Inbetween.Contract.Wire.ChainMode
+SA.Inbetween.Contract.Wire.ErrorMessage
+SA.Inbetween.Contract.Wire.ErrorMessage.Code.get -> SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.ErrorMessage.Code.init -> void
+SA.Inbetween.Contract.Wire.ErrorMessage.Deconstruct(out SA.Inbetween.Contract.Wire.WireErrorCode Code, out SA.Inbetween.Soma.Block<byte> MessageUtf8) -> void
+SA.Inbetween.Contract.Wire.ErrorMessage.Equals(SA.Inbetween.Contract.Wire.ErrorMessage other) -> bool
+SA.Inbetween.Contract.Wire.ErrorMessage.ErrorMessage() -> void
+SA.Inbetween.Contract.Wire.ErrorMessage.ErrorMessage(SA.Inbetween.Contract.Wire.WireErrorCode Code, SA.Inbetween.Soma.Block<byte> MessageUtf8) -> void
+SA.Inbetween.Contract.Wire.ErrorMessage.MessageUtf8.get -> SA.Inbetween.Soma.Block<byte>
+SA.Inbetween.Contract.Wire.ErrorMessage.MessageUtf8.init -> void
+SA.Inbetween.Contract.Wire.Generate
+SA.Inbetween.Contract.Wire.Generate.ChainMode.get -> SA.Inbetween.Contract.Wire.ChainMode
+SA.Inbetween.Contract.Wire.Generate.ChainMode.init -> void
+SA.Inbetween.Contract.Wire.Generate.Config.get -> SA.Inbetween.Contract.Wire.WireConfig
+SA.Inbetween.Contract.Wire.Generate.Config.init -> void
+SA.Inbetween.Contract.Wire.Generate.Context.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.ModelPose>
+SA.Inbetween.Contract.Wire.Generate.Context.init -> void
+SA.Inbetween.Contract.Wire.Generate.Deconstruct(out SA.Inbetween.Contract.Wire.WireConfig Config, out SA.Inbetween.Soma.Block<SA.Inbetween.Soma.ModelPose> Context, out SA.Inbetween.Soma.Block<SA.Inbetween.Contract.Wire.WireTarget> Targets, out SA.Inbetween.Contract.Wire.ChainMode ChainMode) -> void
+SA.Inbetween.Contract.Wire.Generate.Equals(SA.Inbetween.Contract.Wire.Generate other) -> bool
+SA.Inbetween.Contract.Wire.Generate.Generate() -> void
+SA.Inbetween.Contract.Wire.Generate.Generate(SA.Inbetween.Contract.Wire.WireConfig Config, SA.Inbetween.Soma.Block<SA.Inbetween.Soma.ModelPose> Context, SA.Inbetween.Soma.Block<SA.Inbetween.Contract.Wire.WireTarget> Targets, SA.Inbetween.Contract.Wire.ChainMode ChainMode) -> void
+SA.Inbetween.Contract.Wire.Generate.Targets.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Contract.Wire.WireTarget>
+SA.Inbetween.Contract.Wire.Generate.Targets.init -> void
+SA.Inbetween.Contract.Wire.GenerateResult
+SA.Inbetween.Contract.Wire.GenerateResult.Deconstruct(out byte Sequence, out bool Last, out byte TokensChosen, out float GenerationMilliseconds, out float TotalMilliseconds, out SA.Inbetween.Soma.Block<SA.Inbetween.Contract.Wire.WireFrame> Frames) -> void
+SA.Inbetween.Contract.Wire.GenerateResult.Equals(SA.Inbetween.Contract.Wire.GenerateResult other) -> bool
+SA.Inbetween.Contract.Wire.GenerateResult.Frames.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Contract.Wire.WireFrame>
+SA.Inbetween.Contract.Wire.GenerateResult.Frames.init -> void
+SA.Inbetween.Contract.Wire.GenerateResult.GenerateResult() -> void
+SA.Inbetween.Contract.Wire.GenerateResult.GenerateResult(byte Sequence, bool Last, byte TokensChosen, float GenerationMilliseconds, float TotalMilliseconds, SA.Inbetween.Soma.Block<SA.Inbetween.Contract.Wire.WireFrame> Frames) -> void
+SA.Inbetween.Contract.Wire.GenerateResult.GenerationMilliseconds.get -> float
+SA.Inbetween.Contract.Wire.GenerateResult.GenerationMilliseconds.init -> void
+SA.Inbetween.Contract.Wire.GenerateResult.Last.get -> bool
+SA.Inbetween.Contract.Wire.GenerateResult.Last.init -> void
+SA.Inbetween.Contract.Wire.GenerateResult.Sequence.get -> byte
+SA.Inbetween.Contract.Wire.GenerateResult.Sequence.init -> void
+SA.Inbetween.Contract.Wire.GenerateResult.TokensChosen.get -> byte
+SA.Inbetween.Contract.Wire.GenerateResult.TokensChosen.init -> void
+SA.Inbetween.Contract.Wire.GenerateResult.TotalMilliseconds.get -> float
+SA.Inbetween.Contract.Wire.GenerateResult.TotalMilliseconds.init -> void
+SA.Inbetween.Contract.Wire.Hello
+SA.Inbetween.Contract.Wire.Hello.ClientVersion.get -> ushort
+SA.Inbetween.Contract.Wire.Hello.ClientVersion.init -> void
+SA.Inbetween.Contract.Wire.Hello.Deconstruct(out ushort ClientVersion, out SA.Inbetween.Contract.Wire.Rig Rig, out SA.Inbetween.Contract.Wire.WirePrecision Precision, out uint Flags) -> void
+SA.Inbetween.Contract.Wire.Hello.Equals(SA.Inbetween.Contract.Wire.Hello other) -> bool
+SA.Inbetween.Contract.Wire.Hello.Flags.get -> uint
+SA.Inbetween.Contract.Wire.Hello.Flags.init -> void
+SA.Inbetween.Contract.Wire.Hello.Hello() -> void
+SA.Inbetween.Contract.Wire.Hello.Hello(ushort ClientVersion, SA.Inbetween.Contract.Wire.Rig Rig, SA.Inbetween.Contract.Wire.WirePrecision Precision, uint Flags) -> void
+SA.Inbetween.Contract.Wire.Hello.Precision.get -> SA.Inbetween.Contract.Wire.WirePrecision
+SA.Inbetween.Contract.Wire.Hello.Precision.init -> void
+SA.Inbetween.Contract.Wire.Hello.Rig.get -> SA.Inbetween.Contract.Wire.Rig
+SA.Inbetween.Contract.Wire.Hello.Rig.init -> void
+SA.Inbetween.Contract.Wire.HelloAck
+SA.Inbetween.Contract.Wire.HelloAck.Deconstruct(out ushort ServerVersion, out SA.Inbetween.Contract.Wire.Rig Rig, out byte JointCount, out byte FramesPerSecond, out SA.Inbetween.Contract.Wire.WireSpace Space, out bool EngineReady, out byte MinFrames, out byte MaxFrames) -> void
+SA.Inbetween.Contract.Wire.HelloAck.EngineReady.get -> bool
+SA.Inbetween.Contract.Wire.HelloAck.EngineReady.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.Equals(SA.Inbetween.Contract.Wire.HelloAck other) -> bool
+SA.Inbetween.Contract.Wire.HelloAck.FramesPerSecond.get -> byte
+SA.Inbetween.Contract.Wire.HelloAck.FramesPerSecond.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.HelloAck() -> void
+SA.Inbetween.Contract.Wire.HelloAck.HelloAck(ushort ServerVersion, SA.Inbetween.Contract.Wire.Rig Rig, byte JointCount, byte FramesPerSecond, SA.Inbetween.Contract.Wire.WireSpace Space, bool EngineReady, byte MinFrames, byte MaxFrames) -> void
+SA.Inbetween.Contract.Wire.HelloAck.JointCount.get -> byte
+SA.Inbetween.Contract.Wire.HelloAck.JointCount.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.MaxFrames.get -> byte
+SA.Inbetween.Contract.Wire.HelloAck.MaxFrames.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.MinFrames.get -> byte
+SA.Inbetween.Contract.Wire.HelloAck.MinFrames.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.Rig.get -> SA.Inbetween.Contract.Wire.Rig
+SA.Inbetween.Contract.Wire.HelloAck.Rig.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.ServerVersion.get -> ushort
+SA.Inbetween.Contract.Wire.HelloAck.ServerVersion.init -> void
+SA.Inbetween.Contract.Wire.HelloAck.Space.get -> SA.Inbetween.Contract.Wire.WireSpace
+SA.Inbetween.Contract.Wire.HelloAck.Space.init -> void
+SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.Cancel = 8 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.Error = 5 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.Generate = 3 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.GenerateResult = 4 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.Hello = 1 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.HelloAck = 2 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.Ping = 7 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.MessageType.Reset = 6 -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.Rig
+SA.Inbetween.Contract.Wire.Rig.G1 = 1 -> SA.Inbetween.Contract.Wire.Rig
+SA.Inbetween.Contract.Wire.Rig.Soma = 0 -> SA.Inbetween.Contract.Wire.Rig
+SA.Inbetween.Contract.Wire.WireCodec
+SA.Inbetween.Contract.Wire.WireConfig
+SA.Inbetween.Contract.Wire.WireConfig.AllowedTokenMax.get -> byte
+SA.Inbetween.Contract.Wire.WireConfig.AllowedTokenMax.init -> void
+SA.Inbetween.Contract.Wire.WireConfig.AllowedTokenMin.get -> byte
+SA.Inbetween.Contract.Wire.WireConfig.AllowedTokenMin.init -> void
+SA.Inbetween.Contract.Wire.WireConfig.CorrectGeneratedDiff.get -> bool
+SA.Inbetween.Contract.Wire.WireConfig.CorrectGeneratedDiff.init -> void
+SA.Inbetween.Contract.Wire.WireConfig.Deconstruct(out byte AllowedTokenMin, out byte AllowedTokenMax, out bool CorrectGeneratedDiff, out byte Flags, out float HeadingAlignmentX, out float HeadingAlignmentZ) -> void
+SA.Inbetween.Contract.Wire.WireConfig.Equals(SA.Inbetween.Contract.Wire.WireConfig other) -> bool
+SA.Inbetween.Contract.Wire.WireConfig.Flags.get -> byte
+SA.Inbetween.Contract.Wire.WireConfig.Flags.init -> void
+SA.Inbetween.Contract.Wire.WireConfig.HeadingAlignmentX.get -> float
+SA.Inbetween.Contract.Wire.WireConfig.HeadingAlignmentX.init -> void
+SA.Inbetween.Contract.Wire.WireConfig.HeadingAlignmentZ.get -> float
+SA.Inbetween.Contract.Wire.WireConfig.HeadingAlignmentZ.init -> void
+SA.Inbetween.Contract.Wire.WireConfig.WireConfig() -> void
+SA.Inbetween.Contract.Wire.WireConfig.WireConfig(byte AllowedTokenMin, byte AllowedTokenMax, bool CorrectGeneratedDiff, byte Flags, float HeadingAlignmentX, float HeadingAlignmentZ) -> void
+SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.WireErrorCode.BadRequest = 1 -> SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.WireErrorCode.Cancelled = 5 -> SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.WireErrorCode.GpuOutOfMemory = 3 -> SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.WireErrorCode.Internal = 4 -> SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.WireErrorCode.NotReady = 2 -> SA.Inbetween.Contract.Wire.WireErrorCode
+SA.Inbetween.Contract.Wire.WireFormat
+SA.Inbetween.Contract.Wire.WireFrame
+SA.Inbetween.Contract.Wire.WireFrame.Contacts.get -> SA.Inbetween.Contract.FootContacts
+SA.Inbetween.Contract.Wire.WireFrame.Contacts.init -> void
+SA.Inbetween.Contract.Wire.WireFrame.Deconstruct(out SA.Inbetween.Soma.ModelPose Pose, out SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel> RootWorld, out SA.Inbetween.Contract.FootContacts Contacts) -> void
+SA.Inbetween.Contract.Wire.WireFrame.Equals(SA.Inbetween.Contract.Wire.WireFrame other) -> bool
+SA.Inbetween.Contract.Wire.WireFrame.Pose.get -> SA.Inbetween.Soma.ModelPose
+SA.Inbetween.Contract.Wire.WireFrame.Pose.init -> void
+SA.Inbetween.Contract.Wire.WireFrame.RootWorld.get -> SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel>
+SA.Inbetween.Contract.Wire.WireFrame.RootWorld.init -> void
+SA.Inbetween.Contract.Wire.WireFrame.WireFrame() -> void
+SA.Inbetween.Contract.Wire.WireFrame.WireFrame(SA.Inbetween.Soma.ModelPose Pose, SA.Inbetween.Soma.RigidTransform<SA.Inbetween.Soma.SomaModel> RootWorld, SA.Inbetween.Contract.FootContacts Contacts) -> void
+SA.Inbetween.Contract.Wire.WireHeader
+SA.Inbetween.Contract.Wire.WireHeader.BodyLength.get -> uint
+SA.Inbetween.Contract.Wire.WireHeader.BodyLength.init -> void
+SA.Inbetween.Contract.Wire.WireHeader.Deconstruct(out ushort Magic, out byte Version, out SA.Inbetween.Contract.Wire.MessageType Type, out uint RequestId, out uint BodyLength) -> void
+SA.Inbetween.Contract.Wire.WireHeader.Equals(SA.Inbetween.Contract.Wire.WireHeader other) -> bool
+SA.Inbetween.Contract.Wire.WireHeader.Magic.get -> ushort
+SA.Inbetween.Contract.Wire.WireHeader.Magic.init -> void
+SA.Inbetween.Contract.Wire.WireHeader.RequestId.get -> uint
+SA.Inbetween.Contract.Wire.WireHeader.RequestId.init -> void
+SA.Inbetween.Contract.Wire.WireHeader.Type.get -> SA.Inbetween.Contract.Wire.MessageType
+SA.Inbetween.Contract.Wire.WireHeader.Type.init -> void
+SA.Inbetween.Contract.Wire.WireHeader.Version.get -> byte
+SA.Inbetween.Contract.Wire.WireHeader.Version.init -> void
+SA.Inbetween.Contract.Wire.WireHeader.WireHeader() -> void
+SA.Inbetween.Contract.Wire.WireHeader.WireHeader(ushort Magic, byte Version, SA.Inbetween.Contract.Wire.MessageType Type, uint RequestId, uint BodyLength) -> void
+SA.Inbetween.Contract.Wire.WirePrecision
+SA.Inbetween.Contract.Wire.WirePrecision.Fp16Mixed = 1 -> SA.Inbetween.Contract.Wire.WirePrecision
+SA.Inbetween.Contract.Wire.WirePrecision.Fp32 = 0 -> SA.Inbetween.Contract.Wire.WirePrecision
+SA.Inbetween.Contract.Wire.WireSpace
+SA.Inbetween.Contract.Wire.WireSpace.ModelYUp = 0 -> SA.Inbetween.Contract.Wire.WireSpace
+SA.Inbetween.Contract.Wire.WireSpace.WorldZUp = 1 -> SA.Inbetween.Contract.Wire.WireSpace
+SA.Inbetween.Contract.Wire.WireTarget
+SA.Inbetween.Contract.Wire.WireTarget.Deconstruct(out byte PosesToUse, out ushort TransitionEarlyByFrames, out byte TokenCountOverride, out ushort IkPinMask, out SA.Inbetween.Soma.Block<SA.Inbetween.Soma.ModelPose> Poses) -> void
+SA.Inbetween.Contract.Wire.WireTarget.Equals(SA.Inbetween.Contract.Wire.WireTarget other) -> bool
+SA.Inbetween.Contract.Wire.WireTarget.IkPinMask.get -> ushort
+SA.Inbetween.Contract.Wire.WireTarget.IkPinMask.init -> void
+SA.Inbetween.Contract.Wire.WireTarget.Poses.get -> SA.Inbetween.Soma.Block<SA.Inbetween.Soma.ModelPose>
+SA.Inbetween.Contract.Wire.WireTarget.Poses.init -> void
+SA.Inbetween.Contract.Wire.WireTarget.PosesToUse.get -> byte
+SA.Inbetween.Contract.Wire.WireTarget.PosesToUse.init -> void
+SA.Inbetween.Contract.Wire.WireTarget.TokenCountOverride.get -> byte
+SA.Inbetween.Contract.Wire.WireTarget.TokenCountOverride.init -> void
+SA.Inbetween.Contract.Wire.WireTarget.TransitionEarlyByFrames.get -> ushort
+SA.Inbetween.Contract.Wire.WireTarget.TransitionEarlyByFrames.init -> void
+SA.Inbetween.Contract.Wire.WireTarget.WireTarget() -> void
+SA.Inbetween.Contract.Wire.WireTarget.WireTarget(byte PosesToUse, ushort TransitionEarlyByFrames, byte TokenCountOverride, ushort IkPinMask, SA.Inbetween.Soma.Block<SA.Inbetween.Soma.ModelPose> Poses) -> void
+static readonly SA.Inbetween.Contract.GenerationConfigs.Default -> SA.Inbetween.Contract.GenerationConfig
+static SA.Inbetween.Contract.FootContacts.operator !=(SA.Inbetween.Contract.FootContacts left, SA.Inbetween.Contract.FootContacts right) -> bool
+static SA.Inbetween.Contract.FootContacts.operator ==(SA.Inbetween.Contract.FootContacts left, SA.Inbetween.Contract.FootContacts right) -> bool
+static SA.Inbetween.Contract.GenerationConfig.operator !=(SA.Inbetween.Contract.GenerationConfig left, SA.Inbetween.Contract.GenerationConfig right) -> bool
+static SA.Inbetween.Contract.GenerationConfig.operator ==(SA.Inbetween.Contract.GenerationConfig left, SA.Inbetween.Contract.GenerationConfig right) -> bool
+static SA.Inbetween.Contract.GenerationRequest.operator !=(SA.Inbetween.Contract.GenerationRequest left, SA.Inbetween.Contract.GenerationRequest right) -> bool
+static SA.Inbetween.Contract.GenerationRequest.operator ==(SA.Inbetween.Contract.GenerationRequest left, SA.Inbetween.Contract.GenerationRequest right) -> bool
+static SA.Inbetween.Contract.GenerationResult.operator !=(SA.Inbetween.Contract.GenerationResult left, SA.Inbetween.Contract.GenerationResult right) -> bool
+static SA.Inbetween.Contract.GenerationResult.operator ==(SA.Inbetween.Contract.GenerationResult left, SA.Inbetween.Contract.GenerationResult right) -> bool
+static SA.Inbetween.Contract.GenerationResults.Parse(SA.Inbetween.Soma.Block<SA.Inbetween.Soma.Pose> frames, SA.Inbetween.Soma.Block<SA.Inbetween.Contract.FootContacts> contacts, SA.Inbetween.Contract.Timing timing) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.GenerationResult, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.MotionFile.operator !=(SA.Inbetween.Contract.MotionFile left, SA.Inbetween.Contract.MotionFile right) -> bool
+static SA.Inbetween.Contract.MotionFile.operator ==(SA.Inbetween.Contract.MotionFile left, SA.Inbetween.Contract.MotionFile right) -> bool
+static SA.Inbetween.Contract.MotionFiles.From(SA.Inbetween.Contract.GenerationResult result, SA.Inbetween.Contract.Recipe recipe) -> SA.Inbetween.Contract.MotionFile
+static SA.Inbetween.Contract.MotionFiles.Read(System.ReadOnlySpan<byte> source) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.MotionFile, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.MotionFiles.SizeOf(SA.Inbetween.Contract.MotionFile file) -> int
+static SA.Inbetween.Contract.MotionFiles.Write(SA.Inbetween.Contract.MotionFile file, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Recipe.operator !=(SA.Inbetween.Contract.Recipe left, SA.Inbetween.Contract.Recipe right) -> bool
+static SA.Inbetween.Contract.Recipe.operator ==(SA.Inbetween.Contract.Recipe left, SA.Inbetween.Contract.Recipe right) -> bool
+static SA.Inbetween.Contract.Recipes.CanonicalSize(SA.Inbetween.Contract.Recipe recipe) -> int
+static SA.Inbetween.Contract.Recipes.Hash(SA.Inbetween.Contract.Recipe recipe) -> SA.Inbetween.Contract.Sha256
+static SA.Inbetween.Contract.Recipes.ReadCanonical(System.ReadOnlySpan<byte> source) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Recipe, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Recipes.WriteCanonical(SA.Inbetween.Contract.Recipe recipe, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Requests.Parse(SA.Inbetween.Contract.GenerationRequest request) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.ValidRequest, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Sha256.operator !=(SA.Inbetween.Contract.Sha256 left, SA.Inbetween.Contract.Sha256 right) -> bool
+static SA.Inbetween.Contract.Sha256.operator ==(SA.Inbetween.Contract.Sha256 left, SA.Inbetween.Contract.Sha256 right) -> bool
+static SA.Inbetween.Contract.Sha256s.FromBytes(System.ReadOnlySpan<byte> bytes) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Sha256, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Sha256s.Of(System.ReadOnlySpan<byte> data) -> SA.Inbetween.Contract.Sha256
+static SA.Inbetween.Contract.Sha256s.ParseHex(string! text) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Sha256, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Sha256s.ToHex(SA.Inbetween.Contract.Sha256 hash) -> string!
+static SA.Inbetween.Contract.TargetSpec.operator !=(SA.Inbetween.Contract.TargetSpec left, SA.Inbetween.Contract.TargetSpec right) -> bool
+static SA.Inbetween.Contract.TargetSpec.operator ==(SA.Inbetween.Contract.TargetSpec left, SA.Inbetween.Contract.TargetSpec right) -> bool
+static SA.Inbetween.Contract.Timing.operator !=(SA.Inbetween.Contract.Timing left, SA.Inbetween.Contract.Timing right) -> bool
+static SA.Inbetween.Contract.Timing.operator ==(SA.Inbetween.Contract.Timing left, SA.Inbetween.Contract.Timing right) -> bool
+static SA.Inbetween.Contract.ValidRequest.operator !=(SA.Inbetween.Contract.ValidRequest left, SA.Inbetween.Contract.ValidRequest right) -> bool
+static SA.Inbetween.Contract.ValidRequest.operator ==(SA.Inbetween.Contract.ValidRequest left, SA.Inbetween.Contract.ValidRequest right) -> bool
+static SA.Inbetween.Contract.Wire.ErrorMessage.operator !=(SA.Inbetween.Contract.Wire.ErrorMessage left, SA.Inbetween.Contract.Wire.ErrorMessage right) -> bool
+static SA.Inbetween.Contract.Wire.ErrorMessage.operator ==(SA.Inbetween.Contract.Wire.ErrorMessage left, SA.Inbetween.Contract.Wire.ErrorMessage right) -> bool
+static SA.Inbetween.Contract.Wire.Generate.operator !=(SA.Inbetween.Contract.Wire.Generate left, SA.Inbetween.Contract.Wire.Generate right) -> bool
+static SA.Inbetween.Contract.Wire.Generate.operator ==(SA.Inbetween.Contract.Wire.Generate left, SA.Inbetween.Contract.Wire.Generate right) -> bool
+static SA.Inbetween.Contract.Wire.GenerateResult.operator !=(SA.Inbetween.Contract.Wire.GenerateResult left, SA.Inbetween.Contract.Wire.GenerateResult right) -> bool
+static SA.Inbetween.Contract.Wire.GenerateResult.operator ==(SA.Inbetween.Contract.Wire.GenerateResult left, SA.Inbetween.Contract.Wire.GenerateResult right) -> bool
+static SA.Inbetween.Contract.Wire.Hello.operator !=(SA.Inbetween.Contract.Wire.Hello left, SA.Inbetween.Contract.Wire.Hello right) -> bool
+static SA.Inbetween.Contract.Wire.Hello.operator ==(SA.Inbetween.Contract.Wire.Hello left, SA.Inbetween.Contract.Wire.Hello right) -> bool
+static SA.Inbetween.Contract.Wire.HelloAck.operator !=(SA.Inbetween.Contract.Wire.HelloAck left, SA.Inbetween.Contract.Wire.HelloAck right) -> bool
+static SA.Inbetween.Contract.Wire.HelloAck.operator ==(SA.Inbetween.Contract.Wire.HelloAck left, SA.Inbetween.Contract.Wire.HelloAck right) -> bool
+static SA.Inbetween.Contract.Wire.WireCodec.ReadError(System.ReadOnlySpan<byte> body) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Wire.ErrorMessage, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.ReadGenerate(System.ReadOnlySpan<byte> body) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Wire.Generate, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.ReadGenerateResult(System.ReadOnlySpan<byte> body) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Wire.GenerateResult, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.ReadHeader(System.ReadOnlySpan<byte> source) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Wire.WireHeader, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.ReadHello(System.ReadOnlySpan<byte> body) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Wire.Hello, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.ReadHelloAck(System.ReadOnlySpan<byte> body) -> SA.Inbetween.Soma.Result<SA.Inbetween.Contract.Wire.HelloAck, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.SizeOf(SA.Inbetween.Contract.Wire.ErrorMessage message) -> int
+static SA.Inbetween.Contract.Wire.WireCodec.SizeOf(SA.Inbetween.Contract.Wire.Generate message) -> int
+static SA.Inbetween.Contract.Wire.WireCodec.SizeOf(SA.Inbetween.Contract.Wire.GenerateResult message) -> int
+static SA.Inbetween.Contract.Wire.WireCodec.ToFault(SA.Inbetween.Contract.Wire.ErrorMessage message) -> SA.Inbetween.Soma.Fault
+static SA.Inbetween.Contract.Wire.WireCodec.WriteEmpty(SA.Inbetween.Contract.Wire.MessageType type, uint requestId, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.WriteError(uint requestId, SA.Inbetween.Contract.Wire.ErrorMessage message, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.WriteGenerate(uint requestId, SA.Inbetween.Contract.Wire.Generate message, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.WriteGenerateResult(uint requestId, SA.Inbetween.Contract.Wire.GenerateResult message, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.WriteHello(uint requestId, SA.Inbetween.Contract.Wire.Hello message, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireCodec.WriteHelloAck(uint requestId, SA.Inbetween.Contract.Wire.HelloAck message, System.Span<byte> destination) -> SA.Inbetween.Soma.Result<int, SA.Inbetween.Soma.Fault>
+static SA.Inbetween.Contract.Wire.WireConfig.operator !=(SA.Inbetween.Contract.Wire.WireConfig left, SA.Inbetween.Contract.Wire.WireConfig right) -> bool
+static SA.Inbetween.Contract.Wire.WireConfig.operator ==(SA.Inbetween.Contract.Wire.WireConfig left, SA.Inbetween.Contract.Wire.WireConfig right) -> bool
+static SA.Inbetween.Contract.Wire.WireFrame.operator !=(SA.Inbetween.Contract.Wire.WireFrame left, SA.Inbetween.Contract.Wire.WireFrame right) -> bool
+static SA.Inbetween.Contract.Wire.WireFrame.operator ==(SA.Inbetween.Contract.Wire.WireFrame left, SA.Inbetween.Contract.Wire.WireFrame right) -> bool
+static SA.Inbetween.Contract.Wire.WireHeader.operator !=(SA.Inbetween.Contract.Wire.WireHeader left, SA.Inbetween.Contract.Wire.WireHeader right) -> bool
+static SA.Inbetween.Contract.Wire.WireHeader.operator ==(SA.Inbetween.Contract.Wire.WireHeader left, SA.Inbetween.Contract.Wire.WireHeader right) -> bool
+static SA.Inbetween.Contract.Wire.WireTarget.operator !=(SA.Inbetween.Contract.Wire.WireTarget left, SA.Inbetween.Contract.Wire.WireTarget right) -> bool
+static SA.Inbetween.Contract.Wire.WireTarget.operator ==(SA.Inbetween.Contract.Wire.WireTarget left, SA.Inbetween.Contract.Wire.WireTarget right) -> bool
+~override SA.Inbetween.Contract.FootContacts.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.FootContacts.ToString() -> string
+~override SA.Inbetween.Contract.GenerationConfig.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.GenerationConfig.ToString() -> string
+~override SA.Inbetween.Contract.GenerationRequest.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.GenerationRequest.ToString() -> string
+~override SA.Inbetween.Contract.GenerationResult.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.GenerationResult.ToString() -> string
+~override SA.Inbetween.Contract.MotionFile.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.MotionFile.ToString() -> string
+~override SA.Inbetween.Contract.Recipe.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Recipe.ToString() -> string
+~override SA.Inbetween.Contract.Sha256.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Sha256.ToString() -> string
+~override SA.Inbetween.Contract.TargetSpec.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.TargetSpec.ToString() -> string
+~override SA.Inbetween.Contract.Timing.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Timing.ToString() -> string
+~override SA.Inbetween.Contract.ValidRequest.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.ValidRequest.ToString() -> string
+~override SA.Inbetween.Contract.Wire.ErrorMessage.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.ErrorMessage.ToString() -> string
+~override SA.Inbetween.Contract.Wire.Generate.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.Generate.ToString() -> string
+~override SA.Inbetween.Contract.Wire.GenerateResult.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.GenerateResult.ToString() -> string
+~override SA.Inbetween.Contract.Wire.Hello.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.Hello.ToString() -> string
+~override SA.Inbetween.Contract.Wire.HelloAck.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.HelloAck.ToString() -> string
+~override SA.Inbetween.Contract.Wire.WireConfig.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.WireConfig.ToString() -> string
+~override SA.Inbetween.Contract.Wire.WireFrame.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.WireFrame.ToString() -> string
+~override SA.Inbetween.Contract.Wire.WireHeader.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.WireHeader.ToString() -> string
+~override SA.Inbetween.Contract.Wire.WireTarget.Equals(object obj) -> bool
+~override SA.Inbetween.Contract.Wire.WireTarget.ToString() -> string
