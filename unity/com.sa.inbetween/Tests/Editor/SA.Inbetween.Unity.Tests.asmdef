@@ -1,0 +1,9 @@
+{
+  "name": "SA.Inbetween.Unity.Tests",
+  "references": ["SA.Inbetween.Unity", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll", "SA.Inbetween.Soma.dll", "SA.Inbetween.Contract.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}

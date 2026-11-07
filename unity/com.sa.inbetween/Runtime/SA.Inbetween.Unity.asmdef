@@ -1,0 +1,9 @@
+{
+  "name": "SA.Inbetween.Unity",
+  "rootNamespace": "SA.Inbetween.Unity",
+  "references": [],
+  "overrideReferences": true,
+  "precompiledReferences": ["SA.Inbetween.Soma.dll", "SA.Inbetween.Contract.dll", "SA.Inbetween.Engine.dll", "SA.Inbetween.Generators.dll"],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

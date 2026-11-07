@@ -8,3 +8,4 @@ testdata/eval-only/*
 !testdata/eval-only/README.md
 .trt-cache/
 __pycache__/
+unity/com.sa.inbetween/Plugins/*.dll
