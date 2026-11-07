@@ -41,9 +41,39 @@ public static class Poses
     public static RigidTransform<SomaModel> Joint(ModelPose pose, SomaJoint joint) =>
         Read(pose.Values.Span, joint.Index);
 
-    public static ModelPose ToModelPose(Pose pose) => default;
+    public static ModelPose ToModelPose(Pose pose)
+    {
+        var source = pose.Values.Span;
+        if (source.Length != SkeletonFloatCount)
+        {
+            return default;
+        }
 
-    public static Pose WithModelPose(Pose reference, ModelPose model) => default;
+        var values = new float[ModelFloatCount];
+        for (var m = 0; m < SomaJoints.Count; m++)
+        {
+            source.Slice(SomaJoints.SkeletonIndex(m) * FloatsPerJoint, FloatsPerJoint).CopyTo(values.AsSpan(m * FloatsPerJoint));
+        }
+
+        return new ModelPose(new Block<float>(values));
+    }
+
+    public static Pose WithModelPose(Pose reference, ModelPose model)
+    {
+        var source = model.Values.Span;
+        if (reference.Values.Length != SkeletonFloatCount || source.Length != ModelFloatCount)
+        {
+            return default;
+        }
+
+        var values = reference.Values.Span.ToArray();
+        for (var m = 0; m < SomaJoints.Count; m++)
+        {
+            source.Slice(m * FloatsPerJoint, FloatsPerJoint).CopyTo(values.AsSpan(SomaJoints.SkeletonIndex(m) * FloatsPerJoint));
+        }
+
+        return new Pose(new Block<float>(values));
+    }
 
     private static RigidTransform<SomaModel> Read(ReadOnlySpan<float> values, int joint)
     {

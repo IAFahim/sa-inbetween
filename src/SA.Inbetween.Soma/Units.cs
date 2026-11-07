@@ -10,11 +10,13 @@ public readonly record struct Degrees(float Value);
 
 public static class Units
 {
-    public static Centimeters ToCentimeters(Meters meters) => new(float.NaN);
+    private const double DegreesPerRadian = 180.0 / System.Math.PI;
 
-    public static Meters ToMeters(Centimeters centimeters) => new(float.NaN);
+    public static Centimeters ToCentimeters(Meters meters) => new(meters.Value * 100f);
 
-    public static Degrees ToDegrees(Radians radians) => new(float.NaN);
+    public static Meters ToMeters(Centimeters centimeters) => new(centimeters.Value / 100f);
 
-    public static Radians ToRadians(Degrees degrees) => new(float.NaN);
+    public static Degrees ToDegrees(Radians radians) => new((float)(radians.Value * DegreesPerRadian));
+
+    public static Radians ToRadians(Degrees degrees) => new((float)(degrees.Value / DegreesPerRadian));
 }

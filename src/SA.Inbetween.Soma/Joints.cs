@@ -76,6 +76,8 @@ public static class SomaJoints
     public static string Name(SomaJoint joint) => Names[joint.Index];
 
     public static SkeletonJoint ToSkeleton(SomaJoint joint) => new(SkeletonIndices[joint.Index]);
+
+    internal static int SkeletonIndex(int modelJoint) => SkeletonIndices[modelJoint];
 }
 
 public static class SkeletonJoints
