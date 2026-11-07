@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/SA.Inbetween.Onnx/SA.Inbetween.Onnx.csproj" />
+  </ItemGroup>
+</Project>

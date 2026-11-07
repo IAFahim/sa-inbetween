@@ -1,0 +1,5 @@
+#nullable enable
+SA.Inbetween.Onnx.OnnxNetwork
+SA.Inbetween.Onnx.OnnxNetwork.Dispose() -> void
+SA.Inbetween.Onnx.OnnxNetwork.RunAsync(SA.Inbetween.Engine.NetworkInputs inputs, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<SA.Inbetween.Soma.Result<SA.Inbetween.Engine.NetworkOutputs, SA.Inbetween.Soma.Fault>>
+static SA.Inbetween.Onnx.OnnxNetwork.Load(string! modelPath) -> SA.Inbetween.Soma.Result<SA.Inbetween.Onnx.OnnxNetwork!, SA.Inbetween.Soma.Fault>
