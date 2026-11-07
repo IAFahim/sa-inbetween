@@ -3,3 +3,9 @@ obj/
 .vs/
 *.user
 TestResults/
+
+# Evaluation-only NVIDIA-derived goldens and local TensorRT plans: never commit
+testdata/eval-only/*
+!testdata/eval-only/README.md
+.trt-cache/
+__pycache__/
