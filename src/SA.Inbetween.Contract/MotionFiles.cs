@@ -31,7 +31,7 @@ public static class MotionFiles
 
     public static MotionFile From(GenerationResult result, Recipe recipe) => default;
 
-    public static int SizeOf(MotionFile file) => -1;
+    public static int SizeOf(MotionFile file) => 0;
 
     public static Result<int, Fault> Write(MotionFile file, Span<byte> destination) =>
         Result.Error<int, Fault>(Faults.NotImplemented);

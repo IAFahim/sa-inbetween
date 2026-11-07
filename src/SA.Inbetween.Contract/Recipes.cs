@@ -52,7 +52,7 @@ public static class Sha256s
 
 public static class Recipes
 {
-    public static int CanonicalSize(Recipe recipe) => -1;
+    public static int CanonicalSize(Recipe recipe) => 0;
 
     public static Result<int, Fault> WriteCanonical(Recipe recipe, System.Span<byte> destination) =>
         Result.Error<int, Fault>(Faults.NotImplemented);

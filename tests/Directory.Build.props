@@ -1,0 +1,14 @@
+<Project>
+  <Import Project="../Directory.Build.props" />
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Planted.WrongWay'">
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Planted.WrongWay'">
+    <PackageReference Include="xunit.v3" Version="4.0.2" />
+    <PackageReference Include="CsCheck" Version="5.0.1" />
+  </ItemGroup>
+</Project>

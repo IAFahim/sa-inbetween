@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/SA.Inbetween.Generators/SA.Inbetween.Generators.csproj" />
+    <ProjectReference Include="../Planted.WrongWay/Planted.WrongWay.csproj" ReferenceOutputAssembly="false" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

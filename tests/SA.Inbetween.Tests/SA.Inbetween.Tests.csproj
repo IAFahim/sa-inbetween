@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/SA.Inbetween.Generators/SA.Inbetween.Generators.csproj" />
+  </ItemGroup>
+</Project>

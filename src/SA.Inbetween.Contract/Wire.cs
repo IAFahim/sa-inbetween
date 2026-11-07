@@ -127,7 +127,7 @@ public static class WireCodec
     public static Result<HelloAck, Fault> ReadHelloAck(ReadOnlySpan<byte> body) =>
         Result.Error<HelloAck, Fault>(Faults.NotImplemented);
 
-    public static int SizeOf(Generate message) => -1;
+    public static int SizeOf(Generate message) => 0;
 
     public static Result<int, Fault> WriteGenerate(uint requestId, Generate message, Span<byte> destination) =>
         Result.Error<int, Fault>(Faults.NotImplemented);
@@ -135,7 +135,7 @@ public static class WireCodec
     public static Result<Generate, Fault> ReadGenerate(ReadOnlySpan<byte> body) =>
         Result.Error<Generate, Fault>(Faults.NotImplemented);
 
-    public static int SizeOf(GenerateResult message) => -1;
+    public static int SizeOf(GenerateResult message) => 0;
 
     public static Result<int, Fault> WriteGenerateResult(uint requestId, GenerateResult message, Span<byte> destination) =>
         Result.Error<int, Fault>(Faults.NotImplemented);
@@ -143,7 +143,7 @@ public static class WireCodec
     public static Result<GenerateResult, Fault> ReadGenerateResult(ReadOnlySpan<byte> body) =>
         Result.Error<GenerateResult, Fault>(Faults.NotImplemented);
 
-    public static int SizeOf(ErrorMessage message) => -1;
+    public static int SizeOf(ErrorMessage message) => 0;
 
     public static Result<int, Fault> WriteError(uint requestId, ErrorMessage message, Span<byte> destination) =>
         Result.Error<int, Fault>(Faults.NotImplemented);
