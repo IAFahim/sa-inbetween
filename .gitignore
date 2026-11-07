@@ -3,6 +3,8 @@ obj/
 .vs/
 *.user
 TestResults/
+*.trx
 testdata/eval-only/*
 !testdata/eval-only/README.md
-*.trx
+.trt-cache/
+__pycache__/
