@@ -57,8 +57,8 @@ REQUESTS = [
 ]
 
 
-def qz(angle):  # rotation about runtime up (+Z for the MuJoCo-space skeleton)
-    return np.array([0.0, 0.0, np.sin(angle / 2), np.cos(angle / 2)])
+def qy(angle):  # rotation about model up (+Y); the SOMA reference pose is Y up
+    return np.array([0.0, np.sin(angle / 2), 0.0, np.cos(angle / 2)])
 
 
 def rotvec_quat(v):
@@ -66,20 +66,22 @@ def rotvec_quat(v):
     return np.array([0.0, 0.0, 0.0, 1.0]) if a < 1e-12 else ref.q_axis_angle(v / a, a)
 
 
-def synth_poses(rng, ref_local, n, start_xy, yaw, speed, offs0, offs1, z_up_to_runtime):
-    """n poses at 30 Hz walking along yaw; joint rotations = reference * small offsets."""
+def synth_poses(rng, ref_local, n, start_xz, yaw, speed, offs0, offs1, m2r_np):
+    """n model-space poses at 30 Hz walking forward after turning the reference pose by yaw
+    about +Y; joint rotations = reference * small offsets; root placed by m2r_np."""
     j = ref_local.shape[0]
     out = np.empty((n, j, 7))
-    fwd = np.array([np.cos(yaw), np.sin(yaw)])
+    facing = PHI0 + yaw  # heading angle, atan2(fwd.x, fwd.z), as spec E2
+    fwd = np.array([np.sin(facing), np.cos(facing)])
     for f in range(n):
         t = f / max(n - 1, 1)
         for k in range(j):
             off = rotvec_quat(offs0[k] * (1 - t) + offs1[k] * t)
             out[f, k, :3] = ref_local[k, :3]
             out[f, k, 3:] = ref.qnormalize(ref.qmul(ref_local[k, 3:], off))
-        xy = start_xy + fwd * speed * f / 30.0
-        root = np.concatenate([[xy[0], xy[1], ref_local[0, 2]], ref.qmul(qz(yaw), out[f, 0, 3:])])
-        out[f, 0] = ref.tmul(z_up_to_runtime, root)
+        xz = start_xz + fwd * speed * f / 30.0
+        root = np.concatenate([[xz[0], ref_local[0, 1], xz[1]], ref.qmul(qy(yaw), out[f, 0, 3:])])
+        out[f, 0] = ref.tmul(m2r_np, root)
     return out
 
 
@@ -99,26 +101,25 @@ def wp_tf(np_poses):
 
 def run_request(engine, skel, req, ctx_local, rng, ref_local):
     """Run one request through the official engine step by step; return dict of arrays."""
-    m2r_identity = req["m2r"] == "identity"
-    z_up_to_runtime = ref.tinv(np.array(MUJOCO_M2R)) if m2r_identity else ref.identity_transform()
+    m2r_np = np.array(MUJOCO_M2R if req["m2r"] == "mujoco" else [0, 0, 0, 0, 0, 0, 1], dtype=np.float64)
     j = skel.num_joints
     if ctx_local is None:
         yaw0 = rng.uniform(-np.pi, np.pi)
         start = rng.uniform(-3.0, 3.0, size=2)
         ctx_offs0, ctx_offs1 = random_offsets(rng, j, 12), random_offsets(rng, j, 12)
-        ctx_local = synth_poses(rng, ref_local, 4, start, yaw0, 1.2, ctx_offs0, ctx_offs1, z_up_to_runtime)
-        last_xy, last_yaw = start + np.array([np.cos(yaw0), np.sin(yaw0)]) * 1.2 * 3 / 30.0, yaw0
+        ctx_local = synth_poses(rng, ref_local, 4, start, yaw0, 1.2, ctx_offs0, ctx_offs1, m2r_np)
+        last_yaw = yaw0
+        last_xz = start + np.array([np.sin(PHI0 + yaw0), np.cos(PHI0 + yaw0)]) * 1.2 * 3 / 30.0
     else:
-        # Chained: context root ground position/yaw from its last pose, in Z-up space.
-        root_z = ref.tmul(ref.tinv(z_up_to_runtime), ctx_local[3, 0])
-        last_xy = root_z[:2]
-        fwd = ref.qrot(root_z[3:], np.array([1.0, 0.0, 0.0]))
-        last_yaw = np.arctan2(fwd[1], fwd[0])
+        # Chained: ground position and heading of the last context pose, in model space.
+        w = ref.forward_kinematics(ctx_local[3:4], PARENTS, ref.tinv(m2r_np))[0]
+        last_xz = w[0, [0, 2]]
+        last_yaw = ref.heading_from_hips(w[RIGHT_LEG, :3], w[LEFT_LEG, :3]) - PHI0
     yaw_t = last_yaw + req["turn"] * DEG
-    dir_angle = last_yaw + rng.uniform(-0.5, 0.5)
-    tgt_start = last_xy + np.array([np.cos(dir_angle), np.sin(dir_angle)]) * req["dist"]
+    dir_angle = PHI0 + last_yaw + rng.uniform(-0.5, 0.5)
+    tgt_start = last_xz + np.array([np.sin(dir_angle), np.cos(dir_angle)]) * req["dist"]
     tgt_local = synth_poses(rng, ref_local, req["targets"], tgt_start, yaw_t, 1.0,
-                            random_offsets(rng, j, 15), random_offsets(rng, j, 15), z_up_to_runtime)
+                            random_offsets(rng, j, 15), random_offsets(rng, j, 15), m2r_np)
 
     cfg_kwargs = dict(correct_generated_diff=req["correct"], heading_alignment=tuple(req["heading"]))
     if req["tokens"] is not None:
@@ -247,10 +248,13 @@ def reference_check(d, meta, skel_np, m2r):
 
 MUJOCO_M2R = None
 IK_CHAINS_IDX = None
+PARENTS = None
+PHI0 = 0.0
+RIGHT_LEG = LEFT_LEG = -1
 
 
 def main():
-    global MUJOCO_M2R, IK_CHAINS_IDX
+    global MUJOCO_M2R, IK_CHAINS_IDX, PARENTS, PHI0, RIGHT_LEG, LEFT_LEG
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = ap.parse_args()
@@ -265,6 +269,9 @@ def main():
     parents = np.array([skel.joint_parent(i) for i in range(skel.num_joints)], dtype=np.int32)
     model_to_pose, pose_to_model, rl, ll = ref.bind_pose_skeleton(skel.joint_names, parents, SOMA_N1_CONTRACT.joint_names)
     skel_np = (parents, ref_local, model_to_pose, pose_to_model, rl, ll)
+    PARENTS, RIGHT_LEG, LEFT_LEG = parents, int(rl), int(ll)
+    ref_world = ref.forward_kinematics(ref_local[None], parents, ref.identity_transform())[0]
+    PHI0 = float(ref.heading_from_hips(ref_world[rl, :3], ref_world[ll, :3]))
     IK_CHAINS_IDX = tuple((int(pin), skel.joint_index(a), skel.joint_index(b), skel.joint_index(c), hint)
                           for pin, a, b, c, hint in ref.SOMA_IK_CHAINS)
 

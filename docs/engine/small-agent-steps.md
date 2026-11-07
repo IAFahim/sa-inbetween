@@ -11,7 +11,7 @@ index, expected, actual.
    `~/GitHub/motionbricks/.venv/bin/python tools/dump_goldens.py` (about 10 s, needs the RTX 3060).
    Never run `uv sync` in motionbricks and never edit it.
 2. Run `python3 -c "import json;print(json.load(open('testdata/eval-only/goldens/MANIFEST.sha256.json'))['aggregate'])"`.
-   It must print `5ce984291a24299e56abf3944af8b77f1dc0df4ef326f58c4e8f6bd4f9e18179`.
+   It must print `d3407ecd1ee2ec38a5df53cdd8748163d87a07220fd6a283a657bf4f2698bd41`.
    STOP if it differs.
 3. The goldens are evaluation-only NVIDIA-derived data (`testdata/eval-only/README.md`).
    Never commit them, never embed them in source, never copy them into a Unity package.
@@ -60,7 +60,7 @@ dict for `descr` `<f4`/`<i4` and `shape`). STOP if any header has another dtype 
 | T2 ForwardKinematics (E1) | *_token, m2r | guide_world | 0.01 mm, 0.01 deg |
 | T3 Heading + Alignment (E2-E3) | guide_world, heading_alignment | alignment | 1e-5 abs |
 | T4 Encode (E4-E6) | guide_world, alignment | net_global_root_values, net_local_poses | 1e-5 abs |
-| T4b Encode velocities | same | net_local_root_values | 1e-5 abs on column 3; 1e-4 abs on columns 0-2 (they are float32 differences x30; reference float64 already shows 6.8e-5) |
+| T4b Encode velocities | same | net_local_root_values | 1e-5 abs on column 3; 1e-4 abs on columns 0-2 (they are float32 differences x30; reference float64 already shows 4.9e-5) |
 | T5 Conditions (6) | targets, allowed_token_counts | four mask tensors | exact |
 | T6 Rot6D decode (D4) | trimmed_pred | ref_global_rotations | 0.01 deg |
 | T7 Decode (D1-D6) | net_pred_global_motions, net_pred_num_tokens, alignment, m2r | decoded_frames; contacts | 0.01 mm, 0.01 deg; contacts 1e-6 |

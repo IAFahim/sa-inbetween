@@ -210,18 +210,26 @@ validate (sec 4) -> E1..E6 + conditions -> network -> D1..D6 -> (if flag) C1..C3
 | Kernel / func | Spec | Golden check (max vs official FP32, worst of 12 requests) |
 |---|---|---|
 | pad_token_poses_kernel (model/kernels.py:14) | 4 | exact (0.0) |
-| _compute_world_poses_kernel (pose_utils.py:96) | 1, E1 | 0.0012 mm, 3e-5 deg |
-| compute_guide_alignment_kernel (soma/kernels.py:55) | E2-E3 | 7.8e-8 abs |
-| encode_motionbricks_inputs_kernel (soma/kernels.py:87) | E4-E6 | grv 1.4e-6, local_poses 5.5e-7, lrv 6.8e-5 abs |
+| _compute_world_poses_kernel (pose_utils.py:96) | 1, E1 | 0.0015 mm, 4.1e-5 deg |
+| compute_guide_alignment_kernel (soma/kernels.py:55) | E2-E3 | 1.2e-7 abs |
+| encode_motionbricks_inputs_kernel (soma/kernels.py:87) | E4-E6 | grv 1.1e-6, local_poses 4.5e-7, lrv 4.9e-5 abs |
 | write_motionbricks_conditions_kernel (model/kernels.py:25) | 6 | exact |
-| decode_motionbricks_output_kernel (soma/kernels.py:163) | 8 | 0.00072 mm, 2.1e-5 deg, contacts exact |
-| compute_endpoint_deltas_kernel (soma/kernels.py:244) | C1-C2 | 1.1e-6 mm, 4.5e-6 deg |
-| apply_endpoint_deltas_kernel (soma/kernels.py:284) | C3 | 0.00038 mm, 1.9e-5 deg |
-| encode->final end to end from net outputs | all | 0.00098 mm, 3.5e-5 deg |
-| apply_two_bone_ik_chains_kernel (animation/ik.py:98), _capture_pinned_transforms_kernel (target_pose.py:155) | 11 | 0.0011 mm, 0.00028 deg |
+| decode_motionbricks_output_kernel (soma/kernels.py:163) | 8 | 0.00063 mm, 2.5e-5 deg, contacts exact |
+| compute_endpoint_deltas_kernel (soma/kernels.py:244) | C1-C2 | 0 mm, 3.8e-6 deg |
+| apply_endpoint_deltas_kernel (soma/kernels.py:284) | C3 | 0.0004 mm, 1.9e-5 deg |
+| encode->final end to end from net outputs | all | 0.00093 mm, 4.1e-5 deg |
+| apply_two_bone_ik_chains_kernel (animation/ik.py:98), _capture_pinned_transforms_kernel (target_pose.py:155) | 11 | 0.0012 mm, 0.00046 deg |
 | _sample_recorder_kernel (soma/buffers.py:15) | 10 | NOT MAPPED (history resampling) |
 | target_pose.py speed/placement kernels (:355,:463) | - | out of scope (app target placement) |
 
 All kernels in `model/soma/kernels.py` and `model/kernels.py` are mapped. The stepwise
 private-method run is bit-identical to the public `generate_animation` for all 12 requests.
 lrv error is larger because it is a float32 position difference times 30.
+
+Golden inputs: synthetic, seeded (numpy default_rng, seeds 100-111): the SOMA reference
+pose (Y up, hips 1.01 m) with 12-15 deg random joint offsets, turned about +Y and walked
+forward at 1.0-1.2 m/s; targets 0.8-3.5 m away with -120..150 deg turns. Run time: about
+7 s per full dump (engine load 1.4-2.7 s, 5.7-6.1 ms per stepwise request, public
+`generate_animation` median 5.25 ms; stages encode 0.11, inference 4.67, decode 0.09,
+post_process 0.01 ms). Two separate runs produce identical manifests (aggregate
+`d3407ecd1ee2ec38a5df53cdd8748163d87a07220fd6a283a657bf4f2698bd41`, 306 files).

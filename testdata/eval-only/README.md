@@ -11,4 +11,4 @@ Everything in this folder except this README is gitignored and must stay local.
 - Regenerate: `~/GitHub/motionbricks/.venv/bin/python tools/dump_goldens.py`
   (needs the RTX 3060, TensorRT 10.8, and the FP32 plan in `.trt-cache/`).
   Expected aggregate SHA256 in `goldens/MANIFEST.sha256.json`:
-  `5ce984291a24299e56abf3944af8b77f1dc0df4ef326f58c4e8f6bd4f9e18179`.
+  `d3407ecd1ee2ec38a5df53cdd8748163d87a07220fd6a283a657bf4f2698bd41`.
