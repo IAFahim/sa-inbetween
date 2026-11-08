@@ -1,0 +1,87 @@
+using Unity.Collections;
+using Unity.Entities;
+using UnityEngine;
+
+namespace SA.Inbetween.Clips
+{
+    [DisallowMultipleComponent]
+    public sealed class SaClipPlayer : MonoBehaviour
+    {
+        public SaClipAsset Clip;
+        public bool Loop = true;
+        public bool PlayOnStart = true;
+        public string Status = "Waiting for the character...";
+
+        World world;
+        Entity entity;
+        int clipIndex = -1;
+        bool wanted;
+
+        public bool IsPlaying => clipIndex >= 0;
+
+        void OnEnable()
+        {
+            wanted = PlayOnStart;
+        }
+
+        void OnDisable()
+        {
+            Stop();
+        }
+
+        public void Play()
+        {
+            wanted = true;
+        }
+
+        public void Stop()
+        {
+            if (clipIndex >= 0 && world != null && world.IsCreated)
+                SaClipRuntime.Detach(world.EntityManager, entity, clipIndex);
+            clipIndex = -1;
+            world = null;
+            wanted = false;
+            Status = "Stopped";
+        }
+
+        void Update()
+        {
+            if (!wanted || clipIndex >= 0)
+                return;
+            if (Clip == null || Clip.Bytes.Length == 0)
+            {
+                Status = "No clip assigned";
+                return;
+            }
+
+            var active = World.DefaultGameObjectInjectionWorld;
+            if (active == null || !active.IsCreated)
+            {
+                Status = "Waiting for the animation world...";
+                return;
+            }
+
+            var manager = active.EntityManager;
+            using var query = manager.CreateEntityQuery(ComponentType.ReadOnly<SharedClipAsset>(), ComponentType.ReadOnly<SharedContribution>());
+            var count = query.CalculateEntityCount();
+            if (count != 1)
+            {
+                Status = count == 0 ? "Waiting for the character..." : "Found " + count + " shared-family characters; this player needs exactly one";
+                return;
+            }
+
+            using var entities = query.ToEntityArray(Allocator.Temp);
+            if (!SaClipRuntime.TryAttach(manager, entities[0], Clip.Bytes, Loop, out clipIndex, out var error))
+            {
+                Status = error;
+                wanted = false;
+                return;
+            }
+
+            world = active;
+            entity = entities[0];
+            Status = "Playing " + Clip.name;
+            wanted = false;
+        }
+    }
+}

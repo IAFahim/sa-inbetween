@@ -42,7 +42,8 @@ dotnet run --project apps/SA.Inbetween.Cli -c Release -- inspect walk.saib
 | `src/SA.Inbetween.Generators` | `PortedGenerator` (engine + `INetwork`), `SidecarGenerator` (TCP) |
 | `src/SA.Inbetween.Onnx` | `OnnxNetwork` (ONNX Runtime, net10.0) |
 | `apps/SA.Inbetween.Cli` | `sa-inbetween` tool |
-| `unity/com.sa.inbetween` | Unity package of the core libraries (`build/pack-unity.sh`) |
+| `unity/com.sa.inbetween` | Unity package of the core libraries (`build/pack-unity.sh` builds the DLLs; they are not committed) |
+| `unity/com.sa.inbetween.sa` | Unity package: `.saclip` importer and `SaClipPlayer` for SA shared-family characters (needs `com.sa.unity`) |
 | `docs/` | Contract, engine spec and measured parity, reports |
 
 ## Accuracy

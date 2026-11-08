@@ -1,0 +1,9 @@
+{
+  "name": "SA.Inbetween.Clips",
+  "rootNamespace": "SA.Inbetween.Clips",
+  "references": ["SA.Runtime", "Unity.Collections", "Unity.Entities"],
+  "overrideReferences": true,
+  "precompiledReferences": ["SA.Motion.dll", "SA.Animation.dll", "SA.Animation.Content.dll"],
+  "allowUnsafeCode": false,
+  "autoReferenced": true
+}

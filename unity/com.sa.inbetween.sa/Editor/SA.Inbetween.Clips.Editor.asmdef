@@ -1,0 +1,7 @@
+{
+  "name": "SA.Inbetween.Clips.Editor",
+  "rootNamespace": "SA.Inbetween.Clips.Editor",
+  "references": ["SA.Inbetween.Clips"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}
