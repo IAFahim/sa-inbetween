@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../apps/SA.Inbetween.Cli/SA.Inbetween.Cli.csproj" />
+  </ItemGroup>
+</Project>

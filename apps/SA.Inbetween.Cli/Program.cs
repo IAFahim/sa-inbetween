@@ -25,16 +25,27 @@ public static class Program
         }
 
         var options = Options.Parse(args);
-        switch (args[0])
+        try
         {
-            case "inspect":
-                return Inspect(options);
-            case "pose":
-                return ExtractPose(options);
-            case "generate":
-                return await Generate(options).ConfigureAwait(false);
-            default:
-                return Fail($"unknown command '{args[0]}'");
+            switch (args[0])
+            {
+                case "inspect":
+                    return Inspect(options);
+                case "pose":
+                    return ExtractPose(options);
+                case "generate":
+                    return await Generate(options).ConfigureAwait(false);
+                default:
+                    return Fail($"unknown command '{args[0]}'");
+            }
+        }
+        catch (IOException exception)
+        {
+            return Fail(exception.Message);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return Fail(exception.Message);
         }
     }
 

@@ -33,5 +33,7 @@ jobs:
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Architecture.Tests
       - name: Tests
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests
+      - name: CLI tests
+        run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Cli.Tests
       - name: ONNX tests
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Onnx.Tests
