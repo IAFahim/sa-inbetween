@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.sh text eol=lf
+*.cs text eol=lf
+*.png binary
+*.saib binary
+*.pose binary
+*.dll binary
