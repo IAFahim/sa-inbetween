@@ -176,12 +176,16 @@ namespace SA.Inbetween.Clips.Editor
             var seconds = frame.FindPropertyRelative("Seconds");
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(clip, GUIContent.none);
-            var labels = isStart
-                ? new[] { "end of clip", "start of clip", "at time" }
-                : new[] { "end of clip", "start of clip", "at time" };
+            var labels = new[] { "end of clip", "start of clip", "at time (s)", "at frame" };
             where.enumValueIndex = EditorGUILayout.Popup(where.enumValueIndex, labels, GUILayout.Width(110));
             if ((FrameWhere)where.enumValueIndex == FrameWhere.Time)
                 seconds.floatValue = Mathf.Max(0f, EditorGUILayout.FloatField(seconds.floatValue, GUILayout.Width(52)));
+            else if ((FrameWhere)where.enumValueIndex == FrameWhere.Frame)
+            {
+                var number = frame.FindPropertyRelative("Frame");
+                number.intValue = Mathf.Max(0, EditorGUILayout.IntField(number.intValue, GUILayout.Width(52)));
+                EditorGUILayout.LabelField("= " + (number.intValue / ClipFrame.ClipFrameRate).ToString("0.00") + " s", EditorStyles.miniLabel, GUILayout.Width(64));
+            }
             EditorGUILayout.EndHorizontal();
         }
 

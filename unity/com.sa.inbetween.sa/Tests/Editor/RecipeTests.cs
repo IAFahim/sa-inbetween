@@ -18,6 +18,9 @@ namespace SA.Inbetween.Clips.Tests
             var at = new ClipFrame { Where = FrameWhere.Time, Seconds = 0.5f };
             Assert.AreEqual("0.4,0.4333,0.4667,0.5", RecipeRunner.Times(at, true));
             Assert.AreEqual("0.5,0.5333,0.5667,0.6", RecipeRunner.Times(at, false));
+            var frame = new ClipFrame { Where = FrameWhere.Frame, Frame = 15 };
+            Assert.AreEqual("0.4,0.4333,0.4667,0.5", RecipeRunner.Times(frame, true));
+            Assert.AreEqual("0.5,0.5333,0.5667,0.6", RecipeRunner.Times(frame, false));
             at.Seconds = 0.05f;
             Assert.AreEqual("0,0,0.0167,0.05", RecipeRunner.Times(at, true));
         }

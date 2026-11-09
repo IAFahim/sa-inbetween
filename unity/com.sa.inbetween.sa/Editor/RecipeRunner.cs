@@ -103,7 +103,7 @@ namespace SA.Inbetween.Clips.Editor
 
         static void Add(StringBuilder sb, ClipFrame f)
         {
-            sb.Append('|').Append(f.Where).Append(f.Seconds.ToString("R", CultureInfo.InvariantCulture));
+            sb.Append('|').Append(f.Where).Append(f.AnchorSeconds.ToString("R", CultureInfo.InvariantCulture));
             if (f.Clip == null) return;
             using var sha = SHA1.Create();
             sb.Append(BitConverter.ToString(sha.ComputeHash(f.Clip.Bytes)));
@@ -228,7 +228,7 @@ namespace SA.Inbetween.Clips.Editor
                 case FrameWhere.End: return "e-3f,e-2f,e-1f,e";
                 case FrameWhere.Start: return isStart ? "s,s,s,s" : "s,s+1f,s+2f,s+3f";
                 default:
-                    var t = Mathf.Max(0f, f.Seconds);
+                    var t = Mathf.Max(0f, f.AnchorSeconds);
                     var step = 1f / StudioCommands.FrameRate;
                     var from = isStart ? -3 : 0;
                     var sb = new StringBuilder();

@@ -9,14 +9,20 @@ namespace SA.Inbetween.Clips
         End,
         Start,
         Time,
+        Frame,
     }
 
     [Serializable]
     public struct ClipFrame
     {
+        public const float ClipFrameRate = 30f;
+
+        public float AnchorSeconds => Where == FrameWhere.Frame ? Frame / ClipFrameRate : Seconds;
+
         public SaClipAsset Clip;
         public FrameWhere Where;
         public float Seconds;
+        public int Frame;
     }
 
     public sealed class InbetweenRecipe : ScriptableObject

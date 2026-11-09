@@ -20,7 +20,7 @@ namespace SA.Inbetween.Clips.Editor
             {
                 case FrameWhere.End: return duration;
                 case FrameWhere.Start: return 0f;
-                default: return Mathf.Clamp(frame.Seconds, 0f, duration);
+                default: return Mathf.Clamp(frame.AnchorSeconds, 0f, duration);
             }
         }
 
