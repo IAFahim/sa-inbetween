@@ -1,6 +1,6 @@
 # P00 Housekeeping — pinned reference facts
 
-Worktree: `/home/os/GitHub/sa-inbetween-wt/p00`, detached at foundation commit
+Worktree: a local checkout, detached at foundation commit
 `e6cb9b4` (= `packet/foundation`). Reference checkout `~/GitHub/motionbricks`
 was read only: no `uv sync`, no edits (one experiment used a `/tmp` copy of its
 index; see §5).

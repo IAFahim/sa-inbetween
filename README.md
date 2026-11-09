@@ -1,36 +1,68 @@
 # sa-inbetween
 
-Generate SOMA-rig motion between key poses with NVIDIA MotionBricks, as a small, deterministic .NET
-library plus a command-line tool. No Python or GPU needed: the network runs through ONNX Runtime on
-the CPU (about 4.6 s for a cold 50-frame generation including model load).
+Generate natural character motion between key poses, on the CPU, from a .NET command line or the Unity Editor.
 
-Output is a `.saib` motion file (30 fps, 77 joints, metres, SOMA model space) that the SA pipeline
-retargets to the humanoid-v1 rig (`sa-motion`, branch `packet/P08-soma-rig`).
+You give it where a character is (four recent poses) and where it should go (a target pose). It returns a 30 fps, 77-joint motion that gets you there, using NVIDIA's MotionBricks network through ONNX Runtime. No Python, no GPU, and the same input always gives the same bytes.
 
-## Quick start
+```text
+context poses + target pose(s)
+        |  sa-inbetween generate        (CPU, about 5 s for 50 frames)
+        v
+   walk.saib                            SOMA rig, Y-up, metres, 30 fps
+        |  sa-soma-bake                 (retarget to the SA humanoid-v1 rig)
+        v
+   walk.saclip                          drop into Unity
+        |  SaClipPlayer                 plays on an SA shared-family character in ECS
+        v
+   character moves
+```
 
-You need the .NET 10 SDK and the MotionBricks ONNX model
-(`mmm_v6_soma_fp32.onnx`, sha256 pinned in `SA.Inbetween.Contract.ModelPins`). The model is NVIDIA's;
-download it from the MotionBricks repository, it is not included here.
+Generation never runs in an ECS system. It makes a finished clip once, and only that clip enters the animation runtime.
+
+## What is in this repository
+
+| You want | Use |
+| --- | --- |
+| Motion files from the command line | `sa-inbetween` (download from Releases) |
+| A .NET library | `SA.Inbetween.*` projects under `src/` |
+| Unity Editor window and clip playback for SA characters | `unity/com.sa.inbetween.sa` |
+
+The retarget and bake step (`sa-soma-bake`) lives in the SA motion repository, not here, so the last two stages above need that repository and the `com.sa.unity` package. Everything up to the `.saib` file works on its own.
+
+## Install
+
+1. Download the CLI for your platform from the latest release. It is self-contained, so you do not need .NET installed.
+2. Download NVIDIA's MotionBricks ONNX model (`mmm_v6_soma_fp32.onnx`) from the MotionBricks repository and accept its licence. This repository does not ship the model. The tool checks its sha256 before use.
+
+## Use
 
 ```bash
-dotnet run --project apps/SA.Inbetween.Cli -c Release -- generate \
-  --model path/to/mmm_v6_soma_fp32.onnx \
+sa-inbetween generate \
+  --model mmm_v6_soma_fp32.onnx \
   --context ctx0.pose --context ctx1.pose --context ctx2.pose --context ctx3.pose \
   --target goal.pose \
   --out walk.saib
 
-dotnet run --project apps/SA.Inbetween.Cli -c Release -- inspect walk.saib
+sa-inbetween inspect walk.saib
 ```
 
-- A `.pose` file is one pose: 77 joints x (px, py, pz, qx, qy, qz, qw), float32 little endian,
-  2156 bytes, local transforms, metres, SOMA model space (Y up, +Z forward).
-- `--context` takes four poses (oldest first) or one `.saib` (its last four frames, or
-  `--context-end N`).
-- `--target` takes `file.pose`, `file.saib:FRAME`, or up to four comma-separated poses. Repeat
-  `--target` to chain several generations; each starts from the previous one's last four frames.
-- The model's sha256 is verified before use (`--skip-verify` to bypass).
-- `pose file.saib --frame N --out x.pose` extracts a frame.
+- A `.pose` file is one pose: 77 joints x (px, py, pz, qx, qy, qz, qw), float32 little endian, 2156 bytes, local transforms, metres, SOMA model space (Y up, +Z forward).
+- `--context` takes four poses (oldest first) or one `.saib` (its last four frames, or `--context-end N`).
+- `--target` takes `file.pose`, `file.saib:FRAME`, or up to four comma-separated poses. Repeat `--target` to chain several generations; each starts from the previous one's last four frames.
+- `pose file.saib --frame N --out x.pose` extracts a frame, which is the easy way to make poses from an existing motion.
+- Exit code 0 is success, 1 is an error with a message, 2 is wrong usage.
+
+### In Unity (SA characters)
+
+Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), then open `Window > SA > Inbetween Studio`. Point it at the tools, the model and the family file once, pick a context and a target, and press **Generate and bake**. The clip is imported and ready for a `SaClipPlayer`. See `unity/com.sa.inbetween.sa/README.md`.
+
+### From C#
+
+```csharp
+// PortedGenerator = engine + ONNX network. Build a request, await GenerateAsync.
+// See apps/SA.Inbetween.Cli/Program.cs for a complete example, and docs/ecs-integration.md
+// for where it may and may not run.
+```
 
 ## Layout
 
@@ -43,7 +75,7 @@ dotnet run --project apps/SA.Inbetween.Cli -c Release -- inspect walk.saib
 | `src/SA.Inbetween.Onnx` | `OnnxNetwork` (ONNX Runtime, net10.0) |
 | `apps/SA.Inbetween.Cli` | `sa-inbetween` tool |
 | `unity/com.sa.inbetween` | Unity package of the core libraries (`build/pack-unity.sh` builds the DLLs; they are not committed) |
-| `unity/com.sa.inbetween.sa` | Unity package: `.saclip` importer and `SaClipPlayer` for SA shared-family characters (needs `com.sa.unity`) |
+| `unity/com.sa.inbetween.sa` | Unity package: Inbetween Studio window, `.saclip` importer and `SaClipPlayer` (needs `com.sa.unity`) |
 | `docs/` | Contract, engine spec and measured parity, reports |
 
 ## Accuracy
@@ -73,5 +105,6 @@ Golden-based tests skip unless NVIDIA's evaluation-only recordings are placed in
 
 ## Licence
 
-Apache-2.0 (code). See `NOTICE` for third-party terms, in particular the NVIDIA Open Model
-Agreement that governs the model weights.
+Apache-2.0 for the code in this repository. The MotionBricks weights are NVIDIA's, under the NVIDIA Open Model Agreement, and are not included. NVIDIA's sample motions and test recordings are evaluation-only and are never committed here. See `NOTICE`.
+
+What is finished, what is not, and what still needs review: `docs/status.md`.
