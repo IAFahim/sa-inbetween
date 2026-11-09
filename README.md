@@ -56,13 +56,7 @@ sa-inbetween inspect walk.saib
 
 Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), then open `Window > SA > Inbetween Studio`. Point it at the tools, the model and the family file once, pick a context and a target, and press **Generate and bake**. The clip is imported and ready for a `SaClipPlayer`. See `unity/com.sa.inbetween.sa/README.md`.
 
-### From C#
-
-```csharp
-// PortedGenerator = engine + ONNX network. Build a request, await GenerateAsync.
-// See apps/SA.Inbetween.Cli/Program.cs for a complete example, and docs/ecs-integration.md
-// for where it may and may not run.
-```
+For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a complete caller of `PortedGenerator`) and `docs/ecs-integration.md` (where generation may and may not run).
 
 ## Layout
 
