@@ -104,10 +104,10 @@ namespace SA.Inbetween.Clips.Tests
                 System.IO.File.WriteAllText(System.IO.Path.Combine(root, "model", "mmm_v6_soma_fp32.onnx"), "x");
                 var partial = StudioDiscovery.Find(root);
                 Assert.IsFalse(partial.Complete);
-                CollectionAssert.AreEquivalent(new[] { "a .safamily file", "library.json" }, partial.Missing());
+                CollectionAssert.AreEquivalent(new[] { "a .safamily file", "soma_rest.pose" }, partial.Missing());
                 System.IO.File.WriteAllText(System.IO.Path.Combine(root, "other.safamily"), "x");
                 System.IO.File.WriteAllText(System.IO.Path.Combine(root, "humanoid-v1.safamily"), "x");
-                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "library.json"), "{}");
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "soma_rest.pose"), "x");
                 var full = StudioDiscovery.Find(root);
                 Assert.IsTrue(full.Complete);
                 StringAssert.EndsWith("humanoid-v1.safamily", full.Family);
@@ -124,37 +124,6 @@ namespace SA.Inbetween.Clips.Tests
             var t = StudioDiscovery.Find("/no/such/folder");
             Assert.IsFalse(t.Complete);
             Assert.AreEqual(5, t.Missing().Count);
-        }
-
-        [Test]
-        public void Library_loads_complete_entries_only()
-        {
-            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sa_lib_" + System.Guid.NewGuid().ToString("N"));
-            try
-            {
-                System.IO.Directory.CreateDirectory(root);
-                foreach (var n in new[] { "a_0", "a_1", "a_2", "a_3", "b_0" })
-                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(root, n + ".pose"), new byte[4]);
-                var json = "{\"version\":1,\"entries\":[" +
-                    "{\"name\":\"A 1\",\"group\":\"A\",\"time\":0,\"files\":[\"a_0.pose\",\"a_1.pose\",\"a_2.pose\",\"a_3.pose\"]}," +
-                    "{\"name\":\"B 1\",\"group\":\"B\",\"time\":0,\"files\":[\"b_0.pose\",\"b_1.pose\",\"b_2.pose\",\"b_3.pose\"]}]}";
-                var path = System.IO.Path.Combine(root, "library.json");
-                System.IO.File.WriteAllText(path, json);
-                Assert.IsTrue(StudioLibrary.TryLoad(path, out var lib, out _));
-                Assert.AreEqual(1, lib.Entries.Count);
-                Assert.AreEqual("A/A 1", lib.Labels()[0]);
-                Assert.AreEqual(4, lib.PathsOf(0).Length);
-                Assert.AreEqual(0, lib.IndexOf("A 1"));
-                Assert.AreEqual(-1, lib.IndexOf("B 1"));
-                System.IO.File.WriteAllText(path, "{\"version\":2,\"entries\":[]}");
-                Assert.IsFalse(StudioLibrary.TryLoad(path, out _, out var err));
-                StringAssert.Contains("empty", err);
-                Assert.IsFalse(StudioLibrary.TryLoad("/no/such.json", out _, out _));
-            }
-            finally
-            {
-                System.IO.Directory.Delete(root, true);
-            }
         }
 
         [Test]
@@ -178,6 +147,25 @@ namespace SA.Inbetween.Clips.Tests
             s.TokenOverride = 20;
             Assert.IsFalse(StudioCommands.TryGenerate(s, out _, out var e));
             StringAssert.Contains("seconds", e);
+        }
+
+        [Test]
+        public void Pose_extraction_command_carries_clip_times_and_rest()
+        {
+            var s = Valid(); s.RestPath = "/t/soma_rest.pose";
+            Assert.IsTrue(StudioCommands.TryPoses(s, "/c/a.saclip", "e-3f,e-2f,e-1f,e", "/w/s_{}.pose", out var c, out _));
+            CollectionAssert.AreEqual(new[] { "/t/bake.dll", "pose", "/f/humanoid-v1.safamily", "/c/a.saclip", "e-3f,e-2f,e-1f,e", "/t/soma_rest.pose", "/w/s_{}.pose" }, c.Args);
+            s.RestPath = "";
+            Assert.IsFalse(StudioCommands.TryPoses(s, "/c/a.saclip", "s", "/w/s.pose", out _, out var e));
+            StringAssert.Contains("rest", e);
+        }
+
+        [Test]
+        public void Work_folder_keeps_the_intermediate_file_out_of_the_output_folder()
+        {
+            var s = Valid(); s.WorkFolder = "Library/SaInbetween/x";
+            Assert.AreEqual("Library/SaInbetween/x/walk.saib", StudioCommands.SaibPath(s).Replace('\\', '/'));
+            StringAssert.StartsWith("Assets/Generated/walk", StudioCommands.ClipPath(s).Replace('\\', '/'));
         }
     }
 }

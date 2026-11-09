@@ -16,7 +16,9 @@ namespace SA.Inbetween.Clips.Editor
         public string BakePath = "";
         public string ModelPath = "";
         public string FamilyPath = "";
+        public string RestPath = "";
         public string OutputFolder = "Assets/Generated";
+        public string WorkFolder = "";
         public List<string> Contexts = new List<string>();
         public int ContextEnd = -1;
         public List<string> Targets = new List<string> { "" };
@@ -44,7 +46,7 @@ namespace SA.Inbetween.Clips.Editor
             return Mathf.Clamp(tokens, MinTokens, MaxTokens);
         }
 
-        public static string SaibPath(StudioSettings s) => Path.Combine(s.OutputFolder, s.ClipName + ".saib");
+        public static string SaibPath(StudioSettings s) => Path.Combine(string.IsNullOrEmpty(s.WorkFolder) ? s.OutputFolder : s.WorkFolder, s.ClipName + ".saib");
 
         public static string ClipPath(StudioSettings s) => Path.Combine(s.OutputFolder, s.ClipName + ".saclip");
 
@@ -105,6 +107,20 @@ namespace SA.Inbetween.Clips.Editor
             args.Add(s.FamilyPath);
             args.Add(SaibPath(s));
             args.Add(ClipPath(s));
+            command = new StudioCommand { File = file, Args = args };
+            error = "";
+            return true;
+        }
+
+        public static bool TryPoses(StudioSettings s, string clipFile, string times, string outPattern, out StudioCommand command, out string error)
+        {
+            command = default;
+            if (!Require(s.BakePath, "sa-soma-bake executable", out error) || !Require(s.FamilyPath, "family (.safamily)", out error) ||
+                !Require(s.RestPath, "rest pose (soma_rest.pose)", out error))
+                return false;
+            var args = new List<string>();
+            Launcher(s.BakePath, args, out var file);
+            args.Add("pose"); args.Add(s.FamilyPath); args.Add(clipFile); args.Add(times); args.Add(s.RestPath); args.Add(outPattern);
             command = new StudioCommand { File = file, Args = args };
             error = "";
             return true;

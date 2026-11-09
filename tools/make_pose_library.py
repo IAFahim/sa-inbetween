@@ -76,6 +76,9 @@ def main() -> int:
                 files.append(f.name)
             entries.append({"name": f"{label} {k + 1}", "group": label, "time": round(t, 2), "files": files})
             print(name, f"t={t:.2f}s")
+    first = next(iter(sorted(out.glob("*_0.pose"))), None)
+    if first is not None:
+        (out / "soma_rest.pose").write_bytes(first.read_bytes())
     (out / "library.json").write_text(json.dumps({"version": 1, "entries": entries}, indent=1))
     print(len(entries), "entries ->", out)
     return 0

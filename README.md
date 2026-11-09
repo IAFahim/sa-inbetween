@@ -54,7 +54,7 @@ sa-inbetween inspect walk.saib
 
 ### In Unity (SA characters)
 
-Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), then open `Window > SA > Inbetween Studio`, point it at your tools folder once, pick a start and a goal pose and press **Generate motion**. Then **Preview on character**. Step by step: `docs/designer-guide.md`.
+Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
 
 For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a complete caller of `PortedGenerator`) and `docs/ecs-integration.md` (where generation may and may not run).
 
@@ -69,7 +69,7 @@ For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a comple
 | `src/SA.Inbetween.Onnx` | `OnnxNetwork` (ONNX Runtime, net10.0) |
 | `apps/SA.Inbetween.Cli` | `sa-inbetween` tool |
 | `unity/com.sa.inbetween` | Unity package of the core libraries (`build/pack-unity.sh` builds the DLLs; they are not committed) |
-| `unity/com.sa.inbetween.sa` | Unity package: Inbetween Studio window, `.saclip` importer and `SaClipPlayer` (needs `com.sa.unity`) |
+| `unity/com.sa.inbetween.sa` | Unity package: Inbetween Bridge recipes, `.saclip` importer and `SaClipPlayer` (needs `com.sa.unity`) |
 | `docs/` | Contract, engine spec and measured parity, reports |
 
 ## Accuracy

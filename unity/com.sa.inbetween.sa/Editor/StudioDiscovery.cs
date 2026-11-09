@@ -9,9 +9,9 @@ namespace SA.Inbetween.Clips.Editor
         public string Bake;
         public string Model;
         public string Family;
-        public string Library;
+        public string Rest;
 
-        public bool Complete => Cli != "" && Bake != "" && Model != "" && Family != "" && Library != "";
+        public bool Complete => Cli != "" && Bake != "" && Model != "" && Family != "" && Rest != "";
 
         public List<string> Missing()
         {
@@ -20,7 +20,7 @@ namespace SA.Inbetween.Clips.Editor
             if (Bake == "") m.Add("sa-soma-bake");
             if (Model == "") m.Add("mmm_v6_soma_fp32.onnx");
             if (Family == "") m.Add("a .safamily file");
-            if (Library == "") m.Add("library.json");
+            if (Rest == "") m.Add("soma_rest.pose");
             return m;
         }
     }
@@ -31,7 +31,7 @@ namespace SA.Inbetween.Clips.Editor
 
         public static StudioTools Find(string root)
         {
-            var tools = new StudioTools { Cli = "", Bake = "", Model = "", Family = "", Library = "" };
+            var tools = new StudioTools { Cli = "", Bake = "", Model = "", Family = "", Rest = "" };
             if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
                 return tools;
             Walk(root, 0, ref tools);
@@ -60,7 +60,7 @@ namespace SA.Inbetween.Clips.Editor
                 if (t.Bake == "" && (n == "sa-soma-bake" || n == "sa-soma-bake.exe" || n == "SA.Soma.Bake.dll")) t.Bake = f;
                 if (t.Model == "" && n == "mmm_v6_soma_fp32.onnx") t.Model = f;
                 if (n.EndsWith(".safamily", System.StringComparison.Ordinal) && (t.Family == "" || n.StartsWith("humanoid-v1", System.StringComparison.Ordinal))) t.Family = f;
-                if (t.Library == "" && n == "library.json") t.Library = f;
+                if (t.Rest == "" && n == "soma_rest.pose") t.Rest = f;
             }
 
             if (depth >= MaxDepth)

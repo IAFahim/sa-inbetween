@@ -7,7 +7,7 @@ What is built, what is verified, and what is not. Updated 2026-11-09.
 - Engine (encode, decode, endpoint correction, IK pin): matches NVIDIA's TensorRT goldens to 0.06 mm and 0.002 rotation components (see `docs/engine/status.md`). Parity tests need the NVIDIA evaluation data and are skipped in CI.
 - ONNX CPU backend (`PortedGenerator`): bit-deterministic, about 4.6 s cold for 50 frames.
 - CLI `sa-inbetween` and bake tool `sa-soma-bake` (sa-motion repo): error handling, exit codes, tests.
-- Unity packages `com.sa.inbetween` (core) and `com.sa.inbetween.sa` (importer, `SaClipPlayer`, Inbetween Studio window).
+- Unity packages `com.sa.inbetween` (core) and `com.sa.inbetween.sa` (importer, `SaClipPlayer`, Inbetween Bridge recipes).
 - CI on Linux and Windows. Tagging `vX.Y.Z` builds a release: CLI for linux-x64 and win-x64, both Unity packages, SHA256SUMS (`build/package-release.sh`).
 
 ## Not built
