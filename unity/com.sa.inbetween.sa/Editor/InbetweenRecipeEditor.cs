@@ -174,8 +174,15 @@ namespace SA.Inbetween.Clips.Editor
             var clip = frame.FindPropertyRelative("Clip");
             var where = frame.FindPropertyRelative("Where");
             var seconds = frame.FindPropertyRelative("Seconds");
+            var kind = frame.FindPropertyRelative("Kind");
+            var motion = frame.FindPropertyRelative("Motion");
+            var unity = (SourceKind)kind.enumValueIndex == SourceKind.UnityClip;
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(clip, GUIContent.none);
+            kind.enumValueIndex = EditorGUILayout.Popup(kind.enumValueIndex, new[] { ".saclip", "Unity clip" }, GUILayout.Width(84));
+            if (unity)
+                motion.objectReferenceValue = EditorGUILayout.ObjectField(motion.objectReferenceValue, typeof(AnimationClip), false);
+            else
+                EditorGUILayout.PropertyField(clip, GUIContent.none);
             var labels = new[] { "end of clip", "start of clip", "at time (s)", "at frame" };
             where.enumValueIndex = EditorGUILayout.Popup(where.enumValueIndex, labels, GUILayout.Width(110));
             if ((FrameWhere)where.enumValueIndex == FrameWhere.Time)
@@ -184,9 +191,19 @@ namespace SA.Inbetween.Clips.Editor
             {
                 var number = frame.FindPropertyRelative("Frame");
                 number.intValue = Mathf.Max(0, EditorGUILayout.IntField(number.intValue, GUILayout.Width(52)));
-                EditorGUILayout.LabelField("= " + (number.intValue / ClipFrame.ClipFrameRate).ToString("0.00") + " s", EditorStyles.miniLabel, GUILayout.Width(64));
+                var rate = unity && motion.objectReferenceValue is AnimationClip picked && picked.frameRate > 0f ? picked.frameRate : ClipFrame.ClipFrameRate;
+                EditorGUILayout.LabelField("= " + (number.intValue / rate).ToString("0.00") + " s", EditorStyles.miniLabel, GUILayout.Width(64));
             }
             EditorGUILayout.EndHorizontal();
+            if (!unity)
+                return;
+            var character = frame.FindPropertyRelative("Character");
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("  on character", GUILayout.Width(84));
+            character.objectReferenceValue = EditorGUILayout.ObjectField(character.objectReferenceValue, typeof(GameObject), false);
+            EditorGUILayout.EndHorizontal();
+            if (character.objectReferenceValue is GameObject go && go.GetComponentInChildren<Animator>(true) == null)
+                EditorGUILayout.HelpBox("The character needs an Animator (a model or prefab imported with a rig).", MessageType.Warning);
         }
 
         static void Swap(InbetweenRecipe recipe)
@@ -238,6 +255,29 @@ namespace SA.Inbetween.Clips.Editor
             }
 
             EditorGUILayout.EndHorizontal();
+            DrawExport(recipe, busy);
+        }
+
+        void DrawExport(InbetweenRecipe recipe, bool busy)
+        {
+            EditorGUILayout.Space(4);
+            EditorGUILayout.LabelField("Export", EditorStyles.boldLabel);
+            serializedObject.Update();
+            var character = serializedObject.FindProperty("Character");
+            var fallback = SaClipExport.CharacterFor(recipe);
+            EditorGUILayout.PropertyField(character, new GUIContent("Character", "The character the exported clip plays on. Empty uses the character of a Unity clip source."));
+            serializedObject.ApplyModifiedProperties();
+            if (recipe.Character == null && fallback != null)
+                EditorGUILayout.LabelField(" ", "Uses " + fallback.name + " from the sources.", EditorStyles.miniLabel);
+            using (new EditorGUI.DisabledScope(busy || fallback == null))
+                if (GUILayout.Button(new GUIContent("Export > Animation Clip", "Writes " + recipe.name + ".anim next to the recipe: a Generic clip for this character, starting at the origin facing +Z. Play it on the model set to a Generic rig."), GUILayout.Height(24)))
+                {
+                    if (!SaClipExport.TryExport(recipe, out var saved, out var error))
+                        EditorUtility.DisplayDialog("Cannot export", error, "OK");
+                    else
+                        EditorGUIUtility.PingObject(saved);
+                    GUIUtility.ExitGUI();
+                }
         }
 
         void DrawStrip(InbetweenRecipe recipe)

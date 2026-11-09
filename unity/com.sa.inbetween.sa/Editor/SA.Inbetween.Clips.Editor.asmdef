@@ -1,7 +1,9 @@
 {
   "name": "SA.Inbetween.Clips.Editor",
   "rootNamespace": "SA.Inbetween.Clips.Editor",
-  "references": ["SA.Inbetween.Clips"],
+  "references": ["SA.Inbetween.Clips", "SA.Editor", "SA.Runtime"],
   "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["SA.Motion.dll", "SA.Animation.dll", "SA.Animation.Content.dll"],
   "autoReferenced": true
 }

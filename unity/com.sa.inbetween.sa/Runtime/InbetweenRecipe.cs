@@ -12,17 +12,30 @@ namespace SA.Inbetween.Clips
         Frame,
     }
 
+    public enum SourceKind
+    {
+        SaClip,
+        UnityClip,
+    }
+
     [Serializable]
     public struct ClipFrame
     {
         public const float ClipFrameRate = 30f;
 
-        public float AnchorSeconds => Where == FrameWhere.Frame ? Frame / ClipFrameRate : Seconds;
+        public float FrameRate => Kind == SourceKind.UnityClip && Motion != null && Motion.frameRate > 0f ? Motion.frameRate : ClipFrameRate;
+
+        public float AnchorSeconds => Where == FrameWhere.Frame ? Frame / FrameRate : Seconds;
+
+        public bool HasSource => Kind == SourceKind.UnityClip ? Motion != null && Character != null : Clip != null;
 
         public SaClipAsset Clip;
         public FrameWhere Where;
         public float Seconds;
         public int Frame;
+        public SourceKind Kind;
+        public AnimationClip Motion;
+        public GameObject Character;
     }
 
     public sealed class InbetweenRecipe : ScriptableObject
@@ -37,5 +50,6 @@ namespace SA.Inbetween.Clips
         public bool LandExactly = true;
         public SaClipAsset Output;
         public string BuiltFrom = "";
+        public GameObject Character;
     }
 }

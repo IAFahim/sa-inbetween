@@ -112,7 +112,10 @@ namespace SA.Inbetween.Clips.Editor
             return true;
         }
 
-        public static bool TryPoses(StudioSettings s, string clipFile, string times, string outPattern, out StudioCommand command, out string error)
+        public static bool TryPoses(StudioSettings s, string clipFile, string times, string outPattern, out StudioCommand command, out string error) =>
+            TryPoses(s, clipFile, times, outPattern, false, out command, out error);
+
+        public static bool TryPoses(StudioSettings s, string clipFile, string times, string outPattern, bool rootLast, out StudioCommand command, out string error)
         {
             command = default;
             if (!Require(s.BakePath, "sa-soma-bake executable", out error) || !Require(s.FamilyPath, "family (.safamily)", out error) ||
@@ -121,6 +124,7 @@ namespace SA.Inbetween.Clips.Editor
             var args = new List<string>();
             Launcher(s.BakePath, args, out var file);
             args.Add("pose"); args.Add(s.FamilyPath); args.Add(clipFile); args.Add(times); args.Add(s.RestPath); args.Add(outPattern);
+            if (rootLast) { args.Add("--root"); args.Add("last"); }
             command = new StudioCommand { File = file, Args = args };
             error = "";
             return true;

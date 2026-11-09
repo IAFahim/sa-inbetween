@@ -161,6 +161,14 @@ namespace SA.Inbetween.Clips.Tests
         }
 
         [Test]
+        public void Pose_extraction_can_keep_the_root_of_the_last_time()
+        {
+            var s = Valid(); s.RestPath = "/t/soma_rest.pose";
+            Assert.IsTrue(StudioCommands.TryPoses(s, "/c/a.saclip", "0.9,1,1.1,1.2", "/w/s_{}.pose", true, out var c, out _));
+            CollectionAssert.AreEqual(new[] { "/t/bake.dll", "pose", "/f/humanoid-v1.safamily", "/c/a.saclip", "0.9,1,1.1,1.2", "/t/soma_rest.pose", "/w/s_{}.pose", "--root", "last" }, c.Args);
+        }
+
+        [Test]
         public void Work_folder_keeps_the_intermediate_file_out_of_the_output_folder()
         {
             var s = Valid(); s.WorkFolder = "Library/SaInbetween/x";

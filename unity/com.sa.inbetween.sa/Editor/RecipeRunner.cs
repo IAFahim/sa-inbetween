@@ -7,6 +7,7 @@ using System.Text;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using SA.Editor;
 
 namespace SA.Inbetween.Clips.Editor
 {
@@ -65,19 +66,33 @@ namespace SA.Inbetween.Clips.Editor
 
         public static string Problem(InbetweenRecipe recipe)
         {
-            if (recipe.Start.Clip == null) return "Choose the clip the character starts from.";
+            var start = SourceProblem(recipe.Start, "the character starts from", "The start");
+            if (start != "") return start;
             if (recipe.Goals.Count == 0) return "Add a goal to move toward.";
             for (var i = 0; i < recipe.Goals.Count; i++)
-                if (recipe.Goals[i].Clip == null) return (recipe.Goals.Count == 1 ? "The goal" : "Goal " + (i + 1)) + " has no clip.";
+            {
+                var name = recipe.Goals.Count == 1 ? "The goal" : "Goal " + (i + 1);
+                if (recipe.Goals[i].Kind == SourceKind.SaClip && recipe.Goals[i].Clip == null) return name + " has no clip.";
+                var goal = SourceProblem(recipe.Goals[i], "for " + name.ToLowerInvariant(), name);
+                if (goal != "") return goal;
+            }
             var output = OutputPath(recipe);
             if (output == "") return "Save the recipe as an asset first.";
-            if (SamePath(recipe.Start.Clip, output)) return "This recipe is named like its start clip, so the result would overwrite it. Rename the recipe.";
+            if (SamePath(recipe.Start, output)) return "This recipe is named like its start clip, so the result would overwrite it. Rename the recipe.";
             foreach (var g in recipe.Goals)
-                if (SamePath(g.Clip, output)) return "This recipe is named like one of its goal clips, so the result would overwrite it. Rename the recipe.";
+                if (SamePath(g, output)) return "This recipe is named like one of its goal clips, so the result would overwrite it. Rename the recipe.";
             return "";
         }
 
-        static bool SamePath(SaClipAsset clip, string path) => string.Equals(AssetDatabase.GetAssetPath(clip), path, StringComparison.OrdinalIgnoreCase);
+        static string SourceProblem(ClipFrame f, string role, string name)
+        {
+            if (f.Kind == SourceKind.SaClip) return f.Clip == null ? "Choose the clip " + role + "." : "";
+            if (f.Motion == null) return "Choose the Unity clip " + role + ".";
+            if (f.Character == null) return name + " needs a character to play its Unity clip on.";
+            return "";
+        }
+
+        static bool SamePath(ClipFrame f, string path) => f.Kind == SourceKind.SaClip && string.Equals(AssetDatabase.GetAssetPath(f.Clip), path, StringComparison.OrdinalIgnoreCase);
 
         public static RecipeState StateOf(InbetweenRecipe recipe)
         {
@@ -104,10 +119,87 @@ namespace SA.Inbetween.Clips.Editor
         static void Add(StringBuilder sb, ClipFrame f)
         {
             sb.Append('|').Append(f.Where).Append(f.AnchorSeconds.ToString("R", CultureInfo.InvariantCulture));
+            if (f.Kind == SourceKind.UnityClip)
+            {
+                sb.Append("|unity|").Append(f.Frame.ToString(CultureInfo.InvariantCulture)).Append('|').Append(SourceKey(f));
+                return;
+            }
             if (f.Clip == null) return;
             using var sha = SHA1.Create();
             sb.Append(BitConverter.ToString(sha.ComputeHash(f.Clip.Bytes)));
         }
+
+        public const float SourceRate = 30f;
+
+        public static string SourceKey(ClipFrame f)
+        {
+            var sb = new StringBuilder();
+            sb.Append(SourceRate.ToString("R", CultureInfo.InvariantCulture)).Append('|').Append(FamilyVersion());
+            AppendAsset(sb, f.Motion);
+            AppendAsset(sb, f.Character);
+            using var sha = SHA1.Create();
+            return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString()))).Replace("-", "").ToLowerInvariant();
+        }
+
+        static void AppendAsset(StringBuilder sb, UnityEngine.Object asset)
+        {
+            sb.Append('|');
+            if (asset == null) { sb.Append("none"); return; }
+            var path = AssetDatabase.GetAssetPath(asset);
+            sb.Append(asset.name).Append('|').Append(path).Append('|');
+            if (path != "") sb.Append(AssetDatabase.GetAssetDependencyHash(path).ToString());
+            else sb.Append(GlobalObjectId.GetGlobalObjectIdSlow(asset).ToString());
+        }
+
+        static readonly Lazy<string> Family = new Lazy<string>(() =>
+        {
+            var info = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(FamilyClips).Assembly);
+            if (info == null) return "unknown";
+            return info.version + (info.git != null ? "@" + info.git.hash : "");
+        });
+
+        static string FamilyVersion() => Family.Value;
+
+        public static string SourceFile(ClipFrame f, string work) => Path.Combine(work, "src_" + SourceKey(f).Substring(0, 16) + ".saclip");
+
+        public static bool TryBakeSource(ClipFrame f, string work, out string file, out string error)
+        {
+            file = "";
+            error = SourceProblem(f, "to bake", "The source");
+            if (error != "") return false;
+            if (f.Kind == SourceKind.SaClip)
+            {
+                file = Path.GetFullPath(AssetDatabase.GetAssetPath(f.Clip));
+                return true;
+            }
+            file = SourceFile(f, work);
+            if (File.Exists(file)) return true;
+            if (!SaClipConvert.TryConvert(f.Character, f.Motion, out var bytes, out error))
+            {
+                error = "Cannot read '" + f.Motion.name + "' on '" + f.Character.name + "': " + error;
+                return false;
+            }
+            Directory.CreateDirectory(work);
+            var temporary = file + ".tmp";
+            File.WriteAllBytes(temporary, bytes);
+            if (File.Exists(file)) File.Delete(file);
+            File.Move(temporary, file);
+            return true;
+        }
+
+        public static byte[] PreviewBytes(InbetweenRecipe recipe, ClipFrame f)
+        {
+            if (f.Kind == SourceKind.SaClip) return f.Clip == null ? null : f.Clip.Bytes;
+            if (f.Motion == null || f.Character == null) return null;
+            var file = SourceFile(f, WorkFolder(recipe));
+            if (!File.Exists(file)) return null;
+            if (Baked.TryGetValue(file, out var cached)) return cached;
+            var bytes = File.ReadAllBytes(file);
+            Baked[file] = bytes;
+            return bytes;
+        }
+
+        static readonly Dictionary<string, byte[]> Baked = new Dictionary<string, byte[]>();
 
         public static bool Start(InbetweenRecipe recipe, out string error)
         {
@@ -214,8 +306,9 @@ namespace SA.Inbetween.Clips.Editor
 
         static bool AddPoses(StudioSettings s, RecipeRun run, List<RecipeRun.Step> steps, string label, ClipFrame frame, bool isStart, string pattern, List<string> files, out string error)
         {
-            var clipFile = Path.GetFullPath(AssetDatabase.GetAssetPath(frame.Clip));
-            if (!StudioCommands.TryPoses(s, clipFile, Times(frame, isStart), pattern, out var command, out error)) return false;
+            if (!TryBakeSource(frame, s.WorkFolder, out var clipFile, out error)) return false;
+            var rootLast = isStart && frame.Kind == SourceKind.UnityClip;
+            if (!StudioCommands.TryPoses(s, clipFile, Times(frame, isStart), pattern, rootLast, out var command, out error)) return false;
             steps.Add(new RecipeRun.Step { Label = label, Command = command });
             for (var i = 0; i < 4; i++) files.Add(pattern.Replace("{}", i.ToString(CultureInfo.InvariantCulture)));
             return true;

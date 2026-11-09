@@ -46,6 +46,52 @@ namespace SA.Inbetween.Clips.Tests
         }
 
         [Test]
+        public void Unity_clip_frames_count_at_the_clip_frame_rate()
+        {
+            var motion = new AnimationClip { frameRate = 24f };
+            try
+            {
+                var frame = new ClipFrame { Kind = SourceKind.UnityClip, Motion = motion, Where = FrameWhere.Frame, Frame = 12 };
+                Assert.AreEqual(0.5f, frame.AnchorSeconds, 1e-6f);
+                Assert.AreEqual("0.4,0.4333,0.4667,0.5", RecipeRunner.Times(frame, true));
+                frame.Kind = SourceKind.SaClip;
+                Assert.AreEqual(0.4f, frame.AnchorSeconds, 1e-6f);
+            }
+            finally
+            {
+                Object.DestroyImmediate(motion);
+            }
+        }
+
+        [Test]
+        public void Unity_clip_sources_need_a_clip_and_a_character_and_change_the_hash()
+        {
+            var r = ScriptableObject.CreateInstance<InbetweenRecipe>();
+            var motion = new AnimationClip { name = "m" };
+            var character = new GameObject("c");
+            try
+            {
+                var before = RecipeRunner.Hash(r);
+                r.Start = new ClipFrame { Kind = SourceKind.UnityClip, Where = FrameWhere.Frame, Frame = 3 };
+                StringAssert.Contains("Unity clip", RecipeRunner.Problem(r));
+                r.Start.Motion = motion;
+                StringAssert.Contains("character", RecipeRunner.Problem(r));
+                r.Start.Character = character;
+                StringAssert.DoesNotContain("start", RecipeRunner.Problem(r).ToLowerInvariant());
+                var unity = RecipeRunner.Hash(r);
+                Assert.AreNotEqual(before, unity);
+                r.Start.Frame = 4;
+                Assert.AreNotEqual(unity, RecipeRunner.Hash(r));
+            }
+            finally
+            {
+                Object.DestroyImmediate(character);
+                Object.DestroyImmediate(motion);
+                Object.DestroyImmediate(r);
+            }
+        }
+
+        [Test]
         public void Incomplete_recipe_names_the_problem()
         {
             var r = ScriptableObject.CreateInstance<InbetweenRecipe>();

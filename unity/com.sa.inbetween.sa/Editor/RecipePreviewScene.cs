@@ -94,9 +94,9 @@ namespace SA.Inbetween.Clips.Editor
         public void Bind(InbetweenRecipe recipe)
         {
             result.Bind(recipe.Output == null ? null : recipe.Output.Bytes);
-            start.Bind(recipe.Start.Clip == null ? null : recipe.Start.Clip.Bytes);
+            start.Bind(RecipeRunner.PreviewBytes(recipe, recipe.Start));
             var last = recipe.Goals.Count == 0 ? default : recipe.Goals[recipe.Goals.Count - 1];
-            goal.Bind(last.Clip == null ? null : last.Clip.Bytes);
+            goal.Bind(RecipeRunner.PreviewBytes(recipe, last));
         }
 
         public void Evaluate(InbetweenRecipe recipe, float seconds, bool ghosts)
