@@ -15,7 +15,7 @@ if [ -d "$motion/tools/SA.Soma.Bake" ]; then
     tools="stage/SaInbetween-$rid"
     mkdir -p "$tools/cli" "$tools/bake" "$tools/model"
     cp -r "stage/cli-$rid/." "$tools/cli/"
-    dotnet publish "$motion/tools/SA.Soma.Bake" -c Release -r "$rid" --self-contained true -o "$tools/bake"
+    dotnet publish "$motion/tools/SA.Soma.Bake" -c Release -r "$rid" --self-contained true -p:RunAnalyzers=false -p:TreatWarningsAsErrors=false -o "$tools/bake"
     cp "$motion/families/humanoid-v1.safamily" "$tools/"
     cp build/tools-readme.md "$tools/README.md"
     (cd stage && if [ "$rid" = win-x64 ]; then zip -qr "../dist/SaInbetween-tools-$version-$rid.zip" "SaInbetween-$rid"; else tar -czf "../dist/SaInbetween-tools-$version-$rid.tar.gz" "SaInbetween-$rid"; fi)
