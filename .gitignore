@@ -9,3 +9,5 @@ testdata/eval-only/*
 .trt-cache/
 __pycache__/
 unity/com.sa.inbetween/Plugins/*.dll
+dist/
+stage/

@@ -1,0 +1,32 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: "1"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Test
+        run: |
+          dotnet build SA.Inbetween.sln -c Release -warnaserror
+          dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests
+          dotnet test --no-build -c Release --project tests/SA.Inbetween.Cli.Tests
+      - name: Package
+        run: build/package-release.sh "${GITHUB_REF_NAME}"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --title "${GITHUB_REF_NAME}" --generate-notes
