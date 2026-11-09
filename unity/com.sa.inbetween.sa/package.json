@@ -1,6 +1,6 @@
 {
   "name": "com.sa.inbetween.sa",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "displayName": "SA Inbetween for SA Animation",
   "description": "Import .saclip files baked by sa-soma-bake and play them on SA shared-family characters. No scripts to write.",
   "unity": "7000.0",

@@ -167,6 +167,51 @@ namespace SA.Inbetween.Clips.Editor
             return true;
         }
 
+        public static string WorkFolder(InbetweenRecipe recipe) => Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Library", "SaInbetween", Key(recipe));
+
+        internal static bool PrepareSources(InbetweenRecipe recipe, List<RecipeRun.Step> steps, out StudioSettings s, out string error)
+        {
+            s = null;
+            error = Problem(recipe);
+            if (error != "") return false;
+            if (IsRunning(recipe)) { error = "Already generating."; return false; }
+            var tools = InbetweenSettings.Tools();
+            if (!tools.Complete) { error = "Setup needed: " + string.Join(", ", tools.Missing()); return false; }
+            if (Application.isPlaying) { error = "Leave Play mode before generating."; return false; }
+
+            var work = WorkFolder(recipe);
+            Directory.CreateDirectory(work);
+            s = new StudioSettings
+            {
+                CliPath = tools.Cli,
+                BakePath = tools.Bake,
+                ModelPath = tools.Model,
+                FamilyPath = tools.Family,
+                RestPath = tools.Rest,
+                OutputFolder = work,
+                WorkFolder = work,
+                ClipName = recipe.name,
+                TokenOverride = StudioCommands.TokensForSeconds(recipe.DurationSeconds),
+                Correct = recipe.LandExactly,
+                VerifyModel = InbetweenSettings.VerifyModel,
+            };
+
+            var run = new RecipeRun();
+            var contexts = new List<string>();
+            var targets = new List<string>();
+            if (!AddPoses(s, run, steps, "Reading the start", recipe.Start, true, Path.Combine(work, "start_{}.pose"), contexts, out error)) return false;
+            for (var i = 0; i < recipe.Goals.Count; i++)
+            {
+                var files = new List<string>();
+                if (!AddPoses(s, run, steps, recipe.Goals.Count == 1 ? "Reading the goal" : "Reading goal " + (i + 1), recipe.Goals[i], false, Path.Combine(work, "goal" + i + "_{}.pose"), files, out error)) return false;
+                targets.Add(string.Join(",", files));
+            }
+
+            s.Contexts = contexts;
+            s.Targets = targets;
+            return true;
+        }
+
         static bool AddPoses(StudioSettings s, RecipeRun run, List<RecipeRun.Step> steps, string label, ClipFrame frame, bool isStart, string pattern, List<string> files, out string error)
         {
             var clipFile = Path.GetFullPath(AssetDatabase.GetAssetPath(frame.Clip));

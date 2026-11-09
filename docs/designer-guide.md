@@ -12,7 +12,7 @@ You do not need a terminal. You pick two clips you already have, and Inbetween m
 1. In the Project window select the clip the character is leaving, then ctrl-click the clip it is going to.
 2. Choose `Assets > Create > SA > Inbetween Bridge` (or right-click > Create > SA). A recipe named *A_to_B* appears next to the clips.
 3. In the Inspector press **Generate**. It takes about 10 seconds. The bridge clip appears next to the recipe, named after it.
-4. Press **Preview on character** to see it. The scene needs your SA character; the preview enters Play mode.
+4. Watch it right away in the Inspector preview (see below), no Play mode needed. **Preview on character** still plays it on your SA character; that one needs the character in the scene and enters Play mode.
 
 The recipe starts from the **end** of the first clip and moves to the **start** of the second. That is what you want when the two clips play one after the other.
 
@@ -26,6 +26,30 @@ The recipe starts from the **end** of the first clip and moves to the **start** 
 
 When you change anything the recipe says *Settings changed since the last generate*. Nothing is regenerated behind your back; press **Generate again** when you are ready. The result is repeatable: the same recipe gives the same clip.
 
+## Preview without Play mode
+
+Once the recipe has a result, the Inspector shows a preview strip under **Result**:
+
+- **Play / Pause** and a **scrub slider** with the time and length. Dragging the slider pauses.
+- A small 3D view with the SA skeleton playing the clip, root motion included. Drag in it to orbit, scroll to zoom. The camera follows the hips.
+- **Ghost start and goal** draws the start pose in faded green and the goal pose in faded orange, so you can see how close the bridge leaves and lands. The goal ghost stands where the bridge ends.
+- **Show in Scene view** draws the same skeleton and ghosts as lines in the Scene view, at the scene origin, while the recipe is selected.
+
+The preview reads the clip directly, so it works in any scene, with no character at all.
+
+## Try variations
+
+The same settings always give the same clip, so pressing Generate again will not give you something new. **Make variations** does:
+
+1. Press **Make variations**. It reads the start and goal once, then makes up to four versions one after another: as set, one step shorter, one step longer, and one where the model picks the length within that range. A version that comes out identical to an earlier one is replaced by one with the other landing (exact or loose). Each step is 4 frames, about 0.13 s; durations stay within 0.6 to 1.9 s.
+2. Each version appears as a card with its own small preview, its length and frame count. All cards play in step with the main preview.
+3. Press **Keep this one** on the card you like. It becomes the recipe's result (the same clip file as before, so everything using the clip picks it up), the recipe's Duration and Land exactly change to match, and the recipe says *Up to date*. The other versions are thrown away.
+4. Changed your mind? **Edit > Undo Keep variation** (ctrl-Z) puts back the previous clip file and the recipe settings. Redo works too. If the recipe had no result before, undo removes the clip.
+
+Undo cannot bring back the versions you did not keep; press Make variations again for those (they come out the same). **Discard** throws away all versions without keeping one. Versions you have not decided on survive closing Unity; they live in `Library/SaInbetween`.
+
+A kept *model picks* version has no exact duration setting; the recipe gets the closest one, so a later Generate again can differ slightly.
+
 ## Make a loop
 
 Select one clip and choose **Inbetween Bridge**. The recipe goes from the end of the clip back to its start.
@@ -37,10 +61,11 @@ Select one clip and choose **Inbetween Bridge**. The recipe goes from the end of
 - Result looks off at the seam: use **At time** on the start so the bridge leaves the clip a little earlier, or lengthen the duration.
 - The character does not move in Preview: the scene needs exactly one SA shared-family character. The player's Status field says what it is waiting for.
 - Do not enter Play mode while generating.
+- *Cannot preview this clip*: the result file is not an SA humanoid clip, or it is damaged. Generate again.
 
 ## What it does not do yet
 
-- No in-editor ghost preview; Preview plays on the character in Play mode.
+- The editor preview shows the SA skeleton, not your character's mesh. Use Preview on character for the final look.
 - Poses come from existing clips. Capturing a pose from the scene, from a Unity `.anim`, or from a Timeline is planned.
 - The neck is a single bone on the SA rig, so a source clip's neck is smoothed slightly when it is read back. The head's position can move by up to about 2 cm at the seam.
 

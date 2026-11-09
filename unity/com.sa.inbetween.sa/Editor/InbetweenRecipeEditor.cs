@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,9 +7,71 @@ namespace SA.Inbetween.Clips.Editor
     [CustomEditor(typeof(InbetweenRecipe))]
     public sealed class InbetweenRecipeEditor : UnityEditor.Editor
     {
-        Vector2 logScroll;
+        const string GhostsKey = "SA.Inbetween.preview.ghosts";
+        const string SceneKey = "SA.Inbetween.preview.scene";
 
-        public override bool RequiresConstantRepaint() => RecipeRunner.IsRunning((InbetweenRecipe)target);
+        Vector2 logScroll;
+        readonly SkeletonPreview preview = new SkeletonPreview();
+        readonly SkeletonRenderer view = new SkeletonRenderer();
+        readonly List<SkeletonRenderer> cardViews = new List<SkeletonRenderer>();
+        readonly List<SkeletonClip> cardClips = new List<SkeletonClip>();
+        VariationRun cardsFor;
+        double clock;
+        double lastTick;
+        bool playing = true;
+
+        static bool Ghosts
+        {
+            get => EditorPrefs.GetBool(GhostsKey, true);
+            set => EditorPrefs.SetBool(GhostsKey, value);
+        }
+
+        static bool InScene
+        {
+            get => EditorPrefs.GetBool(SceneKey, true);
+            set => EditorPrefs.SetBool(SceneKey, value);
+        }
+
+        public override bool RequiresConstantRepaint() => RecipeRunner.IsRunning((InbetweenRecipe)target) || RecipeVariations.IsRunning((InbetweenRecipe)target);
+
+        void OnEnable()
+        {
+            lastTick = EditorApplication.timeSinceStartup;
+            EditorApplication.update += Tick;
+        }
+
+        void OnDisable()
+        {
+            EditorApplication.update -= Tick;
+            SkeletonSceneDrawer.Hide(this);
+            view.Dispose();
+            foreach (var v in cardViews) v.Dispose();
+            cardViews.Clear();
+        }
+
+        void Tick()
+        {
+            var now = EditorApplication.timeSinceStartup;
+            var dt = now - lastTick;
+            lastTick = now;
+            if (!playing || target == null)
+                return;
+            clock += dt;
+            Refresh((InbetweenRecipe)target);
+            Repaint();
+        }
+
+        float TimeFor(float duration) => playing ? PreviewMath.Wrap(clock, duration) : Mathf.Min((float)clock, duration);
+
+        void Refresh(InbetweenRecipe recipe)
+        {
+            preview.Bind(recipe);
+            preview.Evaluate(recipe, TimeFor(preview.Duration), Ghosts);
+            if (InScene && preview.Ready)
+                SkeletonSceneDrawer.Show(this, preview.Layers);
+            else
+                SkeletonSceneDrawer.Hide(this);
+        }
 
         public override void OnInspectorGUI()
         {
@@ -17,7 +80,7 @@ namespace SA.Inbetween.Clips.Editor
             DrawStatus(recipe);
             EditorGUILayout.Space(6);
 
-            var busy = RecipeRunner.IsRunning(recipe);
+            var busy = RecipeRunner.IsRunning(recipe) || RecipeVariations.IsRunning(recipe);
             using (new EditorGUI.DisabledScope(busy))
             {
                 EditorGUILayout.LabelField("Start from", EditorStyles.boldLabel);
@@ -62,6 +125,9 @@ namespace SA.Inbetween.Clips.Editor
             serializedObject.ApplyModifiedProperties();
             EditorGUILayout.Space(8);
             DrawActions(recipe, busy);
+            DrawPreview(recipe, busy);
+            EditorGUILayout.Space(8);
+            DrawVariations(recipe, busy);
         }
 
         void DrawStatus(InbetweenRecipe recipe)
@@ -133,21 +199,30 @@ namespace SA.Inbetween.Clips.Editor
         {
             var state = RecipeRunner.StateOf(recipe);
             var ready = state == RecipeState.NotGenerated || state == RecipeState.OutOfDate || state == RecipeState.UpToDate || state == RecipeState.Failed;
-            using (new EditorGUI.DisabledScope(!ready))
+            using (new EditorGUI.DisabledScope(!ready || RecipeVariations.IsRunning(recipe)))
                 if (GUILayout.Button(recipe.Output == null ? "Generate" : "Generate again", GUILayout.Height(32)))
                 {
                     if (!RecipeRunner.Start(recipe, out var error))
                         EditorUtility.DisplayDialog("Cannot generate", error, "OK");
                 }
 
-            if (busy && GUILayout.Button("Cancel"))
+            if (RecipeRunner.IsRunning(recipe) && GUILayout.Button("Cancel"))
                 RecipeRunner.Cancel(recipe);
+        }
 
+        void DrawPreview(InbetweenRecipe recipe, bool busy)
+        {
             if (recipe.Output == null)
                 return;
             EditorGUILayout.Space(4);
             using (new EditorGUI.DisabledScope(true))
                 EditorGUILayout.ObjectField("Result", recipe.Output, typeof(SaClipAsset), false);
+            Refresh(recipe);
+            if (!preview.Ready)
+                EditorGUILayout.HelpBox("Cannot preview this clip: " + preview.Error, MessageType.Warning);
+            else
+                DrawStrip(recipe);
+
             EditorGUILayout.BeginHorizontal();
             using (new EditorGUI.DisabledScope(busy))
                 if (GUILayout.Button("Preview on character", GUILayout.Height(24)))
@@ -156,6 +231,130 @@ namespace SA.Inbetween.Clips.Editor
             {
                 Selection.activeObject = recipe.Output;
                 EditorGUIUtility.PingObject(recipe.Output);
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        void DrawStrip(InbetweenRecipe recipe)
+        {
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(playing ? "Pause" : "Play", GUILayout.Width(56)))
+            {
+                playing = !playing;
+                clock = preview.Time;
+                lastTick = EditorApplication.timeSinceStartup;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            var t = GUILayout.HorizontalSlider(preview.Time, 0f, preview.Duration, GUILayout.ExpandWidth(true));
+            if (EditorGUI.EndChangeCheck())
+            {
+                playing = false;
+                clock = t;
+                Refresh(recipe);
+            }
+
+            GUILayout.Label(PreviewMath.Label(preview.Time, preview.Duration), EditorStyles.miniLabel, GUILayout.Width(92));
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginChangeCheck();
+            var ghosts = EditorGUILayout.ToggleLeft(new GUIContent("Ghost start and goal", "Shows the start pose (green) and the goal pose (orange) faded"), Ghosts, GUILayout.Width(150));
+            var inScene = EditorGUILayout.ToggleLeft(new GUIContent("Show in Scene view", "Draws the skeleton at the scene origin"), InScene);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Ghosts = ghosts;
+                InScene = inScene;
+                Refresh(recipe);
+            }
+
+            EditorGUILayout.EndHorizontal();
+            var rect = GUILayoutUtility.GetRect(10f, 220f, GUILayout.ExpandWidth(true));
+            if (view.Orbit(rect)) Repaint();
+            view.Draw(rect, preview.Layers);
+        }
+
+        void DrawVariations(InbetweenRecipe recipe, bool busy)
+        {
+            EditorGUILayout.LabelField("Variations", EditorStyles.boldLabel);
+            var state = RecipeRunner.StateOf(recipe);
+            var ready = state == RecipeState.NotGenerated || state == RecipeState.OutOfDate || state == RecipeState.UpToDate || state == RecipeState.Failed;
+            var run = RecipeVariations.Get(recipe);
+            EditorGUILayout.BeginHorizontal();
+            using (new EditorGUI.DisabledScope(!ready || busy))
+                if (GUILayout.Button(new GUIContent("Make variations", "Generates up to " + RecipeVariations.MaxCandidates + " versions with a shorter, longer or model-picked duration, then lets you keep one"), GUILayout.Height(24)))
+                {
+                    if (!RecipeVariations.Start(recipe, out var error))
+                        EditorUtility.DisplayDialog("Cannot make variations", error, "OK");
+                    run = RecipeVariations.Get(recipe);
+                }
+
+            if (run != null && !run.Done && GUILayout.Button("Cancel", GUILayout.Width(70), GUILayout.Height(24)))
+                RecipeVariations.Cancel(recipe);
+            if (run != null && run.Done && GUILayout.Button("Discard", GUILayout.Width(70), GUILayout.Height(24)))
+            {
+                RecipeVariations.Discard(recipe);
+                run = null;
+            }
+
+            EditorGUILayout.EndHorizontal();
+            if (run == null)
+            {
+                EditorGUILayout.LabelField("The same settings always give the same clip. Variations try nearby durations and landings so you can pick one.", EditorStyles.wordWrappedMiniLabel);
+                return;
+            }
+
+            if (!run.Done)
+                EditorGUILayout.HelpBox(run.Stage + "... (step " + Mathf.Min(run.Finished + 1, run.Total) + " of " + run.Total + ")", MessageType.Info);
+            else if (run.Error != "")
+                EditorGUILayout.HelpBox(run.Error, MessageType.Error);
+            DrawCards(recipe, run);
+        }
+
+        void DrawCards(InbetweenRecipe recipe, VariationRun run)
+        {
+            if (cardsFor != run)
+            {
+                cardsFor = run;
+                cardClips.Clear();
+            }
+
+            while (cardClips.Count < run.Candidates.Count) cardClips.Add(new SkeletonClip());
+            while (cardViews.Count < run.Candidates.Count) cardViews.Add(new SkeletonRenderer { Distance = 5.6f });
+            if (run.Candidates.Count == 0)
+                return;
+            var width = (EditorGUIUtility.currentViewWidth - 40f) / run.Candidates.Count;
+            EditorGUILayout.BeginHorizontal();
+            for (var i = 0; i < run.Candidates.Count; i++)
+            {
+                var candidate = run.Candidates[i];
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Width(width));
+                GUILayout.Label(RecipeVariations.Describe(candidate.Spec), EditorStyles.wordWrappedMiniLabel);
+                var rect = GUILayoutUtility.GetRect(10f, 120f, GUILayout.ExpandWidth(true));
+                var clip = cardClips[i];
+                if (candidate.Ready && clip.BindFile(candidate.ClipFile) && clip.Evaluate(TimeFor(clip.Duration)))
+                {
+                    if (cardViews[i].Orbit(rect)) Repaint();
+                    cardViews[i].Draw(rect, new[] { new SkeletonLayer { World = clip.World, Color = SkeletonPreview.ResultColor } });
+                    GUILayout.Label(clip.Duration.ToString("0.00") + " s, " + clip.Pose.SampleCount + " frames", EditorStyles.centeredGreyMiniLabel);
+                }
+                else
+                {
+                    GUI.Label(rect, candidate.Error != "" ? candidate.Error : clip.Error != "" ? clip.Error : run.Done ? "Not made" : "Waiting...", EditorStyles.centeredGreyMiniLabel);
+                    GUILayout.Label(" ", EditorStyles.centeredGreyMiniLabel);
+                }
+
+                using (new EditorGUI.DisabledScope(!candidate.Ready || !run.Done || RecipeRunner.IsRunning(recipe)))
+                    if (GUILayout.Button("Keep this one"))
+                    {
+                        if (!RecipeVariations.Keep(recipe, i, out var error))
+                            EditorUtility.DisplayDialog("Cannot keep this variation", error, "OK");
+                        else
+                            clock = 0;
+                        GUIUtility.ExitGUI();
+                    }
+
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndHorizontal();
