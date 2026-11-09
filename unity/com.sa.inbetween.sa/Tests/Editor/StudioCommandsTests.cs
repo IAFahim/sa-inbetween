@@ -12,7 +12,7 @@ namespace SA.Inbetween.Clips.Tests
             ModelPath = "/m/model.onnx",
             FamilyPath = "/f/humanoid-v1.safamily",
             OutputFolder = "Assets/Generated",
-            ContextFile = "/c/ctx.saib",
+            Contexts = new System.Collections.Generic.List<string> { "/c/a0.pose", "/c/a1.pose", "/c/a2.pose", "/c/a3.pose" },
             Targets = new System.Collections.Generic.List<string> { "/p/a.pose", " ", "/p/b.pose,/p/c.pose" },
             ClipName = "walk",
         };
@@ -77,6 +77,84 @@ namespace SA.Inbetween.Clips.Tests
             Assert.IsFalse(p.Start(new StudioCommand { File = "/no/such/tool", Args = new System.Collections.Generic.List<string>() }, out var e));
             StringAssert.Contains("Could not start", e);
             Assert.IsFalse(p.Running);
+        }
+
+        [Test]
+        public void Generate_passes_every_context_pose_and_needs_one()
+        {
+            Assert.IsTrue(StudioCommands.TryGenerate(Valid(), out var c, out _));
+            var count = 0;
+            foreach (var a in c.Args) if (a == "--context") count++;
+            Assert.AreEqual(4, count);
+            var s = Valid(); s.Contexts = new System.Collections.Generic.List<string>();
+            Assert.IsFalse(StudioCommands.TryGenerate(s, out _, out var e));
+            StringAssert.Contains("start", e);
+        }
+
+        [Test]
+        public void Discovery_finds_tools_in_nested_folders()
+        {
+            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sa_studio_" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(root, "cli"));
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(root, "model"));
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "cli", "sa-inbetween"), "x");
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "cli", "sa-soma-bake.exe"), "x");
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "model", "mmm_v6_soma_fp32.onnx"), "x");
+                var partial = StudioDiscovery.Find(root);
+                Assert.IsFalse(partial.Complete);
+                CollectionAssert.AreEquivalent(new[] { "a .safamily file", "library.json" }, partial.Missing());
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "other.safamily"), "x");
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "humanoid-v1.safamily"), "x");
+                System.IO.File.WriteAllText(System.IO.Path.Combine(root, "library.json"), "{}");
+                var full = StudioDiscovery.Find(root);
+                Assert.IsTrue(full.Complete);
+                StringAssert.EndsWith("humanoid-v1.safamily", full.Family);
+            }
+            finally
+            {
+                System.IO.Directory.Delete(root, true);
+            }
+        }
+
+        [Test]
+        public void Discovery_of_missing_folder_reports_everything_missing()
+        {
+            var t = StudioDiscovery.Find("/no/such/folder");
+            Assert.IsFalse(t.Complete);
+            Assert.AreEqual(5, t.Missing().Count);
+        }
+
+        [Test]
+        public void Library_loads_complete_entries_only()
+        {
+            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sa_lib_" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                System.IO.Directory.CreateDirectory(root);
+                foreach (var n in new[] { "a_0", "a_1", "a_2", "a_3", "b_0" })
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(root, n + ".pose"), new byte[4]);
+                var json = "{\"version\":1,\"entries\":[" +
+                    "{\"name\":\"A 1\",\"group\":\"A\",\"time\":0,\"files\":[\"a_0.pose\",\"a_1.pose\",\"a_2.pose\",\"a_3.pose\"]}," +
+                    "{\"name\":\"B 1\",\"group\":\"B\",\"time\":0,\"files\":[\"b_0.pose\",\"b_1.pose\",\"b_2.pose\",\"b_3.pose\"]}]}";
+                var path = System.IO.Path.Combine(root, "library.json");
+                System.IO.File.WriteAllText(path, json);
+                Assert.IsTrue(StudioLibrary.TryLoad(path, out var lib, out _));
+                Assert.AreEqual(1, lib.Entries.Count);
+                Assert.AreEqual("A/A 1", lib.Labels()[0]);
+                Assert.AreEqual(4, lib.PathsOf(0).Length);
+                Assert.AreEqual(0, lib.IndexOf("A 1"));
+                Assert.AreEqual(-1, lib.IndexOf("B 1"));
+                System.IO.File.WriteAllText(path, "{\"version\":2,\"entries\":[]}");
+                Assert.IsFalse(StudioLibrary.TryLoad(path, out _, out var err));
+                StringAssert.Contains("empty", err);
+                Assert.IsFalse(StudioLibrary.TryLoad("/no/such.json", out _, out _));
+            }
+            finally
+            {
+                System.IO.Directory.Delete(root, true);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -8,28 +9,35 @@ namespace SA.Inbetween.Clips.Editor
     {
         const string Key = "SA.Inbetween.Studio.";
 
-        StudioSettings s = new StudioSettings();
+        readonly StudioSettings s = new StudioSettings();
+        StudioLibrary library = new StudioLibrary();
+        StudioTools tools;
+        string toolsFolder = "";
+        string libraryError = "";
+        int start;
+        readonly List<int> goals = new List<int> { 0 };
+        bool showSetup;
+        bool showAdvanced;
         StudioProcess job;
         string stage = "";
-        string status = "Ready";
-        MessageType statusType = MessageType.Info;
+        string status = "";
+        MessageType statusType = MessageType.None;
         Vector2 logScroll;
-        bool bakeAfter;
+        SaClipAsset lastClip;
+        double startedAt;
 
         [MenuItem("Window/SA/Inbetween Studio")]
         static void Open()
         {
             var w = GetWindow<InbetweenStudioWindow>("Inbetween Studio");
-            w.minSize = new Vector2(420, 480);
+            w.minSize = new Vector2(380, 420);
         }
 
         void OnEnable()
         {
-            s.CliPath = EditorPrefs.GetString(Key + "cli", "");
-            s.BakePath = EditorPrefs.GetString(Key + "bake", "");
-            s.ModelPath = EditorPrefs.GetString(Key + "model", "");
-            s.FamilyPath = EditorPrefs.GetString(Key + "family", "");
+            toolsFolder = EditorPrefs.GetString(Key + "tools", "");
             s.OutputFolder = EditorPrefs.GetString(Key + "out", "Assets/Generated");
+            Discover();
             EditorApplication.update += Tick;
         }
 
@@ -39,107 +47,191 @@ namespace SA.Inbetween.Clips.Editor
             job?.Kill();
         }
 
-        void Save()
+        void Discover()
         {
-            EditorPrefs.SetString(Key + "cli", s.CliPath);
-            EditorPrefs.SetString(Key + "bake", s.BakePath);
-            EditorPrefs.SetString(Key + "model", s.ModelPath);
-            EditorPrefs.SetString(Key + "family", s.FamilyPath);
-            EditorPrefs.SetString(Key + "out", s.OutputFolder);
+            tools = StudioDiscovery.Find(toolsFolder);
+            s.CliPath = tools.Cli;
+            s.BakePath = tools.Bake;
+            s.ModelPath = tools.Model;
+            s.FamilyPath = tools.Family;
+            library = new StudioLibrary();
+            libraryError = "";
+            if (tools.Library != "" && !StudioLibrary.TryLoad(tools.Library, out library, out libraryError))
+                library = new StudioLibrary();
+            start = Mathf.Clamp(library.IndexOf(EditorPrefs.GetString(Key + "start", "")), 0, Mathf.Max(0, library.Entries.Count - 1));
+            goals[0] = Mathf.Clamp(library.IndexOf(EditorPrefs.GetString(Key + "goal", "")), 0, Mathf.Max(0, library.Entries.Count - 1));
+            showSetup = !tools.Complete || library.Entries.Count == 0;
         }
 
         void OnGUI()
         {
             var busy = job != null && job.Running;
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.LabelField("Tools", EditorStyles.boldLabel);
-            s.CliPath = FileRow("sa-inbetween", s.CliPath, "Select sa-inbetween (executable or .dll)");
-            s.BakePath = FileRow("sa-soma-bake", s.BakePath, "Select sa-soma-bake (executable or .dll)");
-            s.ModelPath = FileRow("Model (.onnx)", s.ModelPath, "Select mmm_v6_soma_fp32.onnx", "onnx");
-            s.FamilyPath = FileRow("Family", s.FamilyPath, "Select humanoid-v1.safamily", "safamily");
-            if (EditorGUI.EndChangeCheck())
-                Save();
+            var ready = tools.Complete && library.Entries.Count > 0;
 
-            EditorGUILayout.Space();
+            GUILayout.Space(6);
+            EditorGUILayout.LabelField("Inbetween Studio", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Pick where the character starts and where it ends up. Studio makes the motion in between.", EditorStyles.wordWrappedMiniLabel);
+            GUILayout.Space(4);
+
+            showSetup = EditorGUILayout.Foldout(showSetup, ready ? "Setup (ready)" : "Setup (needs attention)", true);
+            if (showSetup)
+                SetupGUI();
+
+            if (!ready)
+            {
+                EditorGUILayout.HelpBox("Choose the tools folder above to begin.", MessageType.Info);
+                return;
+            }
+
+            GUILayout.Space(6);
             EditorGUILayout.LabelField("Motion", EditorStyles.boldLabel);
-            s.ContextFile = FileRow("Context", s.ContextFile, "Select a .saib or .pose context", "");
-            s.ContextEnd = EditorGUILayout.IntField(new GUIContent("Context end frame", "-1 uses the last frame of a .saib"), s.ContextEnd);
-            for (var i = 0; i < s.Targets.Count; i++)
+            var labels = library.Labels();
+            start = EditorGUILayout.Popup("Start pose", start, labels);
+            for (var i = 0; i < goals.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                s.Targets[i] = EditorGUILayout.TextField("Target " + (i + 1), s.Targets[i]);
-                if (GUILayout.Button("...", GUILayout.Width(28)))
+                goals[i] = EditorGUILayout.Popup(goals.Count == 1 ? "Goal pose" : "Goal " + (i + 1), goals[i], labels);
+                if (goals.Count > 1 && GUILayout.Button("-", GUILayout.Width(24)))
                 {
-                    var p = EditorUtility.OpenFilePanel("Target pose or motion", "", "");
-                    if (!string.IsNullOrEmpty(p)) s.Targets[i] = p;
+                    goals.RemoveAt(i);
+                    GUIUtility.ExitGUI();
                 }
 
-                using (new EditorGUI.DisabledScope(s.Targets.Count == 1))
-                    if (GUILayout.Button("-", GUILayout.Width(24)))
-                    {
-                        s.Targets.RemoveAt(i);
-                        GUIUtility.ExitGUI();
-                    }
-
                 EditorGUILayout.EndHorizontal();
             }
 
-            if (GUILayout.Button("Add chained target", GUILayout.Width(150)))
-                s.Targets.Add("");
-            EditorGUILayout.HelpBox("A target is a .pose, a .saib:FRAME, or up to four comma separated poses.", MessageType.None);
+            if (goals.Count < 4 && GUILayout.Button("Add another goal after this", GUILayout.Width(190)))
+                goals.Add(goals[goals.Count - 1]);
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Output", EditorStyles.boldLabel);
-            s.ClipName = EditorGUILayout.TextField("Clip name", s.ClipName);
-            s.OutputFolder = EditorGUILayout.TextField("Folder", s.OutputFolder);
-            s.TokensMin = EditorGUILayout.IntSlider("Tokens min", s.TokensMin, 6, 16);
-            s.TokensMax = EditorGUILayout.IntSlider("Tokens max", s.TokensMax, 6, 16);
-            s.Correct = EditorGUILayout.Toggle("Endpoint correction", s.Correct);
-            s.VerifyModel = EditorGUILayout.Toggle("Verify model hash", s.VerifyModel);
-
-            EditorGUILayout.Space();
             using (new EditorGUI.DisabledScope(busy))
             {
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Generate and bake", GUILayout.Height(28)))
-                    Run(true);
-                if (GUILayout.Button("Generate only", GUILayout.Height(28)))
-                    Run(false);
-                if (GUILayout.Button("Bake only", GUILayout.Height(28)))
-                    StartBake();
-                EditorGUILayout.EndHorizontal();
+                var typed = EditorGUILayout.TextField(new GUIContent("Name", "File name for the new clip"), DefaultName());
+                if (!busy)
+                    s.ClipName = typed;
             }
 
+            showAdvanced = EditorGUILayout.Foldout(showAdvanced, "Advanced", true);
+            if (showAdvanced)
+            {
+                EditorGUI.indentLevel++;
+                s.OutputFolder = EditorGUILayout.TextField("Save in", s.OutputFolder);
+                s.TokensMin = EditorGUILayout.IntSlider(new GUIContent("Shortest", "Fewer tokens give a faster move"), s.TokensMin, 6, 16);
+                s.TokensMax = EditorGUILayout.IntSlider(new GUIContent("Longest", "More tokens give a slower, longer move"), s.TokensMax, 6, 16);
+                s.Correct = EditorGUILayout.Toggle(new GUIContent("Land exactly on the goal", "Endpoint correction"), s.Correct);
+                s.VerifyModel = EditorGUILayout.Toggle("Check model file", s.VerifyModel);
+                EditorGUI.indentLevel--;
+            }
+
+            GUILayout.Space(6);
+            using (new EditorGUI.DisabledScope(busy))
+                if (GUILayout.Button(goals.Count > 1 ? "Generate motion (" + goals.Count + " goals)" : "Generate motion", GUILayout.Height(32)))
+                    Run();
             if (busy && GUILayout.Button("Cancel"))
                 job.Kill();
 
-            EditorGUILayout.HelpBox((busy ? stage + "... " : "") + status, busy ? MessageType.Info : statusType);
-            if (job != null)
+            if (busy)
+                EditorGUILayout.HelpBox(stage + "... " + (EditorApplication.timeSinceStartup - startedAt).ToString("0") + " s", MessageType.Info);
+            else if (!string.IsNullOrEmpty(status))
+                EditorGUILayout.HelpBox(status, statusType);
+
+            if (lastClip != null && !busy)
             {
-                logScroll = EditorGUILayout.BeginScrollView(logScroll, GUILayout.MinHeight(100));
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Preview on character", GUILayout.Height(26)))
+                    Preview(lastClip);
+                if (GUILayout.Button("Show clip", GUILayout.Height(26)))
+                {
+                    Selection.activeObject = lastClip;
+                    EditorGUIUtility.PingObject(lastClip);
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (job != null && !string.IsNullOrEmpty(job.Log) && (busy || statusType == MessageType.Error))
+            {
+                logScroll = EditorGUILayout.BeginScrollView(logScroll, GUILayout.MinHeight(80), GUILayout.MaxHeight(200));
                 EditorGUILayout.SelectableLabel(job.Log, EditorStyles.textArea, GUILayout.ExpandHeight(true));
                 EditorGUILayout.EndScrollView();
             }
         }
 
-        string FileRow(string label, string value, string title, string ext = "")
+        void SetupGUI()
         {
+            EditorGUI.indentLevel++;
             EditorGUILayout.BeginHorizontal();
-            value = EditorGUILayout.TextField(label, value);
-            if (GUILayout.Button("...", GUILayout.Width(28)))
+            EditorGUI.BeginChangeCheck();
+            toolsFolder = EditorGUILayout.TextField(new GUIContent("Tools folder", "A folder holding sa-inbetween, sa-soma-bake, the model, a .safamily file and the pose library"), toolsFolder);
+            if (GUILayout.Button("Browse", GUILayout.Width(60)))
             {
-                var p = EditorUtility.OpenFilePanel(title, string.IsNullOrEmpty(value) ? "" : Path.GetDirectoryName(value), ext);
-                if (!string.IsNullOrEmpty(p)) value = p;
+                var p = EditorUtility.OpenFolderPanel("Select the tools folder", string.IsNullOrEmpty(toolsFolder) ? "" : toolsFolder, "");
+                if (!string.IsNullOrEmpty(p)) toolsFolder = p;
                 GUIUtility.ExitGUI();
             }
 
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorPrefs.SetString(Key + "tools", toolsFolder);
+                Discover();
+            }
+
             EditorGUILayout.EndHorizontal();
-            return value;
+            Row("Generator", tools.Cli);
+            Row("Baker", tools.Bake);
+            Row("Model", tools.Model);
+            Row("Character family", tools.Family);
+            Row("Pose library", tools.Library != "" && library.Entries.Count > 0 ? tools.Library : "");
+            if (libraryError != "" && tools.Library != "")
+                EditorGUILayout.HelpBox(libraryError, MessageType.Warning);
+            EditorGUI.indentLevel--;
         }
 
-        void Run(bool thenBake)
+        static void Row(string label, string path)
         {
-            bakeAfter = thenBake;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(150));
+            var found = path != "";
+            var old = GUI.color;
+            GUI.color = found ? new Color(0.4f, 0.8f, 0.4f) : new Color(0.95f, 0.5f, 0.4f);
+            GUILayout.Label(found ? "found" : "missing", GUILayout.Width(55));
+            GUI.color = old;
+            EditorGUILayout.LabelField(found ? Path.GetFileName(path) : "", EditorStyles.miniLabel);
+            EditorGUILayout.EndHorizontal();
+        }
+
+        string DefaultName()
+        {
+            if (job != null && job.Running)
+                return runName;
+            if (!string.IsNullOrEmpty(s.ClipName) && s.ClipName != "motion" && s.ClipName != lastAuto)
+                return s.ClipName;
+            lastAuto = Slug(library.Entries[start].name) + "_to_" + Slug(library.Entries[goals[goals.Count - 1]].name);
+            return lastAuto;
+        }
+
+        string lastAuto = "";
+        string runName = "";
+
+        static string Slug(string name)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var ch in name)
+                sb.Append(char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '_');
+            return sb.ToString().Trim('_');
+        }
+
+        void Run()
+        {
+            runName = DefaultName();
+            s.ClipName = runName;
+            s.Contexts = new List<string>(library.PathsOf(start));
+            s.Targets = new List<string>();
+            foreach (var g in goals)
+                s.Targets.Add(string.Join(",", library.PathsOf(g)));
+            EditorPrefs.SetString(Key + "start", library.Entries[start].name);
+            EditorPrefs.SetString(Key + "goal", library.Entries[goals[0]].name);
+            EditorPrefs.SetString(Key + "out", s.OutputFolder);
+            lastClip = null;
             if (!StudioCommands.TryGenerate(s, out var cmd, out var err))
             {
                 Fail(err);
@@ -150,36 +242,19 @@ namespace SA.Inbetween.Clips.Editor
             Begin("Generating", cmd);
         }
 
-        void StartBake()
-        {
-            bakeAfter = false;
-            if (!StudioCommands.TryBake(s, out var cmd, out var err))
-            {
-                Fail(err);
-                return;
-            }
-
-            if (!File.Exists(StudioCommands.SaibPath(s)))
-            {
-                Fail("No " + StudioCommands.SaibPath(s) + " yet; generate first");
-                return;
-            }
-
-            Begin("Baking", cmd);
-        }
-
         void Begin(string name, StudioCommand cmd)
         {
             job = new StudioProcess();
             stage = name;
+            startedAt = EditorApplication.timeSinceStartup;
             if (!job.Start(cmd, out var err))
             {
                 Fail(err);
                 return;
             }
 
-            status = name + "...";
-            statusType = MessageType.Info;
+            status = "";
+            statusType = MessageType.None;
         }
 
         void Fail(string message)
@@ -191,43 +266,82 @@ namespace SA.Inbetween.Clips.Editor
 
         void Tick()
         {
-            if (job == null || job.Running || job.ExitCode == int.MinValue || job.Handled)
+            if (job == null)
+                return;
+            if (job.Running)
             {
-                if (job != null && job.Running) Repaint();
+                Repaint();
                 return;
             }
 
+            if (job.ExitCode == int.MinValue || job.Handled)
+                return;
+            job.MarkHandled();
             var code = job.ExitCode;
             var finished = stage;
-            job.MarkHandled();
+            s.ClipName = runName;
             if (code != 0)
             {
-                Fail(finished + " failed (exit " + code + "). See the log.");
+                Fail(finished + " failed (exit " + code + "). The log below says why.");
                 return;
             }
 
-            if (finished == "Generating" && bakeAfter)
+            if (finished == "Generating")
             {
-                StartBake();
+                if (!StudioCommands.TryBake(s, out var cmd, out var err))
+                {
+                    Fail(err);
+                    return;
+                }
+
+                Begin("Baking", cmd);
                 return;
             }
 
-            if (finished == "Baking")
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            var path = StudioCommands.ClipPath(s).Replace('\\', '/');
+            lastClip = AssetDatabase.LoadAssetAtPath<SaClipAsset>(path);
+            if (lastClip != null)
             {
-                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-                var clip = AssetDatabase.LoadAssetAtPath<SaClipAsset>(StudioCommands.ClipPath(s).Replace('\\', '/'));
-                status = clip != null ? "Done. Imported " + StudioCommands.ClipPath(s) + ". Assign it to a SaClipPlayer." : "Baked, but the editor did not import the clip.";
-                statusType = clip != null ? MessageType.Info : MessageType.Warning;
-                if (clip != null) EditorGUIUtility.PingObject(clip);
+                status = "Done: " + path;
+                statusType = MessageType.Info;
+                EditorGUIUtility.PingObject(lastClip);
             }
             else
             {
-                AssetDatabase.Refresh();
-                status = "Generated " + StudioCommands.SaibPath(s) + ". Bake it next.";
-                statusType = MessageType.Info;
+                Fail("The clip was baked but Unity did not import " + path);
             }
 
             Repaint();
+        }
+
+        void Preview(SaClipAsset clip)
+        {
+            var player = Object.FindFirstObjectByType<SaClipPlayer>();
+            if (player == null)
+            {
+                var go = new GameObject("Inbetween Preview");
+                Undo.RegisterCreatedObjectUndo(go, "Create Inbetween Preview");
+                player = go.AddComponent<SaClipPlayer>();
+            }
+
+            Undo.RecordObject(player, "Assign clip");
+            player.Clip = clip;
+            player.Loop = true;
+            player.PlayOnStart = true;
+            EditorUtility.SetDirty(player);
+            if (Application.isPlaying)
+            {
+                player.Stop();
+                player.Play();
+            }
+            else
+            {
+                EditorApplication.isPlaying = true;
+            }
+
+            status = "Previewing " + clip.name + ". Exit Play mode to stop.";
+            statusType = MessageType.Info;
         }
     }
 }

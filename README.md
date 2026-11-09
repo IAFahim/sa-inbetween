@@ -54,7 +54,7 @@ sa-inbetween inspect walk.saib
 
 ### In Unity (SA characters)
 
-Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), then open `Window > SA > Inbetween Studio`. Point it at the tools, the model and the family file once, pick a context and a target, and press **Generate and bake**. The clip is imported and ready for a `SaClipPlayer`. See `unity/com.sa.inbetween.sa/README.md`.
+Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), then open `Window > SA > Inbetween Studio`, point it at your tools folder once, pick a start and a goal pose and press **Generate motion**. Then **Preview on character**. Step by step: `docs/designer-guide.md`.
 
 For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a complete caller of `PortedGenerator`) and `docs/ecs-integration.md` (where generation may and may not run).
 

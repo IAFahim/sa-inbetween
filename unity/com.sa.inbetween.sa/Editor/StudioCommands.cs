@@ -16,7 +16,7 @@ namespace SA.Inbetween.Clips.Editor
         public string ModelPath = "";
         public string FamilyPath = "";
         public string OutputFolder = "Assets/Generated";
-        public string ContextFile = "";
+        public List<string> Contexts = new List<string>();
         public int ContextEnd = -1;
         public List<string> Targets = new List<string> { "" };
         public int TokensMin = 8;
@@ -36,7 +36,7 @@ namespace SA.Inbetween.Clips.Editor
         {
             command = default;
             if (!CheckName(s, out error) || !Require(s.CliPath, "sa-inbetween executable", out error) ||
-                !Require(s.ModelPath, "model (.onnx)", out error) || !Require(s.ContextFile, "context motion", out error))
+                !Require(s.ModelPath, "model (.onnx)", out error) || !RequireContext(s, out error))
                 return false;
             if (s.TokensMin < 6 || s.TokensMax > 16 || s.TokensMin > s.TokensMax)
             {
@@ -58,7 +58,7 @@ namespace SA.Inbetween.Clips.Editor
             Launcher(s.CliPath, args, out var file);
             args.Add("generate");
             args.Add("--model"); args.Add(s.ModelPath);
-            args.Add("--context"); args.Add(s.ContextFile);
+            foreach (var c in s.Contexts) { args.Add("--context"); args.Add(c); }
             if (s.ContextEnd >= 0) { args.Add("--context-end"); args.Add(s.ContextEnd.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
             foreach (var t in targets) { args.Add("--target"); args.Add(t); }
             args.Add("--tokens-min"); args.Add(s.TokensMin.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -103,6 +103,18 @@ namespace SA.Inbetween.Clips.Editor
             if (string.IsNullOrWhiteSpace(s.ClipName) || s.ClipName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
                 error = "Clip name is empty or has characters a file name cannot hold";
+                return false;
+            }
+
+            error = "";
+            return true;
+        }
+
+        static bool RequireContext(StudioSettings s, out string error)
+        {
+            if (s.Contexts == null || s.Contexts.Count == 0)
+            {
+                error = "Choose a start pose";
                 return false;
             }
 
