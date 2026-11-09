@@ -156,5 +156,28 @@ namespace SA.Inbetween.Clips.Tests
                 System.IO.Directory.Delete(root, true);
             }
         }
+
+        [Test]
+        public void Seconds_map_to_the_measured_token_frame_relation()
+        {
+            Assert.AreEqual(18, StudioCommands.FramesForTokens(6));
+            Assert.AreEqual(58, StudioCommands.FramesForTokens(16));
+            Assert.AreEqual(6, StudioCommands.TokensForSeconds(0.1f));
+            Assert.AreEqual(16, StudioCommands.TokensForSeconds(10f));
+            Assert.AreEqual(14, StudioCommands.TokensForSeconds(50f / 30f));
+            for (var n = 6; n <= 16; n++)
+                Assert.AreEqual(n, StudioCommands.TokensForSeconds(StudioCommands.SecondsForTokens(n)));
+        }
+
+        [Test]
+        public void Duration_override_is_passed_and_range_checked()
+        {
+            var s = Valid(); s.TokenOverride = 10;
+            Assert.IsTrue(StudioCommands.TryGenerate(s, out var c, out _));
+            Assert.AreEqual("10", c.Args[c.Args.IndexOf("--override") + 1]);
+            s.TokenOverride = 20;
+            Assert.IsFalse(StudioCommands.TryGenerate(s, out _, out var e));
+            StringAssert.Contains("seconds", e);
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 namespace SA.Inbetween.Clips.Editor
 {
@@ -21,6 +22,7 @@ namespace SA.Inbetween.Clips.Editor
         public List<string> Targets = new List<string> { "" };
         public int TokensMin = 8;
         public int TokensMax = 14;
+        public int TokenOverride;
         public bool Correct = true;
         public bool VerifyModel = true;
         public string ClipName = "motion";
@@ -28,6 +30,20 @@ namespace SA.Inbetween.Clips.Editor
 
     public static class StudioCommands
     {
+        public const int MinTokens = 6;
+        public const int MaxTokens = 16;
+        public const float FrameRate = 30f;
+
+        public static int FramesForTokens(int tokens) => 4 * tokens - 6;
+
+        public static float SecondsForTokens(int tokens) => FramesForTokens(tokens) / FrameRate;
+
+        public static int TokensForSeconds(float seconds)
+        {
+            var tokens = Mathf.RoundToInt((seconds * FrameRate + 6f) / 4f);
+            return Mathf.Clamp(tokens, MinTokens, MaxTokens);
+        }
+
         public static string SaibPath(StudioSettings s) => Path.Combine(s.OutputFolder, s.ClipName + ".saib");
 
         public static string ClipPath(StudioSettings s) => Path.Combine(s.OutputFolder, s.ClipName + ".saclip");
@@ -38,6 +54,12 @@ namespace SA.Inbetween.Clips.Editor
             if (!CheckName(s, out error) || !Require(s.CliPath, "sa-inbetween executable", out error) ||
                 !Require(s.ModelPath, "model (.onnx)", out error) || !RequireContext(s, out error))
                 return false;
+            if (s.TokenOverride != 0 && (s.TokenOverride < MinTokens || s.TokenOverride > MaxTokens))
+            {
+                error = "Duration must be between " + SecondsForTokens(MinTokens).ToString("0.0") + " and " + SecondsForTokens(MaxTokens).ToString("0.0") + " seconds";
+                return false;
+            }
+
             if (s.TokensMin < 6 || s.TokensMax > 16 || s.TokensMin > s.TokensMax)
             {
                 error = "Tokens must satisfy 6 <= min <= max <= 16";
@@ -63,6 +85,7 @@ namespace SA.Inbetween.Clips.Editor
             foreach (var t in targets) { args.Add("--target"); args.Add(t); }
             args.Add("--tokens-min"); args.Add(s.TokensMin.ToString(System.Globalization.CultureInfo.InvariantCulture));
             args.Add("--tokens-max"); args.Add(s.TokensMax.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            if (s.TokenOverride != 0) { args.Add("--override"); args.Add(s.TokenOverride.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
             if (!s.Correct) args.Add("--no-correct");
             if (!s.VerifyModel) args.Add("--skip-verify");
             args.Add("--out"); args.Add(SaibPath(s));
