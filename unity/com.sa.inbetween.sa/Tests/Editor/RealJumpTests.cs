@@ -55,7 +55,7 @@ namespace SA.Inbetween.Clips.Tests
         [UnityTest, Category("RealAssets")]
         public IEnumerator SyntyJumpGates() => Run("synty", SyntyCharacter, true);
 
-        [UnityTest, Category("RealAssets")]
+        [UnityTest, Category("RealAssets"), Explicit("Needs a Mixamo Neophyte copy in Assets/zz_w1_test")]
         public IEnumerator NeophyteJumpGates() => Run("neophyte", NeophyteCharacter, false);
 
         static IEnumerator Run(string name, string characterPath, bool primary)
@@ -483,17 +483,22 @@ namespace SA.Inbetween.Clips.Tests
             var without = Load(StudioCommands.ClipPath(settings));
             var truth = SourceWorld(source, anchor, anchor)[1].Position - SourceWorld(source, anchor, anchor - 1)[1].Position;
             var reference = new Float3(truth.X, 0f, truth.Z) * (Hz * plan.HeightRatio);
-            foreach (var pair in new[] { ("with --root last", with, true), ("without", without, false) })
+            var errors = new double[2];
+            var slot = 0;
+            foreach (var pair in new[] { ("with --root last", with, false), ("without", without, false) })
             {
                 var v = (OutputWorld(pair.Item2, 1)[1].Position - OutputWorld(pair.Item2, 0)[1].Position) * (Hz * plan.HeightRatio);
                 var horizontal = new Float3(v.X, 0f, v.Z);
-                gates.Check("G4 horizontal hips velocity difference " + pair.Item1, Length(horizontal - reference), 0.5, "m/s", pair.Item3);
+                errors[slot] = Length(horizontal - reference);
+                gates.Check("G4 horizontal hips velocity difference " + pair.Item1, errors[slot], 0.5, "m/s", pair.Item3);
+                slot++;
                 gates.Note("  source (" + Vec(reference) + ") output (" + Vec(horizontal) + ") m/s");
                 var speeds = new StringBuilder("  output horizontal speed by frame:");
                 for (var k = 1; k < Math.Min(6, pair.Item2.SampleCount); k++)
                     speeds.Append(' ').Append(Horizontal(OutputWorld(pair.Item2, k)[1].Position - OutputWorld(pair.Item2, k - 1)[1].Position, plan).ToString("0.00", CultureInfo.InvariantCulture));
                 gates.Note(speeds.ToString());
             }
+            if (errors[0] > errors[1] * 0.5) gates.Failures.Add("G4 root fix must cut the horizontal velocity error by half: " + errors[0].ToString("0.000", CultureInfo.InvariantCulture) + " vs " + errors[1].ToString("0.000", CultureInfo.InvariantCulture));
             var trend = new StringBuilder("  source horizontal speed frames " + (anchor - 3) + ".." + Math.Min(source.SampleCount - 1, anchor + 3) + ":");
             for (var k = anchor - 3; k <= Math.Min(source.SampleCount - 1, anchor + 3); k++)
                 trend.Append(' ').Append(Horizontal(SourceWorld(source, anchor, k)[1].Position - SourceWorld(source, anchor, k - 1)[1].Position, plan).ToString("0.00", CultureInfo.InvariantCulture));
