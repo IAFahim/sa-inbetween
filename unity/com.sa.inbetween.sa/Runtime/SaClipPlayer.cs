@@ -34,6 +34,19 @@ namespace SA.Inbetween.Clips
             wanted = true;
         }
 
+        void Hold()
+        {
+            if (world == null || !world.IsCreated || !world.EntityManager.Exists(entity) || !world.EntityManager.HasBuffer<SharedContribution>(entity))
+                return;
+            var manager = world.EntityManager;
+            manager.CompleteAllTrackedJobs();
+            var contributions = manager.GetBuffer<SharedContribution>(entity);
+            for (var i = 0; i < contributions.Length; i++)
+                if (contributions[i].Clip == clipIndex && contributions[i].Weight >= 1f)
+                    return;
+            SharedFamilyControl.PlaySingle(ref contributions, clipIndex);
+        }
+
         public void Stop()
         {
             if (clipIndex >= 0 && world != null && world.IsCreated)
@@ -46,7 +59,13 @@ namespace SA.Inbetween.Clips
 
         void Update()
         {
-            if (!wanted || clipIndex >= 0)
+            if (clipIndex >= 0)
+            {
+                Hold();
+                return;
+            }
+
+            if (!wanted)
                 return;
             if (Clip == null || Clip.Bytes.Length == 0)
             {
