@@ -16,6 +16,10 @@ jobs:
       CI: "true"
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: IAFahim/sa-motion
+          path: sa-motion
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -25,7 +29,7 @@ jobs:
           dotnet test --no-build -c Release --project tests/SA.Inbetween.Tests
           dotnet test --no-build -c Release --project tests/SA.Inbetween.Cli.Tests
       - name: Package
-        run: build/package-release.sh "${GITHUB_REF_NAME}"
+        run: SA_MOTION_DIR="$PWD/sa-motion" build/package-release.sh "${GITHUB_REF_NAME}"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
