@@ -106,6 +106,7 @@ namespace SA.Inbetween.Clips.Tests
                 Report(name, gates.Report.ToString());
                 Remove(recipe);
                 if (running != null) Remove(running);
+                if (AssetDatabase.IsValidFolder(Folder) && AssetDatabase.FindAssets("", new[] { Folder }).Length == 0) AssetDatabase.DeleteAsset(Folder);
             }
 
             Assert.IsEmpty(gates.Failures, string.Join("; ", gates.Failures) + "\n" + gates.Report);

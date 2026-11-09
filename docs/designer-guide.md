@@ -31,11 +31,11 @@ When you change anything the recipe says *Settings changed since the last genera
 Once the recipe has a result, the Inspector shows a preview strip under **Result**:
 
 - **Play / Pause** and a **scrub slider** with the time and length. Dragging the slider pauses.
-- A small 3D view with the SA skeleton playing the clip, root motion included. Drag in it to orbit, scroll to zoom. The camera follows the hips.
+- A small 3D view with **your character** playing the clip, root motion included, over a ground grid. Drag in it to orbit, scroll to zoom. The camera follows the hips. The character is the recipe's **Character** field, filled in from a Unity clip source; with no character the view shows the SA skeleton instead.
 - **Ghost start and goal** draws the start pose in faded green and the goal pose in faded orange, so you can see how close the bridge leaves and lands. The goal ghost stands where the bridge ends.
 - **Show in Scene view** draws the same skeleton and ghosts as lines in the Scene view, at the scene origin, while the recipe is selected.
 
-The preview reads the clip directly, so it works in any scene, with no character at all.
+The preview reads the clip directly and never adds anything to your scene. **Preview on character** (Play mode) also leaves the open scene untouched: its player exists only while playing.
 
 ## Try variations
 
@@ -74,14 +74,26 @@ The start keeps the clip's real speed, including running and jumping, so the bri
 
 ## Save the result as a Unity clip
 
-Press **Export > Animation Clip** on the recipe (or right-click a `.saclip` > Export). A `.anim` named after the recipe appears next to it. It starts at the origin facing forward, so place it where the jump left off. The exported clip is a Generic clip: play it on the same character without the Humanoid avatar, or on rigs with identical bone names. A Humanoid `.anim` and FBX export are not built yet.
+**Also save a Unity clip (.anim)** is on by default: every Generate and every Keep writes `<recipe>.anim` next to the recipe for the Character. It shows under **Result** as **Unity clip**; open it in the Animation window or drop it on a Timeline track like any clip. The recipe says *out of date* when that file is missing or older than the result. It starts at the origin facing forward, so place it where the jump left off. It is a Generic clip: play it on the character with its Rig set to Generic, or on rigs with identical bone names.
+
+The **Export** buttons make the other formats:
+
+- **Export > Animation Clip** writes the Generic `.anim` again now (also right-click a `.saclip` > Export Animation Clip).
+- **Export > Humanoid clip** writes `<recipe>_Humanoid.anim` with muscle curves for the Character's Humanoid avatar. It plays through any Humanoid Animator, also on other characters. The avatar spreads arm and leg twist its own way: bones point the same way as the Generic clip (within 0.6 degrees on the Synty test), but the roll of the upper arm and forearm can differ by up to 35 degrees.
+- **Export > FBX** writes `<recipe>.fbx` (the Character with the clip) for other tools, or to reimport as Humanoid with *Copy From Other Avatar*. It needs the FBX Exporter package (`com.unity.formats.fbx`, built into the Editor; add it in the Package Manager). On Linux the FBX SDK also needs the system library `libxml2.so.2`.
 
 Measured on a Synty jump, starting mid-air at the apex (frame 41, hips 1.43 m) and landing: the bridge's first frame matches the jump to 0.0001 cm, it ends on the landing pose exactly, hips height is within 6.5 cm of the real animation, and touchdown lands on the same frame. When the start is a fast run and the goal is standing still, the bridge slows down over the 0.8 s, as it should; make the goal a running pose to keep speed.
 
+## Use a pose instead of a clip
+
+- **Capture**: pose your character in the scene (by hand, or by scrubbing a clip in the Animation window), select it, and press **Capture** next to the start or goal. A two-frame `<recipe>_<start|goal>_pose.saclip` appears next to the recipe and becomes that source, used at its start. `Tools > SA > Inbetween > Capture Pose From Selection` does the same without a recipe. The pose is read relative to the character's own root, so a root-motion clip's height above the floor is not part of it.
+- **Pose file**: a `.pose` file (77 SOMA joints, as `sa-soma-bake pose` writes) imports as a pose asset. Choose **Pose** as the source kind and pick it.
+
+Measured on Synty: a capture of frame 41 of the jump matches that clip frame to 0.004 degrees, and a bridge to it lands on it to 0.004 degrees.
+
 ## What it does not do yet
 
-- The editor preview shows the SA skeleton, not your character's mesh. Use Preview on character for the final look.
-- A frozen pose from a file, capturing the current pose of a character in the scene, and a Timeline track are planned. Humanoid `.anim` and FBX export are planned.
+- A Timeline track that bridges two clips is planned.
 - The neck is a single bone on the SA rig, so a source clip's neck is smoothed slightly when it is read back. The head's position can move by up to about 2 cm at the seam.
 
 ## Tools folder, for the technical artist

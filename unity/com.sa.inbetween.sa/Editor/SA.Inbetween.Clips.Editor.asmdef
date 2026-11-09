@@ -1,9 +1,28 @@
 {
   "name": "SA.Inbetween.Clips.Editor",
   "rootNamespace": "SA.Inbetween.Clips.Editor",
-  "references": ["SA.Inbetween.Clips", "SA.Editor", "SA.Runtime"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "SA.Inbetween.Clips",
+    "SA.Editor",
+    "SA.Runtime",
+    "Unity.Formats.Fbx.Editor",
+    "Autodesk.Fbx"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "overrideReferences": true,
-  "precompiledReferences": ["SA.Motion.dll", "SA.Animation.dll", "SA.Animation.Content.dll"],
-  "autoReferenced": true
+  "precompiledReferences": [
+    "SA.Motion.dll",
+    "SA.Animation.dll",
+    "SA.Animation.Content.dll"
+  ],
+  "autoReferenced": true,
+  "versionDefines": [
+    {
+      "name": "com.unity.formats.fbx",
+      "expression": "5.0.0",
+      "define": "SA_FBX"
+    }
+  ]
 }

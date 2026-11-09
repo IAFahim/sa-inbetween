@@ -23,6 +23,7 @@ namespace SA.Inbetween.Clips.Tests
             var character = AssetDatabase.LoadAssetAtPath<GameObject>(SyntyCharacter);
             var source = AssetDatabase.LoadAssetAtPath<SaClipAsset>(Result);
             if (character == null || source == null) Assert.Ignore("Synty character or MidAirJump result missing");
+            Assert.IsFalse(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty, "the scene was dirty before the test");
             Assert.IsTrue(SaClipExport.TryBuild(source, character, out var generic, out var error), error);
             Assert.IsTrue(SaClipHumanoidExport.TryBuild(source, character, out var humanoid, out error), error);
             Assert.IsTrue(humanoid.isHumanMotion, "the Humanoid clip has no muscle curves");
@@ -95,6 +96,117 @@ namespace SA.Inbetween.Clips.Tests
                 UnityEngine.Object.DestroyImmediate(humanoid);
                 RealJumpTests.Report("e2", report.ToString());
             }
+        }
+
+        [Test, Category("RealAssets")]
+        public void FbxReimportMatchesTheClips()
+        {
+            if (!SaClipFbxExport.Available) Assert.Ignore(SaClipFbxExport.MissingPackage);
+            Assert.IsFalse(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty, "the scene was dirty before the test");
+            var character = AssetDatabase.LoadAssetAtPath<GameObject>(SyntyCharacter);
+            var source = AssetDatabase.LoadAssetAtPath<SaClipAsset>(Result);
+            if (character == null || source == null) Assert.Ignore("Synty character or MidAirJump result missing");
+            const string folder = "Assets/zz_w8_test";
+            if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets", "zz_w8_test");
+            var path = folder + "/E3.fbx";
+            var report = new StringBuilder();
+            var instance = UnityEngine.Object.Instantiate(character);
+            instance.hideFlags = HideFlags.HideAndDontSave;
+            AnimationClip generic = null, humanoid = null;
+            try
+            {
+                var exported = SaClipFbxExport.TryExport(source, character, path, out var error);
+                Assert.IsFalse(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty, "FBX export dirtied the scene");
+                if (!exported && error.StartsWith(SaClipFbxExport.NativeProblem))
+                {
+                    report.Append(error).Append('\n');
+                    Assert.Ignore(error);
+                }
+                Assert.IsTrue(exported, error);
+                Assert.IsTrue(SaClipExport.TryBuild(source, character, out generic, out error), error);
+                Assert.IsTrue(SaClipHumanoidExport.TryBuild(source, character, out humanoid, out error), error);
+                Assert.IsTrue(FamilyClips.TryPlan(instance, out var plan, out error), error);
+                var animator = instance.GetComponentInChildren<Animator>(true);
+                var avatar = animator.avatar;
+                var frames = Mathf.RoundToInt(generic.length * Hz) + 1;
+                report.Append("FBX ").Append(path).Append(", ").Append(new FileInfo(path).Length / 1024).Append(" KiB\n");
+
+                var fbxGeneric = FbxClip(path);
+                Assert.IsNotNull(fbxGeneric, "no take in the FBX");
+                report.Append("generic take '").Append(fbxGeneric.name).Append("' ").Append(fbxGeneric.length.ToString("0.000", CultureInfo.InvariantCulture)).Append(" s\n");
+                Measure(plan, instance, animator, null, generic, null, fbxGeneric, frames, out var genericDegrees, out var genericSwing, out var genericMetres);
+                report.Append("E3 FBX as Generic vs Generic .anim: rotation ").Append(genericDegrees.ToString("0.000", CultureInfo.InvariantCulture)).Append(" deg, hand/foot ")
+                    .Append((genericMetres * 1000.0).ToString("0.00", CultureInfo.InvariantCulture)).Append(" mm\n");
+
+                var importer = (ModelImporter)AssetImporter.GetAtPath(path);
+                importer.animationType = ModelImporterAnimationType.Human;
+                importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
+                importer.sourceAvatar = avatar;
+                importer.SaveAndReimport();
+                var fbxHuman = FbxClip(path);
+                Assert.IsNotNull(fbxHuman, "no take after the Humanoid reimport");
+                Assert.IsTrue(fbxHuman.isHumanMotion, "the reimported take is not Humanoid");
+                Measure(plan, instance, animator, avatar, humanoid, avatar, fbxHuman, frames, out var humanDegrees, out var humanSwing, out var humanMetres);
+                report.Append("E3 FBX as Humanoid (copied avatar) vs Humanoid .anim: rotation ").Append(humanDegrees.ToString("0.000", CultureInfo.InvariantCulture)).Append(" deg, bone direction ")
+                    .Append(humanSwing.ToString("0.000", CultureInfo.InvariantCulture)).Append(" deg, hand/foot ").Append((humanMetres * 1000.0).ToString("0.00", CultureInfo.InvariantCulture)).Append(" mm\n");
+                Measure(plan, instance, animator, null, generic, avatar, fbxHuman, frames, out var crossDegrees, out var crossSwing, out var crossMetres);
+                report.Append("E3 FBX as Humanoid vs Generic .anim: rotation ").Append(crossDegrees.ToString("0.000", CultureInfo.InvariantCulture)).Append(" deg (twist), bone direction ")
+                    .Append(crossSwing.ToString("0.000", CultureInfo.InvariantCulture)).Append(" deg, hand/foot ").Append((crossMetres * 1000.0).ToString("0.00", CultureInfo.InvariantCulture)).Append(" mm\n");
+                Assert.IsFalse(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty, "export dirtied the scene");
+                Assert.LessOrEqual(genericDegrees, 0.5, report.ToString());
+                Assert.LessOrEqual(humanDegrees, 0.5, report.ToString());
+                Assert.LessOrEqual(crossSwing, 0.5, report.ToString());
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(instance);
+                if (generic != null) UnityEngine.Object.DestroyImmediate(generic);
+                if (humanoid != null) UnityEngine.Object.DestroyImmediate(humanoid);
+                RealJumpTests.Report("e3", report.ToString());
+                AssetDatabase.DeleteAsset(folder);
+            }
+        }
+
+        static AnimationClip FbxClip(string path)
+        {
+            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
+                if (asset is AnimationClip clip && !clip.name.StartsWith("__preview__"))
+                    return clip;
+            return null;
+        }
+
+        static void Measure(FamilyRigPlan plan, GameObject instance, Animator animator, Avatar avatarA, AnimationClip a, Avatar avatarB, AnimationClip b, int frames,
+            out double degrees, out double swing, out double metres)
+        {
+            degrees = swing = metres = 0;
+            for (var f = 0; f < frames; f++)
+            {
+                var t = Mathf.Min(f / Hz, Mathf.Min(a.length, b.length));
+                animator.avatar = avatarA;
+                var ma = RealJumpTests.TargetModel(plan, RealJumpTests.Direct(plan, instance, a, t, true), 0);
+                animator.avatar = avatarB;
+                var mb = RealJumpTests.TargetModel(plan, RealJumpTests.Direct(plan, instance, b, t, true), 0);
+                for (var bone = 1; bone < plan.BoneCount; bone++)
+                {
+                    if (!RealJumpTests.Body(plan.CanonicalOfBone[bone])) continue;
+                    degrees = Math.Max(degrees, RealJumpTests.Degrees(ma[bone].Rotation, mb[bone].Rotation));
+                    var child = Child(plan.CanonicalOfBone[bone]);
+                    var end = child < 0 ? -1 : plan.BoneOfCanonical[child];
+                    if (end < 0) continue;
+                    var da = ma[end].Position - ma[bone].Position;
+                    var db = mb[end].Position - mb[bone].Position;
+                    var cos = ((double)da.X * db.X + (double)da.Y * db.Y + (double)da.Z * db.Z) / (RealJumpTests.Length(da) * RealJumpTests.Length(db));
+                    swing = Math.Max(swing, Math.Acos(Math.Max(-1.0, Math.Min(1.0, cos))) * 180.0 / Math.PI);
+                }
+
+                foreach (var role in new[] { 13, 32, 50, 54 })
+                {
+                    var bone = plan.BoneOfCanonical[role];
+                    metres = Math.Max(metres, RealJumpTests.Length(ma[bone].Position - mb[bone].Position));
+                }
+            }
+
+            animator.avatar = avatarB ?? avatarA;
         }
 
         static int Child(int canonical)

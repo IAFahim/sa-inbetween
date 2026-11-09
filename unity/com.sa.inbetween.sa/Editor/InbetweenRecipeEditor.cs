@@ -328,6 +328,17 @@ namespace SA.Inbetween.Clips.Editor
                         EditorGUIUtility.PingObject(saved);
                     GUIUtility.ExitGUI();
                 }
+            using (new EditorGUI.DisabledScope(busy || character == null || !SaClipFbxExport.Available))
+                if (GUILayout.Button(new GUIContent("Export > FBX", "Writes " + recipe.name + ".fbx next to the recipe: the Character with the clip, for other tools or to reimport as Humanoid"), GUILayout.Height(24)))
+                {
+                    if (!SaClipFbxExport.TryExport(recipe, out var path, out var error))
+                        EditorUtility.DisplayDialog("Cannot export", error, "OK");
+                    else
+                        EditorGUIUtility.PingObject(AssetDatabase.LoadMainAssetAtPath(path));
+                    GUIUtility.ExitGUI();
+                }
+            if (!SaClipFbxExport.Available)
+                EditorGUILayout.LabelField(SaClipFbxExport.MissingPackage, EditorStyles.wordWrappedMiniLabel);
             if (character == null)
                 EditorGUILayout.LabelField("Choose a Character above to export for it.", EditorStyles.wordWrappedMiniLabel);
         }
