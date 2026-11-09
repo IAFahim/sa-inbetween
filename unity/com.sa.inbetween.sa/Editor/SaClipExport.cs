@@ -32,6 +32,34 @@ namespace SA.Inbetween.Clips.Editor
             return null;
         }
 
+        public static string SavedKey(InbetweenRecipe recipe)
+        {
+            var character = CharacterFor(recipe);
+            if (character == null) return "";
+            var path = AssetDatabase.GetAssetPath(character);
+            return recipe.BuiltFrom + "|" + character.name + "|" + path + "|" + (path == "" ? "" : AssetDatabase.GetAssetDependencyHash(path).ToString());
+        }
+
+        public static bool SavedClipStale(InbetweenRecipe recipe) =>
+            recipe.SaveAnimationClip && recipe.Output != null && CharacterFor(recipe) != null && (recipe.SavedClip == null || recipe.SavedFrom != SavedKey(recipe));
+
+        public static bool TrySave(InbetweenRecipe recipe, out string error)
+        {
+            if (!TryExport(recipe, out var saved, out error)) return false;
+            recipe.SavedClip = saved;
+            recipe.SavedFrom = SavedKey(recipe);
+            EditorUtility.SetDirty(recipe);
+            AssetDatabase.SaveAssetIfDirty(recipe);
+            return true;
+        }
+
+        public static void SaveAfterGenerate(InbetweenRecipe recipe)
+        {
+            if (!recipe.SaveAnimationClip || CharacterFor(recipe) == null) return;
+            if (!TrySave(recipe, out var error))
+                Debug.LogWarning("SA Inbetween: '" + recipe.name + "' was generated, but its Unity clip was not saved: " + error, recipe);
+        }
+
         public static bool TryExport(InbetweenRecipe recipe, out AnimationClip saved, out string error)
         {
             saved = null;

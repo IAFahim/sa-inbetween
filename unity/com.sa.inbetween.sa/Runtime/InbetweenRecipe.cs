@@ -51,5 +51,8 @@ namespace SA.Inbetween.Clips
         public SaClipAsset Output;
         public string BuiltFrom = "";
         public GameObject Character;
+        public bool SaveAnimationClip = true;
+        public AnimationClip SavedClip;
+        public string SavedFrom = "";
     }
 }

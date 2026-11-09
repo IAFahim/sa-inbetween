@@ -102,7 +102,8 @@ namespace SA.Inbetween.Clips.Editor
             if (Problem(recipe) != "") return RecipeState.Incomplete;
             if (!InbetweenSettings.Tools().Complete) return RecipeState.NeedsSetup;
             if (recipe.Output == null) return RecipeState.NotGenerated;
-            return recipe.BuiltFrom == Hash(recipe) ? RecipeState.UpToDate : RecipeState.OutOfDate;
+            if (recipe.BuiltFrom != Hash(recipe)) return RecipeState.OutOfDate;
+            return SaClipExport.SavedClipStale(recipe) ? RecipeState.OutOfDate : RecipeState.UpToDate;
         }
 
         public static string Hash(InbetweenRecipe recipe)
@@ -346,6 +347,7 @@ namespace SA.Inbetween.Clips.Editor
             recipe.BuiltFrom = hash;
             EditorUtility.SetDirty(recipe);
             AssetDatabase.SaveAssetIfDirty(recipe);
+            SaClipExport.SaveAfterGenerate(recipe);
         }
 
         public static void Cancel(InbetweenRecipe recipe)

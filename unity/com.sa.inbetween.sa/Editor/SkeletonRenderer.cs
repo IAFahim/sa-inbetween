@@ -78,10 +78,26 @@ namespace SA.Inbetween.Clips.Editor
             return utility.EndStaticPreview();
         }
 
+        internal static void Grid(PreviewRenderUtility target, Vector3 focus)
+        {
+            Materials();
+            var origin = new Vector3(Mathf.Round(focus.x / GridStep) * GridStep, 0f, Mathf.Round(focus.z / GridStep) * GridStep);
+            var block = new MaterialPropertyBlock();
+            block.SetColor("_Color", GridColor);
+            target.DrawMesh(grid, Matrix4x4.Translate(origin), faded, 0, block);
+        }
+
+        internal static Color BackgroundColor => Background;
+
         void Prepare()
         {
             utility ??= new PreviewRenderUtility();
             block ??= new MaterialPropertyBlock();
+            Materials();
+        }
+
+        static void Materials()
+        {
             if (solid != null)
                 return;
             var shader = Shader.Find("Hidden/Internal-Colored");

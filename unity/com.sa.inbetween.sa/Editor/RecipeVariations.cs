@@ -332,6 +332,7 @@ namespace SA.Inbetween.Clips.Editor
             EditorUtility.SetDirty(recipe);
             AssetDatabase.SaveAssetIfDirty(recipe);
             Undo.CollapseUndoOperations(group);
+            SaClipExport.SaveAfterGenerate(recipe);
             Runs.Remove(Key(recipe));
             var folder = Folder(recipe);
             if (Directory.Exists(folder)) Directory.Delete(folder, true);

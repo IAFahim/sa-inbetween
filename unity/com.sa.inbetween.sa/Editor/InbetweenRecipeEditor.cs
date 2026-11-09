@@ -13,6 +13,7 @@ namespace SA.Inbetween.Clips.Editor
         Vector2 logScroll;
         readonly SkeletonPreview preview = new SkeletonPreview();
         readonly SkeletonRenderer view = new SkeletonRenderer();
+        readonly CharacterPreview actor = new CharacterPreview();
         readonly List<SkeletonRenderer> cardViews = new List<SkeletonRenderer>();
         readonly List<SkeletonClip> cardClips = new List<SkeletonClip>();
         VariationRun cardsFor;
@@ -45,6 +46,7 @@ namespace SA.Inbetween.Clips.Editor
             EditorApplication.update -= Tick;
             SkeletonSceneDrawer.Hide(this);
             view.Dispose();
+            actor.Dispose();
             foreach (var v in cardViews) v.Dispose();
             cardViews.Clear();
         }
@@ -120,6 +122,8 @@ namespace SA.Inbetween.Clips.Editor
                 var frames = StudioCommands.FramesForTokens(StudioCommands.TokensForSeconds(seconds.floatValue));
                 EditorGUILayout.LabelField(" ", "About " + (frames / StudioCommands.FrameRate).ToString("0.00") + " s, " + frames + " frames per move. Longer needs more goals.", EditorStyles.miniLabel);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("LandExactly"), new GUIContent("Land exactly on the goal", "Corrects the end so the pose matches the goal"));
+                EditorGUILayout.Space(4);
+                DrawCharacter(serializedObject, recipe);
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -151,7 +155,10 @@ namespace SA.Inbetween.Clips.Editor
                     EditorGUILayout.HelpBox("Up to date: the clip matches these settings.", MessageType.None);
                     break;
                 case RecipeState.OutOfDate:
-                    EditorGUILayout.HelpBox("Settings changed since the last generate (or a source clip changed). Press Generate to refresh the clip.", MessageType.Warning);
+                    if (recipe.BuiltFrom == RecipeRunner.Hash(recipe) && SaClipExport.SavedClipStale(recipe))
+                        EditorGUILayout.HelpBox("The Unity clip (" + recipe.name + ".anim) is missing or older than the result. Press Export > Animation Clip, or Generate again.", MessageType.Warning);
+                    else
+                        EditorGUILayout.HelpBox("Settings changed since the last generate (or a source clip changed). Press Generate to refresh the clip.", MessageType.Warning);
                     break;
                 case RecipeState.Running:
                     EditorGUILayout.HelpBox(run.Stage + "... (step " + (run.Finished + 1) + " of " + run.Total + ")", MessageType.Info);
@@ -237,7 +244,11 @@ namespace SA.Inbetween.Clips.Editor
                 return;
             EditorGUILayout.Space(4);
             using (new EditorGUI.DisabledScope(true))
+            {
                 EditorGUILayout.ObjectField("Result", recipe.Output, typeof(SaClipAsset), false);
+                if (recipe.SaveAnimationClip || recipe.SavedClip != null)
+                    EditorGUILayout.ObjectField("Unity clip", recipe.SavedClip, typeof(AnimationClip), false);
+            }
             Refresh(recipe);
             if (!preview.Ready)
                 EditorGUILayout.HelpBox("Cannot preview this clip: " + preview.Error, MessageType.Warning);
@@ -262,22 +273,31 @@ namespace SA.Inbetween.Clips.Editor
         {
             EditorGUILayout.Space(4);
             EditorGUILayout.LabelField("Export", EditorStyles.boldLabel);
-            serializedObject.Update();
-            var character = serializedObject.FindProperty("Character");
-            var fallback = SaClipExport.CharacterFor(recipe);
-            EditorGUILayout.PropertyField(character, new GUIContent("Character", "The character the exported clip plays on. Empty uses the character of a Unity clip source."));
-            serializedObject.ApplyModifiedProperties();
-            if (recipe.Character == null && fallback != null)
-                EditorGUILayout.LabelField(" ", "Uses " + fallback.name + " from the sources.", EditorStyles.miniLabel);
-            using (new EditorGUI.DisabledScope(busy || fallback == null))
+            var character = SaClipExport.CharacterFor(recipe);
+            using (new EditorGUI.DisabledScope(busy || character == null))
                 if (GUILayout.Button(new GUIContent("Export > Animation Clip", "Writes " + recipe.name + ".anim next to the recipe: a Generic clip for this character, starting at the origin facing +Z. Play it on the model set to a Generic rig."), GUILayout.Height(24)))
                 {
-                    if (!SaClipExport.TryExport(recipe, out var saved, out var error))
+                    if (!SaClipExport.TrySave(recipe, out var error))
                         EditorUtility.DisplayDialog("Cannot export", error, "OK");
                     else
-                        EditorGUIUtility.PingObject(saved);
+                        EditorGUIUtility.PingObject(recipe.SavedClip);
                     GUIUtility.ExitGUI();
                 }
+            if (character == null)
+                EditorGUILayout.LabelField("Choose a Character above to export for it.", EditorStyles.wordWrappedMiniLabel);
+        }
+
+        static void DrawCharacter(SerializedObject serialized, InbetweenRecipe recipe)
+        {
+            var character = serialized.FindProperty("Character");
+            EditorGUILayout.PropertyField(character, new GUIContent("Character", "The character the result is previewed on and saved for. Filled from a Unity clip source when empty."));
+            if (character.objectReferenceValue == null)
+            {
+                var fallback = SaClipExport.CharacterFor(recipe);
+                if (fallback != null) character.objectReferenceValue = fallback;
+            }
+
+            EditorGUILayout.PropertyField(serialized.FindProperty("SaveAnimationClip"), new GUIContent("Also save a Unity clip (.anim)", "After each Generate or Keep, writes " + recipe.name + ".anim next to the recipe for the Character, ready for the Animation window and Timeline"));
         }
 
         void DrawStrip(InbetweenRecipe recipe)
@@ -314,6 +334,16 @@ namespace SA.Inbetween.Clips.Editor
 
             EditorGUILayout.EndHorizontal();
             var rect = GUILayoutUtility.GetRect(10f, 220f, GUILayout.ExpandWidth(true));
+            var character = SaClipExport.CharacterFor(recipe);
+            if (character != null && actor.Bind(character, recipe.Output.Bytes))
+            {
+                if (actor.Orbit(rect)) Repaint();
+                actor.Draw(rect, preview.Time);
+                return;
+            }
+
+            if (character != null && actor.Error != "")
+                EditorGUILayout.HelpBox("Cannot show " + character.name + ": " + actor.Error + " Showing the skeleton.", MessageType.Warning);
             if (view.Orbit(rect)) Repaint();
             view.Draw(rect, preview.Layers);
         }
