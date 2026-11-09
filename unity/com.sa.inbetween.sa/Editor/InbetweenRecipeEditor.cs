@@ -162,8 +162,25 @@ namespace SA.Inbetween.Clips.Editor
         }
     }
 
+    [InitializeOnLoad]
     public static class RecipePreview
     {
+        static RecipePreview()
+        {
+            EditorApplication.playModeStateChanged += state =>
+            {
+                if (state == PlayModeStateChange.EnteredPlayMode && Object.FindFirstObjectByType<SaClipPlayer>() != null)
+                    ShowGameView();
+            };
+        }
+
+        public static void ShowGameView()
+        {
+            var type = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+            if (type != null)
+                EditorWindow.GetWindow(type).Show();
+        }
+
         public static void Play(SaClipAsset clip)
         {
             var player = Object.FindFirstObjectByType<SaClipPlayer>();
@@ -186,6 +203,7 @@ namespace SA.Inbetween.Clips.Editor
             }
             else
                 EditorApplication.isPlaying = true;
+            ShowGameView();
         }
     }
 
