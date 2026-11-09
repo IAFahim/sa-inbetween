@@ -87,6 +87,7 @@ namespace SA.Inbetween.Clips.Editor
         static string SourceProblem(ClipFrame f, string role, string name)
         {
             if (f.Kind == SourceKind.SaClip) return f.Clip == null ? "Choose the clip " + role + "." : "";
+            if (f.Kind == SourceKind.Pose) return f.Pose == null ? "Choose the pose " + role + "." : f.Pose.Valid ? "" : name + " pose cannot be read: " + f.Pose.Problem;
             if (f.Motion == null) return "Choose the Unity clip " + role + ".";
             if (f.Character == null) return name + " needs a character to play its Unity clip on.";
             return "";
@@ -120,6 +121,16 @@ namespace SA.Inbetween.Clips.Editor
         static void Add(StringBuilder sb, ClipFrame f)
         {
             sb.Append('|').Append(f.Where).Append(f.AnchorSeconds.ToString("R", CultureInfo.InvariantCulture));
+            if (f.Kind == SourceKind.Pose)
+            {
+                sb.Append("|pose|");
+                if (f.Pose == null || f.Pose.Values == null) return;
+                var raw = new byte[f.Pose.Values.Length * sizeof(float)];
+                Buffer.BlockCopy(f.Pose.Values, 0, raw, 0, raw.Length);
+                using var poseSha = SHA1.Create();
+                sb.Append(BitConverter.ToString(poseSha.ComputeHash(raw)));
+                return;
+            }
             if (f.Kind == SourceKind.UnityClip)
             {
                 sb.Append("|unity|").Append(f.Frame.ToString(CultureInfo.InvariantCulture)).Append('|').Append(SourceKey(f));
@@ -173,6 +184,11 @@ namespace SA.Inbetween.Clips.Editor
                 file = Path.GetFullPath(AssetDatabase.GetAssetPath(f.Clip));
                 return true;
             }
+            if (f.Kind == SourceKind.Pose)
+            {
+                error = "A pose source has no clip to bake.";
+                return false;
+            }
             file = SourceFile(f, work);
             if (File.Exists(file)) return true;
             if (!SaClipConvert.TryConvert(f.Character, f.Motion, out var bytes, out error))
@@ -191,6 +207,7 @@ namespace SA.Inbetween.Clips.Editor
         public static byte[] PreviewBytes(InbetweenRecipe recipe, ClipFrame f)
         {
             if (f.Kind == SourceKind.SaClip) return f.Clip == null ? null : f.Clip.Bytes;
+            if (f.Kind == SourceKind.Pose) return null;
             if (f.Motion == null || f.Character == null) return null;
             var file = SourceFile(f, WorkFolder(recipe));
             if (!File.Exists(file)) return null;
@@ -307,11 +324,30 @@ namespace SA.Inbetween.Clips.Editor
 
         static bool AddPoses(StudioSettings s, RecipeRun run, List<RecipeRun.Step> steps, string label, ClipFrame frame, bool isStart, string pattern, List<string> files, out string error)
         {
+            if (frame.Kind == SourceKind.Pose)
+                return CopyPose(frame, pattern, files, out error);
             if (!TryBakeSource(frame, s.WorkFolder, out var clipFile, out error)) return false;
             var rootLast = isStart && frame.Kind == SourceKind.UnityClip;
             if (!StudioCommands.TryPoses(s, clipFile, Times(frame, isStart), pattern, rootLast, out var command, out error)) return false;
             steps.Add(new RecipeRun.Step { Label = label, Command = command });
             for (var i = 0; i < 4; i++) files.Add(pattern.Replace("{}", i.ToString(CultureInfo.InvariantCulture)));
+            return true;
+        }
+
+        static bool CopyPose(ClipFrame frame, string pattern, List<string> files, out string error)
+        {
+            error = SourceProblem(frame, "to use", "The source");
+            if (error != "") return false;
+            var raw = new byte[frame.Pose.Values.Length * sizeof(float)];
+            Buffer.BlockCopy(frame.Pose.Values, 0, raw, 0, raw.Length);
+            for (var i = 0; i < 4; i++)
+            {
+                var file = pattern.Replace("{}", i.ToString(CultureInfo.InvariantCulture));
+                Directory.CreateDirectory(Path.GetDirectoryName(file) ?? ".");
+                File.WriteAllBytes(file, raw);
+                files.Add(file);
+            }
+
             return true;
         }
 

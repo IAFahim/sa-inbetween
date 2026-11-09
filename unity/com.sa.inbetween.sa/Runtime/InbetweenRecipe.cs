@@ -16,6 +16,7 @@ namespace SA.Inbetween.Clips
     {
         SaClip,
         UnityClip,
+        Pose,
     }
 
     [Serializable]
@@ -27,7 +28,7 @@ namespace SA.Inbetween.Clips
 
         public float AnchorSeconds => Where == FrameWhere.Frame ? Frame / FrameRate : Seconds;
 
-        public bool HasSource => Kind == SourceKind.UnityClip ? Motion != null && Character != null : Clip != null;
+        public bool HasSource => Kind == SourceKind.UnityClip ? Motion != null && Character != null : Kind == SourceKind.Pose ? Pose != null : Clip != null;
 
         public SaClipAsset Clip;
         public FrameWhere Where;
@@ -36,6 +37,7 @@ namespace SA.Inbetween.Clips
         public SourceKind Kind;
         public AnimationClip Motion;
         public GameObject Character;
+        public SaPoseAsset Pose;
     }
 
     public sealed class InbetweenRecipe : ScriptableObject

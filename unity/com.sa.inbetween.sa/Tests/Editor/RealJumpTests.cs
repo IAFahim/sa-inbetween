@@ -125,7 +125,7 @@ namespace SA.Inbetween.Clips.Tests
             return recipe;
         }
 
-        static void Remove(InbetweenRecipe recipe)
+        internal static void Remove(InbetweenRecipe recipe)
         {
             if (recipe == null) return;
             var path = AssetDatabase.GetAssetPath(recipe);
@@ -135,7 +135,7 @@ namespace SA.Inbetween.Clips.Tests
             AssetDatabase.DeleteAsset(path);
         }
 
-        static AnimationClip Take(string path, string name)
+        internal static AnimationClip Take(string path, string name)
         {
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
                 if (asset is AnimationClip clip && clip.name == name)
@@ -143,18 +143,18 @@ namespace SA.Inbetween.Clips.Tests
             return null;
         }
 
-        static SharedClip Load(string file) => Load(File.ReadAllBytes(file));
+        internal static SharedClip Load(string file) => Load(File.ReadAllBytes(file));
 
-        static SharedClip Load(byte[] bytes)
+        internal static SharedClip Load(byte[] bytes)
         {
             SharedFamilyBake.FamilyId(out var a, out var b, out var c, out var d);
             Assert.AreEqual(AnimationError.None, SharedClipReader.Load(bytes, new AssetId(a, b, c, d), SharedFamilyBake.CanonicalReferencePoses(), out var clip));
             return clip;
         }
 
-        static bool Body(int c) => c > 0 && c < 7 || c >= 10 && c <= 13 || c >= 29 && c <= 32 || c >= 48;
+        internal static bool Body(int c) => c > 0 && c < 7 || c >= 10 && c <= 13 || c >= 29 && c <= 32 || c >= 48;
 
-        static Pose[] Locals(SharedClip clip, int frame)
+        internal static Pose[] Locals(SharedClip clip, int frame)
         {
             var output = new Pose[FamilyClips.CanonicalBones];
             frame = Math.Max(0, Math.Min(clip.SampleCount - 1, frame));
@@ -162,7 +162,7 @@ namespace SA.Inbetween.Clips.Tests
             return output;
         }
 
-        static RigidPose[] World(Pose[] locals, RigidPose root)
+        internal static RigidPose[] World(Pose[] locals, RigidPose root)
         {
             var placed = (Pose[])locals.Clone();
             Assert.IsTrue(RigidMath.TryCompose(root, new RigidPose(placed[1].Position, Quaternion.Normalize(placed[1].Rotation)), out var hips));
@@ -189,7 +189,7 @@ namespace SA.Inbetween.Clips.Tests
 
         static float Lowest(RigidPose[] model) => Math.Min(SoleHeight(model, 50), SoleHeight(model, 54));
 
-        static double Degrees(Quaternion a, Quaternion b)
+        internal static double Degrees(Quaternion a, Quaternion b)
         {
             double x = a.X, y = a.Y, z = a.Z, w = a.W;
             var n = Math.Sqrt(x * x + y * y + z * z + w * w) * Math.Sqrt((double)b.X * b.X + (double)b.Y * b.Y + (double)b.Z * b.Z + (double)b.W * b.W);
@@ -200,7 +200,7 @@ namespace SA.Inbetween.Clips.Tests
             return 2.0 * Math.Atan2(Math.Sqrt(rx * rx + ry * ry + rz * rz), Math.Abs(rw)) * 180.0 / Math.PI;
         }
 
-        static double Length(Float3 v) => Math.Sqrt((double)v.X * v.X + (double)v.Y * v.Y + (double)v.Z * v.Z);
+        internal static double Length(Float3 v) => Math.Sqrt((double)v.X * v.X + (double)v.Y * v.Y + (double)v.Z * v.Z);
 
         static Dictionary<string, int> MixamoRoles()
         {
@@ -242,7 +242,7 @@ namespace SA.Inbetween.Clips.Tests
             gates.Check("I3 map differences vs the Mixamo table", differences, 0, "bones", true);
         }
 
-        static Pose[] Direct(FamilyRigPlan plan, GameObject instance, AnimationClip clip, float seconds, bool lift)
+        internal static Pose[] Direct(FamilyRigPlan plan, GameObject instance, AnimationClip clip, float seconds, bool lift)
         {
             var all = instance.GetComponentsInChildren<Transform>(true);
             var count = plan.BoneCount;
@@ -273,7 +273,7 @@ namespace SA.Inbetween.Clips.Tests
             return output;
         }
 
-        static RigidPose[] TargetModel(FamilyRigPlan plan, Pose[] locals, int offset)
+        internal static RigidPose[] TargetModel(FamilyRigPlan plan, Pose[] locals, int offset)
         {
             var count = plan.BoneCount;
             var parents = new int[count];
@@ -283,7 +283,7 @@ namespace SA.Inbetween.Clips.Tests
             return model;
         }
 
-        static void Compare(FamilyRigPlan plan, RigidPose[] a, RigidPose[] b, ref double degrees, ref double metres)
+        internal static void Compare(FamilyRigPlan plan, RigidPose[] a, RigidPose[] b, ref double degrees, ref double metres)
         {
             for (var bone = 1; bone < plan.BoneCount; bone++)
                 if (Body(plan.CanonicalOfBone[bone]))
@@ -507,7 +507,7 @@ namespace SA.Inbetween.Clips.Tests
 
         static double Horizontal(Float3 step, FamilyRigPlan plan) => Math.Sqrt((double)step.X * step.X + (double)step.Z * step.Z) * Hz * plan.HeightRatio;
 
-        static void RunSync(StudioCommand command)
+        internal static void RunSync(StudioCommand command)
         {
             var process = new StudioProcess();
             Assert.IsTrue(process.Start(command, out var error), error);
@@ -516,7 +516,7 @@ namespace SA.Inbetween.Clips.Tests
             Assert.AreEqual(0, process.ExitCode, string.Join(" ", command.Args) + "\n" + process.Log);
         }
 
-        static void Report(string name, string text)
+        internal static void Report(string name, string text)
         {
             var folder = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "sa", "j1");
             Directory.CreateDirectory(folder);

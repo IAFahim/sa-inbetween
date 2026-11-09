@@ -185,7 +185,14 @@ namespace SA.Inbetween.Clips.Editor
             var motion = frame.FindPropertyRelative("Motion");
             var unity = (SourceKind)kind.enumValueIndex == SourceKind.UnityClip;
             EditorGUILayout.BeginHorizontal();
-            kind.enumValueIndex = EditorGUILayout.Popup(kind.enumValueIndex, new[] { ".saclip", "Unity clip" }, GUILayout.Width(84));
+            kind.enumValueIndex = EditorGUILayout.Popup(kind.enumValueIndex, new[] { ".saclip", "Unity clip", "Pose" }, GUILayout.Width(84));
+            if ((SourceKind)kind.enumValueIndex == SourceKind.Pose)
+            {
+                var pose = frame.FindPropertyRelative("Pose");
+                pose.objectReferenceValue = EditorGUILayout.ObjectField(pose.objectReferenceValue, typeof(SaPoseAsset), false);
+                EditorGUILayout.EndHorizontal();
+                return;
+            }
             if (unity)
                 motion.objectReferenceValue = EditorGUILayout.ObjectField(motion.objectReferenceValue, typeof(AnimationClip), false);
             else
@@ -201,6 +208,8 @@ namespace SA.Inbetween.Clips.Editor
                 var rate = unity && motion.objectReferenceValue is AnimationClip picked && picked.frameRate > 0f ? picked.frameRate : ClipFrame.ClipFrameRate;
                 EditorGUILayout.LabelField("= " + (number.intValue / rate).ToString("0.00") + " s", EditorStyles.miniLabel, GUILayout.Width(64));
             }
+            if (!unity && GUILayout.Button(new GUIContent("Capture", "Captures the current pose of the character selected in the scene and uses it here"), GUILayout.Width(60)))
+                Capture(frame, isStart);
             EditorGUILayout.EndHorizontal();
             if (!unity)
                 return;
@@ -211,6 +220,32 @@ namespace SA.Inbetween.Clips.Editor
             EditorGUILayout.EndHorizontal();
             if (character.objectReferenceValue is GameObject go && go.GetComponentInChildren<Animator>(true) == null)
                 EditorGUILayout.HelpBox("The character needs an Animator (a model or prefab imported with a rig).", MessageType.Warning);
+        }
+
+        static void Capture(SerializedProperty frame, bool isStart)
+        {
+            var recipe = (InbetweenRecipe)frame.serializedObject.targetObject;
+            var posed = PoseCapture.CharacterOf(Selection.activeGameObject);
+            if (posed == null)
+            {
+                EditorUtility.DisplayDialog("Capture pose", "Select the posed character in the scene (a GameObject with an Animator), then press Capture again.", "OK");
+                GUIUtility.ExitGUI();
+                return;
+            }
+
+            var role = isStart ? "start" : "goal";
+            if (!PoseCapture.TryCapture(posed, PoseCapture.PathFor(recipe, role), out var asset, out var error))
+            {
+                EditorUtility.DisplayDialog("Capture pose", error, "OK");
+                GUIUtility.ExitGUI();
+                return;
+            }
+
+            frame.FindPropertyRelative("Kind").enumValueIndex = (int)SourceKind.SaClip;
+            frame.FindPropertyRelative("Clip").objectReferenceValue = asset;
+            frame.FindPropertyRelative("Where").enumValueIndex = (int)FrameWhere.Start;
+            frame.serializedObject.ApplyModifiedProperties();
+            GUIUtility.ExitGUI();
         }
 
         static void Swap(InbetweenRecipe recipe)
