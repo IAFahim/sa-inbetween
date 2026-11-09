@@ -19,15 +19,34 @@ namespace SA.Inbetween.Clips
 
         public bool IsPlaying => clipIndex >= 0;
 
+        bool previousRunInBackground;
+
         void OnEnable()
         {
             wanted = PlayOnStart;
+            previousRunInBackground = Application.runInBackground;
+#if UNITY_EDITOR
+            Application.runInBackground = true;
+#endif
         }
 
         void OnDisable()
         {
             Stop();
+#if UNITY_EDITOR
+            Application.runInBackground = previousRunInBackground;
+#endif
         }
+
+#if UNITY_EDITOR
+        void LateUpdate()
+        {
+            if (clipIndex < 0)
+                return;
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+        }
+#endif
 
         public void Play()
         {
