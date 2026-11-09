@@ -75,6 +75,12 @@ namespace SA.Inbetween.Clips.Editor
         {
             saved = null;
             if (!TryBuild(source, character, out var clip, out error)) return false;
+            saved = Save(clip, path);
+            return true;
+        }
+
+        internal static AnimationClip Save(AnimationClip clip, string path)
+        {
             clip.name = Path.GetFileNameWithoutExtension(path);
             var existing = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
             if (existing != null)
@@ -83,14 +89,12 @@ namespace SA.Inbetween.Clips.Editor
                 UnityEngine.Object.DestroyImmediate(clip);
                 EditorUtility.SetDirty(existing);
                 AssetDatabase.SaveAssetIfDirty(existing);
-                saved = existing;
-                return true;
+                return existing;
             }
 
             AssetDatabase.CreateAsset(clip, path);
             AssetDatabase.SaveAssets();
-            saved = clip;
-            return true;
+            return clip;
         }
 
         public static bool TryBuild(SaClipAsset source, GameObject character, out AnimationClip clip, out string error)
@@ -145,6 +149,19 @@ namespace SA.Inbetween.Clips.Editor
             }
 
             return FamilyClips.TryApply(plan, canonical, roots, out locals, out error);
+        }
+
+        public static void ApplyFrame(FamilyRigPlan plan, Pose[] locals, int frame)
+        {
+            var count = plan.BoneCount;
+            for (var b = 1; b < count; b++)
+            {
+                var bone = plan.Bones[b];
+                var pose = plan.CanonicalOfBone[b] > 0 ? locals[frame * count + b] : plan.Rest[b];
+                bone.localRotation = new UnityEngine.Quaternion(pose.Rotation.X, pose.Rotation.Y, pose.Rotation.Z, pose.Rotation.W);
+                if (b == plan.Hips || plan.CanonicalOfBone[b] <= 0)
+                    bone.localPosition = new Vector3(pose.Position.X, pose.Position.Y, pose.Position.Z);
+            }
         }
 
         public static RigidPose RootAt(SharedClip clip, double seconds)
@@ -240,7 +257,10 @@ namespace SA.Inbetween.Clips.Editor
         static void AddConstant(List<EditorCurveBinding> bindings, List<AnimationCurve> curves, string path, string property, float value, float end) =>
             Add(bindings, curves, path, property, new[] { 0f, end }, new[] { value, value });
 
-        static void Add(List<EditorCurveBinding> bindings, List<AnimationCurve> curves, string path, string property, float[] times, float[] values)
+        static void Add(List<EditorCurveBinding> bindings, List<AnimationCurve> curves, string path, string property, float[] times, float[] values) =>
+            Add(bindings, curves, path, typeof(Transform), property, times, values);
+
+        internal static void Add(List<EditorCurveBinding> bindings, List<AnimationCurve> curves, string path, Type type, string property, float[] times, float[] values)
         {
             var keys = new Keyframe[times.Length];
             for (var i = 0; i < times.Length; i++)
@@ -250,7 +270,7 @@ namespace SA.Inbetween.Clips.Editor
                 keys[i] = new Keyframe(times[i], values[i], i > 0 ? before : after, i < times.Length - 1 ? after : before);
             }
 
-            bindings.Add(EditorCurveBinding.FloatCurve(path, typeof(Transform), property));
+            bindings.Add(EditorCurveBinding.FloatCurve(path, type, property));
             curves.Add(new AnimationCurve(keys));
         }
 

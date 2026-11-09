@@ -88,5 +88,40 @@ namespace SA.Inbetween.Clips.Tests
                 Object.DestroyImmediate(r);
             }
         }
-    }
+
+        [Test]
+        public void Preview_on_character_leaves_the_open_scene_untouched()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scene.isDirty) Assert.Ignore("the open scene already has unsaved changes");
+            var guids = UnityEditor.AssetDatabase.FindAssets("t:SaClipAsset");
+            if (guids.Length == 0) Assert.Ignore("no .saclip in the project");
+            var clip = UnityEditor.AssetDatabase.LoadAssetAtPath<SaClipAsset>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
+            var players = Object.FindObjectsByType<SaClipPlayer>(FindObjectsSortMode.None).Length;
+            var roots = scene.rootCount;
+            try
+            {
+                RecipePreview.Request(clip);
+                Assert.AreEqual(clip, RecipePreview.Pending());
+                Assert.IsFalse(scene.isDirty, "requesting a preview dirtied the scene");
+                Assert.AreEqual(players, Object.FindObjectsByType<SaClipPlayer>(FindObjectsSortMode.None).Length);
+                Assert.AreEqual(roots, scene.rootCount);
+                var character = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/AnimationBaseLocomotion/Meshes/PolygonSyntyCharacter.fbx");
+                if (character == null) return;
+                using var preview = new CharacterPreview();
+                if (preview.Bind(character, clip.Bytes))
+                {
+                    var texture = preview.Snapshot(64, 48, 0f);
+                    Assert.IsNotNull(texture);
+                    Object.DestroyImmediate(texture);
+                }
+                Assert.IsFalse(scene.isDirty, "the character preview dirtied the scene");
+                Assert.AreEqual(roots, scene.rootCount);
+            }
+            finally
+            {
+                UnityEditor.SessionState.EraseString(RecipePreview.PendingKey);
+            }
+        }
+}
 }

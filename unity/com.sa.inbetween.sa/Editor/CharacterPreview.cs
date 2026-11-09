@@ -66,6 +66,7 @@ namespace SA.Inbetween.Clips.Editor
             instance.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             foreach (var animator in instance.GetComponentsInChildren<Animator>(true))
                 animator.enabled = false;
+            utility.AddSingleGO(instance);
             skins = instance.GetComponentsInChildren<SkinnedMeshRenderer>(false);
             baked = new Mesh[skins.Length];
             for (var i = 0; i < skins.Length; i++)
@@ -101,16 +102,7 @@ namespace SA.Inbetween.Clips.Editor
         public void Pose(float seconds)
         {
             if (!Ready) return;
-            var frame = Mathf.Clamp(Mathf.RoundToInt(seconds * SaClipExport.Rate), 0, frames - 1);
-            var count = plan.BoneCount;
-            for (var b = 1; b < count; b++)
-            {
-                var bone = plan.Bones[b];
-                var pose = plan.CanonicalOfBone[b] > 0 ? locals[frame * count + b] : plan.Rest[b];
-                bone.localRotation = new Quaternion(pose.Rotation.X, pose.Rotation.Y, pose.Rotation.Z, pose.Rotation.W);
-                if (b == plan.Hips || plan.CanonicalOfBone[b] <= 0)
-                    bone.localPosition = new Vector3(pose.Position.X, pose.Position.Y, pose.Position.Z);
-            }
+            SaClipExport.ApplyFrame(plan, locals, Mathf.Clamp(Mathf.RoundToInt(seconds * SaClipExport.Rate), 0, frames - 1));
         }
 
         public bool Orbit(Rect rect)

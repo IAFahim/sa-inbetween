@@ -318,6 +318,16 @@ namespace SA.Inbetween.Clips.Editor
                         EditorGUIUtility.PingObject(recipe.SavedClip);
                     GUIUtility.ExitGUI();
                 }
+            var human = character != null && character.GetComponentInChildren<Animator>(true) is Animator animator && animator.avatar != null && animator.avatar.isHuman;
+            using (new EditorGUI.DisabledScope(busy || !human))
+                if (GUILayout.Button(new GUIContent("Export > Humanoid clip", "Writes " + recipe.name + "_Humanoid.anim next to the recipe: muscle curves for the Character's Humanoid avatar, playable on any Humanoid character"), GUILayout.Height(24)))
+                {
+                    if (!SaClipHumanoidExport.TryExport(recipe, out var saved, out var error))
+                        EditorUtility.DisplayDialog("Cannot export", error, "OK");
+                    else
+                        EditorGUIUtility.PingObject(saved);
+                    GUIUtility.ExitGUI();
+                }
             if (character == null)
                 EditorGUILayout.LabelField("Choose a Character above to export for it.", EditorStyles.wordWrappedMiniLabel);
         }
@@ -473,11 +483,21 @@ namespace SA.Inbetween.Clips.Editor
     [InitializeOnLoad]
     public static class RecipePreview
     {
+        public const string PendingKey = "SA.Inbetween.preview.pending";
+
         static RecipePreview()
         {
             EditorApplication.playModeStateChanged += state =>
             {
-                if (state == PlayModeStateChange.EnteredPlayMode && Object.FindFirstObjectByType<SaClipPlayer>() != null)
+                if (state != PlayModeStateChange.EnteredPlayMode) return;
+                var clip = Pending();
+                SessionState.EraseString(PendingKey);
+                if (clip != null)
+                {
+                    Show(clip);
+                    ShowGameView();
+                }
+                else if (Object.FindFirstObjectByType<SaClipPlayer>() != null)
                     ShowGameView();
             };
         }
@@ -489,29 +509,42 @@ namespace SA.Inbetween.Clips.Editor
                 EditorWindow.GetWindow(type).Show();
         }
 
+        public static SaClipAsset Pending()
+        {
+            var guid = SessionState.GetString(PendingKey, "");
+            return guid == "" ? null : AssetDatabase.LoadAssetAtPath<SaClipAsset>(AssetDatabase.GUIDToAssetPath(guid));
+        }
+
+        public static void Request(SaClipAsset clip)
+        {
+            var path = AssetDatabase.GetAssetPath(clip);
+            if (path == "") SessionState.EraseString(PendingKey);
+            else SessionState.SetString(PendingKey, AssetDatabase.AssetPathToGUID(path));
+        }
+
         public static void Play(SaClipAsset clip)
+        {
+            if (Application.isPlaying)
+            {
+                Show(clip);
+                ShowGameView();
+                return;
+            }
+
+            Request(clip);
+            EditorApplication.isPlaying = true;
+        }
+
+        static void Show(SaClipAsset clip)
         {
             var player = Object.FindFirstObjectByType<SaClipPlayer>();
             if (player == null)
-            {
-                var go = new GameObject("Inbetween Preview");
-                Undo.RegisterCreatedObjectUndo(go, "Create Inbetween Preview");
-                player = go.AddComponent<SaClipPlayer>();
-            }
-
-            Undo.RecordObject(player, "Assign clip");
+                player = new GameObject("Inbetween Preview").AddComponent<SaClipPlayer>();
             player.Clip = clip;
             player.Loop = true;
             player.PlayOnStart = true;
-            EditorUtility.SetDirty(player);
-            if (Application.isPlaying)
-            {
-                player.Stop();
-                player.Play();
-            }
-            else
-                EditorApplication.isPlaying = true;
-            ShowGameView();
+            player.Stop();
+            player.Play();
         }
     }
 

@@ -32,7 +32,8 @@ namespace SA.Inbetween.Clips.Tests
             if (!InbetweenSettings.Tools().Complete) Assert.Ignore("inbetween tools missing");
             if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets", "zz_w7_test");
             var report = new StringBuilder();
-            var posed = (GameObject)PrefabUtility.InstantiatePrefab(character);
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+            var posed = (GameObject)PrefabUtility.InstantiatePrefab(character, scene);
             InbetweenRecipe recipe = null;
             InbetweenRecipe poseRecipe = null;
             try
@@ -103,6 +104,7 @@ namespace SA.Inbetween.Clips.Tests
             finally
             {
                 UnityEngine.Object.DestroyImmediate(posed);
+                UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene);
                 RealJumpTests.Report("w7", report.ToString());
                 AssetDatabase.DeleteAsset(Folder);
             }
