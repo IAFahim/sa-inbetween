@@ -1,0 +1,24 @@
+{
+  "name": "SA.Inbetween.Timeline.Tests",
+  "references": [
+    "SA.Inbetween.Timeline",
+    "SA.Inbetween.Timeline.Editor",
+    "SA.Inbetween.Clips",
+    "SA.Inbetween.Clips.Editor",
+    "Unity.Timeline",
+    "Unity.Timeline.Editor",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ]
+}

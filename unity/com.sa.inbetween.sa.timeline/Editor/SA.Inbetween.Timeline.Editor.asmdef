@@ -1,0 +1,15 @@
+{
+  "name": "SA.Inbetween.Timeline.Editor",
+  "rootNamespace": "SA.Inbetween.Timeline.Editor",
+  "references": [
+    "SA.Inbetween.Timeline",
+    "SA.Inbetween.Clips",
+    "SA.Inbetween.Clips.Editor",
+    "Unity.Timeline",
+    "Unity.Timeline.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}
