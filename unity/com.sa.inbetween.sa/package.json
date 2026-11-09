@@ -1,10 +1,10 @@
 {
   "name": "com.sa.inbetween.sa",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "displayName": "SA Inbetween for SA Animation",
   "description": "Import .saclip files baked by sa-soma-bake and play them on SA shared-family characters. No scripts to write.",
   "unity": "7000.0",
   "dependencies": {
-    "com.sa.unity": "0.3.1"
+    "com.sa.unity": "0.3.2"
   }
 }

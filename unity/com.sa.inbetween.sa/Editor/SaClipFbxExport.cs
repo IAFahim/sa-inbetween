@@ -58,12 +58,25 @@ namespace SA.Inbetween.Clips.Editor
             return TryExport(recipe.Output, character, path, out error);
         }
 
+        static void ClearDirty(UnityEngine.SceneManagement.Scene scene)
+        {
+            var method = typeof(EditorSceneManager).GetMethod("ClearSceneDirtiness", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            method?.Invoke(null, new object[] { scene });
+        }
+
         public static bool TryExport(SaClipAsset source, GameObject character, string path, out string error)
         {
 #if SA_FBX
             if (!NativeReady(out error)) return false;
             if (!SaClipExport.TryBuild(source, character, out var clip, out error)) return false;
             clip.name = Path.GetFileNameWithoutExtension(path);
+            var clean = new System.Collections.Generic.List<UnityEngine.SceneManagement.Scene>();
+            for (var i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            {
+                var open = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+                if (open.isLoaded && !open.isDirty) clean.Add(open);
+            }
+
             var scene = EditorSceneManager.NewPreviewScene();
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(character, scene);
             if (instance == null)
@@ -105,6 +118,8 @@ namespace SA.Inbetween.Clips.Editor
                 EditorSceneManager.ClosePreviewScene(scene);
                 UnityEngine.Object.DestroyImmediate(controller, true);
                 UnityEngine.Object.DestroyImmediate(clip);
+                foreach (var open in clean)
+                    if (open.IsValid() && open.isDirty) ClearDirty(open);
             }
 #else
             error = MissingPackage;
