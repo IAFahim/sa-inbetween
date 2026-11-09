@@ -63,10 +63,25 @@ Select one clip and choose **Inbetween Bridge**. The recipe goes from the end of
 - Do not enter Play mode while generating.
 - *Cannot preview this clip*: the result file is not an SA humanoid clip, or it is damaged. Generate again.
 
+## Use your own character and clips (Mixamo, Synty, any Humanoid)
+
+1. In **Start from** or **Move to**, change the source kind to **Unity clip**.
+2. Pick the **Unity clip** (an FBX take or a `.anim`) and the **Character** (the model or prefab the clip belongs to, with a Humanoid avatar).
+3. Choose **at frame** and type the frame number you see in the Animation window, for example frame 60 of a jump.
+4. The first Generate converts the clip once (cached in `Library/SaInbetween`); later runs reuse it.
+
+The start keeps the clip's real speed, including running and jumping, so the bridge continues the motion instead of restarting it. The converter maps bones through the Humanoid avatar, so Mixamo's `mixamorig:` names need no setup.
+
+## Save the result as a Unity clip
+
+Press **Export > Animation Clip** on the recipe (or right-click a `.saclip` > Export). A `.anim` named after the recipe appears next to it. It starts at the origin facing forward, so place it where the jump left off. The exported clip is a Generic clip: play it on the same character without the Humanoid avatar, or on rigs with identical bone names. A Humanoid `.anim` and FBX export are not built yet.
+
+Measured on a Synty jump, starting mid-air at the apex (frame 41, hips 1.43 m) and landing: the bridge's first frame matches the jump to 0.0001 cm, it ends on the landing pose exactly, hips height is within 6.5 cm of the real animation, and touchdown lands on the same frame. When the start is a fast run and the goal is standing still, the bridge slows down over the 0.8 s, as it should; make the goal a running pose to keep speed.
+
 ## What it does not do yet
 
 - The editor preview shows the SA skeleton, not your character's mesh. Use Preview on character for the final look.
-- Poses come from existing clips. Capturing a pose from the scene, from a Unity `.anim`, or from a Timeline is planned.
+- A frozen pose from a file, capturing the current pose of a character in the scene, and a Timeline track are planned. Humanoid `.anim` and FBX export are planned.
 - The neck is a single bone on the SA rig, so a source clip's neck is smoothed slightly when it is read back. The head's position can move by up to about 2 cm at the seam.
 
 ## Tools folder, for the technical artist

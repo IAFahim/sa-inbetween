@@ -54,7 +54,7 @@ sa-inbetween inspect walk.saib
 
 ### In Unity (SA characters)
 
-Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.0), select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
+Add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.1), select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
 
 For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a complete caller of `PortedGenerator`) and `docs/ecs-integration.md` (where generation may and may not run).
 
