@@ -109,6 +109,23 @@ namespace SA.Inbetween.Clips.Editor
                 }
 
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+                if (AssetImporter.GetAtPath(path) is ModelImporter importer)
+                {
+                    importer.importAnimation = true;
+                    importer.animationType = ModelImporterAnimationType.Generic;
+                    importer.clipAnimations = new ModelImporterClipAnimation[0];
+                    importer.SaveAndReimport();
+                }
+
+                var hasTake = false;
+                foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(path))
+                    if (asset is AnimationClip imported && !imported.name.StartsWith("__preview__", StringComparison.Ordinal) && imported.length > 0f) hasTake = true;
+                if (!hasTake)
+                {
+                    error = "The FBX was written but Unity found no animation take in it: " + path;
+                    return false;
+                }
+
                 error = "";
                 return true;
             }
