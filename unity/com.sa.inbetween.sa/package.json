@@ -5,6 +5,6 @@
   "description": "Import .saclip files baked by sa-soma-bake and play them on SA shared-family characters. No scripts to write.",
   "unity": "7000.0",
   "dependencies": {
-    "com.sa.unity": "0.3.2"
+    "com.sa.unity": "0.3.4"
   }
 }
