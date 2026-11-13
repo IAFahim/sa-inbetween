@@ -1,11 +1,11 @@
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 #if SA_FBX
 using System;
 using UnityEditor.Animations;
 using UnityEditor.Formats.Fbx.Exporter;
-using UnityEditor.SceneManagement;
 #endif
 
 namespace SA.Inbetween.Clips.Editor

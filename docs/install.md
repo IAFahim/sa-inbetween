@@ -7,8 +7,8 @@ Three pieces: two Unity packages and a tools folder.
 Add to `Packages/manifest.json` under `dependencies` (use the latest release tag):
 
 ```json
-"com.sa.unity": "https://github.com/IAFahim/com.sa.unity.git#v0.3.2",
-"com.sa.inbetween.sa": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa#v0.9.0"
+"com.sa.unity": "https://github.com/IAFahim/com.sa.unity.git#v0.3.6",
+"com.sa.inbetween.sa": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa#v0.9.1"
 ```
 
 `com.sa.unity` pulls in `com.sa.motion.unity`, Entities and Entities Graphics. Optional: `com.sa.inbetween.sa.timeline` from the same repository, path `unity/com.sa.inbetween.sa.timeline`, for the Timeline bridge track.

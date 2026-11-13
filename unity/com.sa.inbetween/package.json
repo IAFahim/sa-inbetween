@@ -1,6 +1,6 @@
 {
   "name": "com.sa.inbetween",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "displayName": "SA Inbetween",
   "description": "SOMA in-between motion: prebuilt core DLLs and Unity adapters.",
   "unity": "7000.0"
