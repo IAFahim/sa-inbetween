@@ -14,7 +14,7 @@ namespace SA.Inbetween.Timeline.Editor
         public const string FolderSuffix = "_Generated";
         public const string PlanExtension = ".genplan.json";
 
-        public static readonly GenVariant[] Order = { GenVariant.AsSet, GenVariant.Shorter, GenVariant.Longer, GenVariant.OtherLanding };
+        public static readonly GenVariant[] Order = { GenVariant.AsSet, GenVariant.Shorter, GenVariant.Longer, GenVariant.OtherLanding, GenVariant.ModelPicks };
 
         public static string Folder(TimelineAsset timeline)
         {
@@ -90,6 +90,7 @@ namespace SA.Inbetween.Timeline.Editor
             recipe.Goals = new List<ClipFrame>(job.Goals);
             recipe.DurationSeconds = seconds;
             recipe.LandExactly = landExactly;
+            recipe.ModelPicksLength = variant == GenVariant.ModelPicks;
             recipe.SaveAnimationClip = job.Character != null && (job.Export.Anim || (job.Export.PlaceOnTimeline && !GenOutputs.PlacesHumanoid(job)));
             return JsonUtility.ToJson(recipe) != before;
         }

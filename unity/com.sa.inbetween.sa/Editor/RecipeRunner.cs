@@ -205,6 +205,7 @@ namespace SA.Inbetween.Clips.Editor
             Add(sb, recipe.Start);
             foreach (var g in recipe.Goals) Add(sb, g);
             sb.Append(recipe.DurationSeconds.ToString("R", CultureInfo.InvariantCulture)).Append(recipe.LandExactly ? "L" : "l");
+            if (recipe.ModelPicksLength) sb.Append("|pick");
             using var sha = SHA1.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString()));
             return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
@@ -372,10 +373,10 @@ namespace SA.Inbetween.Clips.Editor
                 OutputFolder = work,
                 WorkFolder = work,
                 ClipName = recipe.name,
-                TokenOverride = StudioCommands.TokensForSeconds(recipe.DurationSeconds),
                 Correct = recipe.LandExactly,
                 VerifyModel = InbetweenSettings.VerifyModel,
             };
+            ApplyLength(s, recipe);
 
             var run = new RecipeRun();
             var contexts = new List<string>();
@@ -409,6 +410,20 @@ namespace SA.Inbetween.Clips.Editor
             return true;
         }
 
+        public static void ApplyLength(StudioSettings s, InbetweenRecipe recipe)
+        {
+            var tokens = StudioCommands.TokensForSeconds(recipe.DurationSeconds);
+            if (!recipe.ModelPicksLength)
+            {
+                s.TokenOverride = tokens;
+                return;
+            }
+
+            s.TokenOverride = 0;
+            s.TokensMin = Mathf.Max(StudioCommands.MinTokens, tokens - 1);
+            s.TokensMax = Mathf.Min(StudioCommands.MaxTokens, tokens + 1);
+        }
+
         public static string WorkFolder(InbetweenRecipe recipe) => Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Library", "SaInbetween", Key(recipe));
 
         internal static bool PrepareSources(InbetweenRecipe recipe, List<RecipeRun.Step> steps, out StudioSettings s, out string error)
@@ -433,10 +448,10 @@ namespace SA.Inbetween.Clips.Editor
                 OutputFolder = work,
                 WorkFolder = work,
                 ClipName = recipe.name,
-                TokenOverride = StudioCommands.TokensForSeconds(recipe.DurationSeconds),
                 Correct = recipe.LandExactly,
                 VerifyModel = InbetweenSettings.VerifyModel,
             };
+            ApplyLength(s, recipe);
 
             var run = new RecipeRun();
             var contexts = new List<string>();

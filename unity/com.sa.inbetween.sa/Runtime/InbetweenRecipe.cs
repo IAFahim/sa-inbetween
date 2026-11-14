@@ -50,6 +50,7 @@ namespace SA.Inbetween.Clips
         public List<ClipFrame> Goals = new List<ClipFrame> { new ClipFrame { Where = FrameWhere.Start } };
         public float DurationSeconds = 1.0f;
         public bool LandExactly = true;
+        public bool ModelPicksLength;
         public SaClipAsset Output;
         public string BuiltFrom = "";
         public GameObject Character;

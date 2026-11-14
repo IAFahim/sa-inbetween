@@ -356,6 +356,7 @@ namespace SA.Inbetween.Clips.Editor
             recipe.Output = clip;
             recipe.DurationSeconds = KeptSeconds(candidate.Spec, pose.SampleCount, recipe.Goals.Count);
             recipe.LandExactly = candidate.Spec.Correct;
+            recipe.ModelPicksLength = false;
             recipe.BuiltFrom = RecipeRunner.Hash(recipe);
             EditorUtility.SetDirty(recipe);
             AssetDatabase.SaveAssetIfDirty(recipe);

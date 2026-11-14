@@ -54,6 +54,8 @@ The recipe starts from the **end** of the first clip and moves to the **start** 
 - **Add another goal**: chain moves. The character goes to goal 1, then goal 2, up to four.
 - **Duration**: how long each move takes, from 0.6 to 1.9 seconds. A longer transition needs more goals.
 - **Land exactly on the goal**: keeps the end pose on target. Turn it off for a looser landing.
+- **Let the model pick the length**: the model chooses how long each move takes, within one step (about 0.13 s) of
+  Duration. The result is still repeatable: the same recipe gives the same clip.
 - **Swap start and goal**: flips the direction.
 
 When you change anything the recipe says *Settings changed since the last generate*. Nothing is regenerated behind your back; press **Generate again** when you are ready. The result is repeatable: the same recipe gives the same clip.
@@ -222,7 +224,7 @@ Time is the wiring between clips. Nothing points at anything else; where a clip 
 |---|---|
 | Source | Kind (Unity Clip, Sa Clip, Pose), the clip or pose, Character (optional). Trim it and change its speed like any clip |
 | Start Pose, Goal Pose | From (Source, Source Frame, Pose Asset), Frame, Pose |
-| Generate | Land Exactly, Keep (As Set, Shorter, Longer, Other Landing), Variations (1 to 4) |
+| Generate | Land Exactly, Keep (As Set, Shorter, Longer, Other Landing, Model Picks: the model chooses the length within one step), Variations (1 to 4) |
 | Retarget / Bake | Character (model or prefab), Rig (Auto, Humanoid, Generic: which clip goes on the Generated row), Foot IK |
 | Export | `.anim`, Humanoid `.anim`, FBX, Place on Timeline, Place Sources (the clips around it, hips matched) |
 | Label | Label |

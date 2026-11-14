@@ -10,6 +10,7 @@ namespace SA.Inbetween.Timeline.Gen
         Shorter,
         Longer,
         OtherLanding,
+        ModelPicks,
     }
 
     [Serializable]
@@ -21,7 +22,7 @@ namespace SA.Inbetween.Timeline.Gen
         [Tooltip("The version that is exported and placed on the timeline.")]
         public GenVariant Keep;
 
-        [Range(1, 4), Tooltip("How many versions to make: the kept one, then the others in this order: As Set, Shorter, Longer, Other Landing. The others stay next to the kept one as alternates, so switching Keep to one of them needs no new generation.")]
+        [Range(1, 4), Tooltip("How many versions to make: the kept one, then the others in this order: As Set, Shorter, Longer, Other Landing, Model Picks (the model chooses the length within one step). The others stay next to the kept one as alternates, so switching Keep to one of them needs no new generation.")]
         public int Variations;
     }
 

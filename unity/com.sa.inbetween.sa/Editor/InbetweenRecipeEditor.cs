@@ -122,6 +122,7 @@ namespace SA.Inbetween.Clips.Editor
                 var frames = StudioCommands.FramesForTokens(StudioCommands.TokensForSeconds(seconds.floatValue));
                 EditorGUILayout.LabelField(" ", "About " + (frames / StudioCommands.FrameRate).ToString("0.00") + " s, " + frames + " frames per move. Longer needs more goals.", EditorStyles.miniLabel);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("LandExactly"), new GUIContent("Land exactly on the goal", "Corrects the end so the pose matches the goal"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("ModelPicksLength"), new GUIContent("Let the model pick the length", "The model chooses how long each move takes, within one step (about 0.13 s) of Duration"));
                 EditorGUILayout.Space(4);
                 DrawCharacter(serializedObject, recipe);
             }
