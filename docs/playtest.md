@@ -154,6 +154,21 @@ Vulkan with the libxml2 link; tools v0.9.2 with the NVIDIA model; then the three
 An earlier fresh-Editor run had 61/62: a wrong assertion in a new test (the recipe's empty goal was reported first),
 fixed in the test; the other two suites were the same.
 
+## Release receipts (v0.9.3, com.sa.unity v0.3.7)
+
+- CI green on `feat/playtest`, `main` and the tag (Linux and Windows .NET build, format, tests, smoke-script parse in
+  PowerShell 7 and 5.1). Release workflow green: 9 assets including `windows-smoke.ps1` and `SHA256SUMS`.
+- **Windows runner** (release job `windows-smoke`, Windows PowerShell 5.1, zip from the release): SHA-256, unpack (415
+  files), PE32+ x64 for both programs, Visual C++ runtime v14.51.36247.00, both programs start (exit 2): **PASS**;
+  model and generate skip (no NVIDIA model in CI).
+- **Installed the way a user does**, in a copy of the clean-install project (Mixamo only): the install.md lines
+  resolved `com.sa.unity` v0.3.7 (`5a9ce4d`) and `com.sa.inbetween.sa` v0.9.3 from Git, 0 compile errors, 0 `CS`
+  warnings. Linux tools from the release: `sha256sum -c` OK; `windows-smoke.ps1` on the Linux tarball with the model
+  and rest pose: 7/7 PASS (generate 2.3 s). The 0.9.2 recipe in that project says *out of date* once, as documented.
+  Copy diagnostics listed the Git hashes, every tool SHA-256 and *Model matches the pin: yes*.
+- Demo in that project (no jump clip there): it chose the middle of `Stabbing` back to its start, generated and saved
+  in 5.6 s from **Make demo scene** to done; preview bound; scene clean with the controller on the character.
+
 ## Remaining
 
 - **A Windows run by a person**: `docs/windows-tester-checklist.md`. CI starts the tools on Windows; nobody has
@@ -163,3 +178,8 @@ fixed in the test; the other two suites were the same.
 - **SA.Shape** stays out of scope (IAFahim/com.sa.unity#4 item 2).
 - **The NVIDIA licence question for the 77-entry parent table** (`docs/status.md`) is the owner's call.
 - Unity 7000.0.0a16 is installed, but this release was tested on a12 only.
+- Without a clip named jump, the demo falls back to the middle of a clip (and says so in its message), but the recipe
+  keeps the name `Jump_MidAir_to_Landing` and the window's intro still talks about a jump. Cosmetic; the tester
+  checklist asks for a Mixamo jump.
+- Test projects kept for the owner: `~/playtest-project` (packages as `file:` from the worktrees, Synty, testables) and
+  `~/playtest-gitinstall` (v0.9.3 / v0.3.7 from Git, release tools).
