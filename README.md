@@ -104,4 +104,4 @@ Golden-based tests skip unless NVIDIA's evaluation-only recordings are placed in
 
 Apache-2.0 for the code in this repository. The MotionBricks weights are NVIDIA's, under the NVIDIA Open Model Agreement, and are not included. NVIDIA's sample motions and test recordings are evaluation-only and are never committed here. See `NOTICE`.
 
-What is finished, what is not, and what still needs review: `docs/status.md`. Playtest readiness, versions and known limits: `docs/playtest.md`, `docs/compatibility.md`, `docs/known-limitations.md`.
+What is finished, what is not, and what still needs review: `docs/status.md`. Showing it to someone: `docs/investor-demo.md` (a 10-minute script with fallbacks). Playtest readiness, versions and known limits: `docs/playtest.md`, `docs/compatibility.md`, `docs/known-limitations.md`.

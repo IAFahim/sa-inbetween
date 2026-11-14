@@ -1,6 +1,6 @@
 # Status
 
-What is built, what is verified, and what is not. Updated 2026-11-14 (0.9.3).
+What is built, what is verified, and what is not. Updated 2026-11-15 (0.9.4).
 
 ## Production-ready
 - Contract, wire codec, motion file (`.saib`), recipe hashing: tested, property-tested, zero-allocation kernels.
@@ -15,6 +15,16 @@ What is built, what is verified, and what is not. Updated 2026-11-14 (0.9.3).
 - BenchmarkDotNet suite (P19) and mutation testing (P20). Allocation is covered by `EngineAllocationSpec`.
 - Contacts into leg IK and root travel in the family bake (P16). Clips are attached at runtime, not through a subscene baker.
 - Video poses (P27) and move tuning (P28).
+
+## Investor demo (v0.9.4)
+- A 10-minute script with exact clicks, timings, known limits and a fallback for every step: `docs/investor-demo.md`.
+- Dry run from a clean Unity 7000.0.0a16 project (First Bridge window and Generation Track) found and fixed: a floating
+  Humanoid landing, an emptied recipe name after Make demo scene again, the manual SA-runtime setup (now one button),
+  frozen poses around the generated clip on the Timeline (sources and hips matching on the Generated track), FBX
+  placement order, the bake menus' director lookup; added a step limit and a one-click demo backup. Receipts:
+  IAFahim/sa-inbetween#3.
+- Generation timelines (`com.sa.inbetween.sa.timeline` 0.2.0) are released with it: `docs/designer-guide.md`
+  ("Author a generation on a Timeline"), `docs/timeline-generation.md`.
 
 ## Designer pilot (v0.9.3)
 - Play-test ready on Linux: first-10-minutes demo (`SA > Inbetween > Create Demo Scene`), plain failure messages with

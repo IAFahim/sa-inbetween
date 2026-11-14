@@ -6,8 +6,8 @@ Write down anything that is unclear, not only what fails.
 
 ## A. The tools, without Unity (5 minutes)
 
-1. From the [v0.9.3 release](https://github.com/IAFahim/sa-inbetween/releases/tag/v0.9.3) download
-   `SaInbetween-tools-v0.9.3-win-x64.zip`, `SHA256SUMS` and `windows-smoke.ps1` into one folder. Put the two NVIDIA
+1. From the [v0.9.4 release](https://github.com/IAFahim/sa-inbetween/releases/tag/v0.9.4) download
+   `SaInbetween-tools-v0.9.4-win-x64.zip`, `SHA256SUMS` and `windows-smoke.ps1` into one folder. Put the two NVIDIA
    files in the same folder.
 2. In that folder, Shift + right-click > **Open PowerShell window here**, and run:
 

@@ -2,7 +2,7 @@
 
 Four steps: three Unity packages, the tools folder, two NVIDIA files, and (Linux only, for FBX export) one library link.
 
-Tested on Unity 7000.0.0a12 with a new **Universal 3D (URP)** project on Linux. Unity fetches the packages with Git, so `git` must be on the PATH (Windows: Git for Windows).
+Tested on Unity 7000.0.0a16 (0.9.4) and 7000.0.0a12 (0.9.3) with a new **Universal 3D (URP)** project on Linux. Unity fetches the packages with Git, so `git` must be on the PATH (Windows: Git for Windows).
 
 ## 1. Packages
 
@@ -11,17 +11,14 @@ Open `Packages/manifest.json` in your project and add these lines at the top of 
 ```json
 "com.sa.motion.unity": "https://github.com/IAFahim/sa-motion.git?path=packages/com.sa.motion.unity#e56b12fe81fb7166c2c8a0984025220e3c07bb48",
 "com.sa.unity": "https://github.com/IAFahim/com.sa.unity.git#v0.3.7",
-"com.sa.inbetween.sa": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa#v0.9.3",
+"com.sa.inbetween.sa": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa#v0.9.4",
 "com.unity.formats.fbx": "5.1.6",
 ```
 
 - All three SA lines are needed. `com.sa.unity` depends on `com.sa.motion.unity`, and Unity cannot fetch that one by itself: without the first line it stops with `Package [com.sa.motion.unity@0.1.0] cannot be found`. The commit is the sa-motion revision `com.sa.unity` 0.3.7 was tested with.
 - `com.sa.unity` brings Entities and Entities Graphics 6.7.0.
 - `com.unity.formats.fbx` is the FBX Exporter (it ships with the Editor). It is only needed for **Export > FBX**.
-- Optional, for the Timeline bridge track: `"com.sa.inbetween.sa.timeline": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#v0.9.3"`.
-- Generation timelines (author and bake in the Timeline window) are in `com.sa.inbetween.sa.timeline` **0.2.0**, on branch
-  `feat/timeline-gen` until it is released: `"com.sa.inbetween.sa.timeline": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#feat/timeline-gen"`
-  (it works with `com.sa.inbetween.sa` v0.9.3).
+- Optional, for Timeline bridges and generation timelines (author and bake in the Timeline window, `com.sa.inbetween.sa.timeline` 0.2.0): `"com.sa.inbetween.sa.timeline": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#v0.9.4"`.
 - Optional, only if the project also uses Tl: `"com.tl.unity": "https://github.com/IAFahim/tl.unity.git?path=/com.tl.unity#main"`.
   The SA packages do not need it. With it, a generation timeline's Tl Settings (When it ends: Loop or Next) are honoured by Bake
   Timeline. Tl needs the newest Unity 7 editor and brings Entities Graphics 7.0.0; read its `docs/USING-ECS.md` first.
@@ -30,16 +27,16 @@ Go back to Unity. It downloads the packages and compiles; the Console shows no e
 
 ## 2. Tools folder
 
-From the [v0.9.3 release page](https://github.com/IAFahim/sa-inbetween/releases/tag/v0.9.3) download `SHA256SUMS` and the tools for your system:
+From the [v0.9.4 release page](https://github.com/IAFahim/sa-inbetween/releases/tag/v0.9.4) download `SHA256SUMS` and the tools for your system:
 
-- Windows: `SaInbetween-tools-v0.9.3-win-x64.zip`
-- Linux: `SaInbetween-tools-v0.9.3-linux-x64.tar.gz`
+- Windows: `SaInbetween-tools-v0.9.4-win-x64.zip`
+- Linux: `SaInbetween-tools-v0.9.4-linux-x64.tar.gz`
 
-Check the download. Linux: `sha256sum -c SHA256SUMS --ignore-missing` prints `OK` for it. Windows PowerShell: `Get-FileHash .\SaInbetween-tools-v0.9.3-win-x64.zip` prints the hash on its line of `SHA256SUMS`.
+Check the download. Linux: `sha256sum -c SHA256SUMS --ignore-missing` prints `OK` for it. Windows PowerShell: `Get-FileHash .\SaInbetween-tools-v0.9.4-win-x64.zip` prints the hash on its line of `SHA256SUMS`.
 
 The archive holds one folder, `SaInbetween`. It must end up in the project folder, next to `Assets` (not inside it):
 
-- Linux: `tar xzf SaInbetween-tools-v0.9.3-linux-x64.tar.gz -C <project>`
+- Linux: `tar xzf SaInbetween-tools-v0.9.4-linux-x64.tar.gz -C <project>`
 - Windows: right-click the zip, **Extract All**, then move the `SaInbetween` folder from the extracted folder into the project folder.
 
 It contains the generator (`cli/`), the baker (`bake/`) and the character family file. Both programs are self-contained, so no .NET install is needed. On Windows the model runtime uses the Microsoft Visual C++ Redistributable 2015-2022 (x64), which most PCs already have; if Generate fails with exit `-1073741515`, install it from https://aka.ms/vs/17/release/vc_redist.x64.exe.

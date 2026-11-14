@@ -1,4 +1,4 @@
-# Known limitations (0.9.3)
+# Known limitations (0.9.4)
 
 What SA Inbetween does not do, or does differently from what you might expect. Each item says what you see and what
 to do about it.
