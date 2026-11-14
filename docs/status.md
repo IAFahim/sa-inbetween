@@ -1,6 +1,6 @@
 # Status
 
-What is built, what is verified, and what is not. Updated 2026-11-09.
+What is built, what is verified, and what is not. Updated 2026-11-14.
 
 ## Production-ready
 - Contract, wire codec, motion file (`.saib`), recipe hashing: tested, property-tested, zero-allocation kernels.
@@ -16,7 +16,12 @@ What is built, what is verified, and what is not. Updated 2026-11-09.
 - Contacts into leg IK and root travel in the family bake (P16). Clips are attached at runtime, not through a subscene baker.
 - Video poses (P27) and move tuning (P28).
 
+## Designer pilot (v0.9.2)
+- Clean install on Linux, from the published Git URLs and release tools, through the whole designer guide with Mixamo clips: `docs/reports/clean-install-2026-11-14.md`.
+- Not run on Windows yet; the Windows tools zip is checked statically in that report, with the steps a Windows tester runs.
+
 ## Needs a person
+- `RealJumpTests.SyntyJumpGates` G3 foot penetration is 3.45 cm against a 3 cm gate since com.sa.unity 0.3.6 (the start frame itself converts 2.5 cm below the ground). Decide: gate relative to the start frame, or a ground correction in the calibration.
 - Foot gate in the SOMA retarget: sole is the lower of mid-foot and toe-ball, hip reference lowered to 0.9864 m.
 - Arm, forearm and hand twist on a skinned character.
 - 77-entry skeleton parent table: confirm the NVIDIA licence allows it in source.
