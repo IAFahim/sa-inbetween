@@ -218,8 +218,8 @@ namespace SA.Inbetween.Clips.Editor
             EditorGUILayout.LabelField("  on character", GUILayout.Width(84));
             character.objectReferenceValue = EditorGUILayout.ObjectField(character.objectReferenceValue, typeof(GameObject), false);
             EditorGUILayout.EndHorizontal();
-            if (character.objectReferenceValue is GameObject go && go.GetComponentInChildren<Animator>(true) == null)
-                EditorGUILayout.HelpBox("The character needs an Animator (a model or prefab imported with a rig).", MessageType.Warning);
+            if (character.objectReferenceValue is GameObject go && !(go.GetComponentInChildren<Animator>(true) is Animator animator && animator.avatar != null && animator.avatar.isHuman))
+                EditorGUILayout.HelpBox("This character has no Humanoid Avatar, so its bones are matched by name. For Mixamo, Synty and other humanoids select the model, set Inspector > Rig > Animation Type to Humanoid and press Apply.", MessageType.Warning);
         }
 
         static void Capture(SerializedProperty frame, bool isStart)
@@ -508,7 +508,7 @@ namespace SA.Inbetween.Clips.Editor
                     Show(clip);
                     ShowGameView();
                 }
-                else if (Object.FindFirstObjectByType<SaClipPlayer>() != null)
+                else if (Object.FindAnyObjectByType<SaClipPlayer>() != null)
                     ShowGameView();
             };
         }
@@ -548,7 +548,7 @@ namespace SA.Inbetween.Clips.Editor
 
         static void Show(SaClipAsset clip)
         {
-            var player = Object.FindFirstObjectByType<SaClipPlayer>();
+            var player = Object.FindAnyObjectByType<SaClipPlayer>();
             if (player == null)
                 player = new GameObject("Inbetween Preview").AddComponent<SaClipPlayer>();
             player.Clip = clip;
@@ -564,37 +564,100 @@ namespace SA.Inbetween.Clips.Editor
         [MenuItem("Assets/Create/SA/Inbetween Bridge", false, 300)]
         static void Create()
         {
-            var clips = Selection.GetFiltered<SaClipAsset>(SelectionMode.Assets);
-            var folder = "Assets";
-            var name = "Inbetween";
-            if (clips.Length > 0)
-            {
-                var path = AssetDatabase.GetAssetPath(clips[0]);
-                folder = System.IO.Path.GetDirectoryName(path)?.Replace('\\', '/') ?? "Assets";
-                name = clips[0].name + (clips.Length > 1 ? "_to_" + clips[clips.Length - 1].name : "_loop");
-            }
-            else if (Selection.activeObject != null)
-            {
-                var path = AssetDatabase.GetAssetPath(Selection.activeObject);
-                if (AssetDatabase.IsValidFolder(path)) folder = path;
-            }
-
-            var recipe = ScriptableObject.CreateInstance<InbetweenRecipe>();
-            if (clips.Length > 0)
-            {
-                recipe.Start = new ClipFrame { Clip = clips[0], Where = FrameWhere.End };
-                recipe.Goals.Clear();
-                if (clips.Length == 1)
-                    recipe.Goals.Add(new ClipFrame { Clip = clips[0], Where = FrameWhere.Start });
-                for (var i = 1; i < clips.Length && i <= InbetweenRecipe.MaxGoals; i++)
-                    recipe.Goals.Add(new ClipFrame { Clip = clips[i], Where = FrameWhere.Start });
-            }
-
-            var target = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + name + ".asset");
-            AssetDatabase.CreateAsset(recipe, target);
+            var recipe = Build(Selection.objects, out var target);
+            AssetDatabase.CreateAsset(recipe, AssetDatabase.GenerateUniqueAssetPath(target));
             AssetDatabase.SaveAssets();
             Selection.activeObject = recipe;
             EditorGUIUtility.PingObject(recipe);
+        }
+
+        public static InbetweenRecipe Build(Object[] selected, out string target)
+        {
+            var sources = new List<ClipFrame>();
+            var names = new List<string>();
+            var models = new List<GameObject>();
+            var folder = "";
+            foreach (var picked in selected)
+            {
+                var path = AssetDatabase.GetAssetPath(picked);
+                if (picked is SaClipAsset saclip)
+                    Add(sources, names, new ClipFrame { Kind = SourceKind.SaClip, Clip = saclip }, saclip.name);
+                else if (picked is AnimationClip motion && !IsPreviewTake(motion))
+                    Add(sources, names, new ClipFrame { Kind = SourceKind.UnityClip, Motion = motion, Character = ModelOf(path) }, TakeName(motion));
+                else if (picked is GameObject model && EditorUtility.IsPersistent(model))
+                    models.Add(model);
+                else if (AssetDatabase.IsValidFolder(path))
+                    folder = path;
+            }
+
+            GameObject character = null;
+            var takesFromModels = sources.Count == 0;
+            foreach (var model in models)
+            {
+                if (takesFromModels && FirstTake(AssetDatabase.GetAssetPath(model)) is AnimationClip take)
+                    Add(sources, names, new ClipFrame { Kind = SourceKind.UnityClip, Motion = take, Character = model }, TakeName(take));
+                else if (character == null)
+                    character = model;
+            }
+
+            if (folder == "" && sources.Count > 0)
+                folder = System.IO.Path.GetDirectoryName(SourcePath(sources[0]))?.Replace('\\', '/') ?? "";
+
+            var recipe = ScriptableObject.CreateInstance<InbetweenRecipe>();
+            recipe.Character = character;
+            if (sources.Count > 0)
+            {
+                recipe.Start = WithCharacter(sources[0], FrameWhere.End, character);
+                recipe.Goals.Clear();
+                if (sources.Count == 1)
+                    recipe.Goals.Add(WithCharacter(sources[0], FrameWhere.Start, character));
+                for (var i = 1; i < sources.Count && i <= InbetweenRecipe.MaxGoals; i++)
+                    recipe.Goals.Add(WithCharacter(sources[i], FrameWhere.Start, character));
+            }
+
+            var name = sources.Count == 0 ? "Inbetween" : names[0] + (sources.Count > 1 ? "_to_" + names[names.Count - 1] : "_loop");
+            target = (folder == "" ? "Assets" : folder) + "/" + name + ".asset";
+            return recipe;
+        }
+
+        static void Add(List<ClipFrame> sources, List<string> names, ClipFrame source, string name)
+        {
+            sources.Add(source);
+            names.Add(name);
+        }
+
+        static string SourcePath(ClipFrame source) => AssetDatabase.GetAssetPath(source.Kind == SourceKind.SaClip ? (Object)source.Clip : source.Motion);
+
+        static ClipFrame WithCharacter(ClipFrame source, FrameWhere where, GameObject character)
+        {
+            source.Where = where;
+            if (source.Kind == SourceKind.UnityClip && source.Character == null)
+                source.Character = character;
+            return source;
+        }
+
+        static bool IsPreviewTake(AnimationClip clip) => clip.name.StartsWith("__preview__", System.StringComparison.Ordinal);
+
+        static GameObject ModelOf(string clipPath) => AssetDatabase.LoadMainAssetAtPath(clipPath) as GameObject;
+
+        static AnimationClip FirstTake(string modelPath)
+        {
+            foreach (var asset in AssetDatabase.LoadAllAssetRepresentationsAtPath(modelPath))
+                if (asset is AnimationClip clip && !IsPreviewTake(clip))
+                    return clip;
+            return null;
+        }
+
+        public static string TakeName(AnimationClip clip)
+        {
+            var path = AssetDatabase.GetAssetPath(clip);
+            if (!(AssetDatabase.LoadMainAssetAtPath(path) is GameObject))
+                return clip.name;
+            var takes = 0;
+            foreach (var asset in AssetDatabase.LoadAllAssetRepresentationsAtPath(path))
+                if (asset is AnimationClip other && !IsPreviewTake(other))
+                    takes++;
+            return takes == 1 ? System.IO.Path.GetFileNameWithoutExtension(path) : clip.name;
         }
     }
 }

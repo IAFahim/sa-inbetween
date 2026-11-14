@@ -24,7 +24,7 @@ namespace SA.Inbetween.Clips.Editor
             try
             {
                 return FamilyClips.TryPlan(instance, out var plan, out error)
-                    && FamilyClips.TrySample(plan, motion, Rate, out var canonical, out var root, out _, out error)
+                    && FamilyClips.TrySampleFixed(plan, motion, Rate, out var canonical, out var root, out _, out _, out error)
                     && FamilyClips.TryEncode(plan, canonical, root, Rate, out bytes, out error);
             }
             finally
@@ -43,7 +43,7 @@ namespace SA.Inbetween.Clips.Editor
             }
 
             var folder = Path.GetDirectoryName(AssetDatabase.GetAssetPath(motion))?.Replace('\\', '/') ?? "Assets";
-            var path = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + motion.name + ".saclip");
+            var path = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + BridgeMenu.TakeName(motion) + ".saclip");
             if (!TryConvert(character, motion, out var bytes, out var error))
             {
                 EditorUtility.DisplayDialog("Convert to .saclip", error, "OK");

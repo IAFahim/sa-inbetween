@@ -92,6 +92,46 @@ namespace SA.Inbetween.Clips.Tests
         }
 
         [Test]
+        public void Bridge_from_selected_unity_clips_and_character_fills_both_sources()
+        {
+            const string folder = "Assets/zz_bridge_menu_test";
+            UnityEditor.AssetDatabase.DeleteAsset(folder);
+            UnityEditor.AssetDatabase.CreateFolder("Assets", "zz_bridge_menu_test");
+            var body = new GameObject("Body");
+            InbetweenRecipe recipe = null;
+            try
+            {
+                var leaving = new AnimationClip { name = "Jump" };
+                var arriving = new AnimationClip { name = "Land" };
+                UnityEditor.AssetDatabase.CreateAsset(leaving, folder + "/Jump.anim");
+                UnityEditor.AssetDatabase.CreateAsset(arriving, folder + "/Land.anim");
+                body.AddComponent<Animator>();
+                var character = UnityEditor.PrefabUtility.SaveAsPrefabAsset(body, folder + "/Body.prefab");
+
+                recipe = BridgeMenu.Build(new Object[] { leaving, arriving, character }, out var target);
+
+                Assert.AreEqual(folder + "/Jump_to_Land.asset", target);
+                Assert.AreEqual(SourceKind.UnityClip, recipe.Start.Kind);
+                Assert.AreEqual(leaving, recipe.Start.Motion);
+                Assert.AreEqual(FrameWhere.End, recipe.Start.Where);
+                Assert.AreEqual(character, recipe.Start.Character);
+                Assert.AreEqual(1, recipe.Goals.Count);
+                Assert.AreEqual(SourceKind.UnityClip, recipe.Goals[0].Kind);
+                Assert.AreEqual(arriving, recipe.Goals[0].Motion);
+                Assert.AreEqual(FrameWhere.Start, recipe.Goals[0].Where);
+                Assert.AreEqual(character, recipe.Goals[0].Character);
+                Assert.AreEqual(character, recipe.Character);
+                StringAssert.StartsWith("Save the recipe", RecipeRunner.Problem(recipe));
+            }
+            finally
+            {
+                if (recipe != null) Object.DestroyImmediate(recipe);
+                Object.DestroyImmediate(body);
+                UnityEditor.AssetDatabase.DeleteAsset(folder);
+            }
+        }
+
+        [Test]
         public void Incomplete_recipe_names_the_problem()
         {
             var r = ScriptableObject.CreateInstance<InbetweenRecipe>();

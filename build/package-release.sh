@@ -12,13 +12,13 @@ done
 motion="${SA_MOTION_DIR:-../sa-motion}"
 if [ -d "$motion/tools/SA.Soma.Bake" ]; then
   for rid in linux-x64 win-x64; do
-    tools="stage/SaInbetween-$rid"
+    tools="stage/tools-$rid/SaInbetween"
     mkdir -p "$tools/cli" "$tools/bake" "$tools/model"
     cp -r "stage/cli-$rid/." "$tools/cli/"
-    dotnet publish "$motion/tools/SA.Soma.Bake" -c Release -r "$rid" --self-contained true -p:RunAnalyzers=false -p:TreatWarningsAsErrors=false -o "$tools/bake"
+    dotnet publish "$motion/tools/SA.Soma.Bake" -c Release -r "$rid" --self-contained true -p:InvariantGlobalization=true -p:RunAnalyzers=false -p:TreatWarningsAsErrors=false -o "$tools/bake"
     cp "$motion/families/humanoid-v1.safamily" "$tools/"
     cp build/tools-readme.md "$tools/README.md"
-    (cd stage && if [ "$rid" = win-x64 ]; then zip -qr "../dist/SaInbetween-tools-$version-$rid.zip" "SaInbetween-$rid"; else tar -czf "../dist/SaInbetween-tools-$version-$rid.tar.gz" "SaInbetween-$rid"; fi)
+    (cd "stage/tools-$rid" && if [ "$rid" = win-x64 ]; then zip -qr "../../dist/SaInbetween-tools-$version-$rid.zip" SaInbetween; else tar -czf "../../dist/SaInbetween-tools-$version-$rid.tar.gz" SaInbetween; fi)
   done
 fi
 build/pack-unity.sh >/dev/null

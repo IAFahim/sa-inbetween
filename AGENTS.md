@@ -2,6 +2,13 @@
 
 Domain: turn key poses into SOMA in-between motion, and hand it on as data.
 
+## Start here (Unity work)
+Pull and read `IAFahim/unity-cli-skill` `skills/unity-cli-field-notes/SKILL.md` (owner rules 1-20), then the SA companion
+`sa-motion/.claude/skills/sa-unity-cli/SKILL.md` (Save-dialog rules, `eng/unity.sh` lock). Hard rules: newest installed
+Unity 7 editor, one Unity process at a time under the lock, batchmode only, never hand-edit Unity-serialized files or
+`.meta`, every new file in `unity/` ships its Unity-generated `.meta`, test the packages the way a user installs them
+(`docs/install.md` into a new project), and judge runs by the NUnit counts, never the exit code alone.
+
 ## Laws
 1. Data and behavior are separate. Types hold data; static pure functions hold behavior.
 2. Immutable by default: readonly record structs and immutable collections. Mutation only

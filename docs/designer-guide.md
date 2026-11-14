@@ -4,13 +4,12 @@ You do not need a terminal. You pick two clips you already have, and Inbetween m
 
 ## One-time setup (your technical artist does this once)
 
-1. Put the packages `com.sa.unity` and `com.sa.inbetween.sa` in the project.
-2. Put the **tools folder** in the project root and name it `SaInbetween`. It holds `sa-inbetween`, `sa-soma-bake`, `mmm_v6_soma_fp32.onnx`, `humanoid-v1.safamily` and `soma_rest.pose`. Or keep it anywhere and choose it in `Edit > Project Settings > SA Inbetween`, where every line should say *found*.
+Follow `docs/install.md`: three package lines in `Packages/manifest.json`, the **tools folder** `SaInbetween` next to `Assets` (it holds `sa-inbetween`, `sa-soma-bake`, `humanoid-v1.safamily`, and the two NVIDIA files `mmm_v6_soma_fp32.onnx` and `soma_rest.pose`), and a look at `Edit > Project Settings > SA Inbetween`, where every line should say *found*.
 
 ## Make a bridge
 
-1. In the Project window select the clip the character is leaving, then ctrl-click the clip it is going to.
-2. Choose `Assets > Create > SA > Inbetween Bridge` (or right-click > Create > SA). A recipe named *A_to_B* appears next to the clips.
+1. In the Project window select the clip the character is leaving, then ctrl-click the clip it is going to. A clip can be a `.saclip` or a Unity clip: an FBX take (unfold the FBX to see it) or an `.anim`. With Unity clips, also ctrl-click the character model you want to see and export the result on (see "Use your own character and clips" below). If you select only FBX files and no clips, each FBX's first take is used.
+2. Choose `Assets > Create > SA > Inbetween Bridge` (or right-click > Create > SA). A recipe named *A_to_B* appears next to the first clip, with both clips filled in. An FBX with one take gives its file name, because Mixamo takes are all named alike (`mixamo.com` or `Scene`).
 3. In the Inspector press **Generate**. It takes about 10 seconds. The bridge clip appears next to the recipe, named after it.
 4. Watch it right away in the Inspector preview (see below), no Play mode needed. **Preview on character** still plays it on your SA character; that one needs the character in the scene and enters Play mode.
 
@@ -37,6 +36,17 @@ Once the recipe has a result, the Inspector shows a preview strip under **Result
 
 The preview reads the clip directly and never adds anything to your scene. **Preview on character** (Play mode) also leaves the open scene untouched: its player exists only while playing.
 
+## Preview on character (Play mode)
+
+This plays the result on an SA character in the running ECS world, the way the game will. It needs one SA shared-family character in a SubScene of the open scene. Set it up once per character:
+
+1. Select the character model in the Project window and choose `Tools > SA > Set Up Character`. It saves `Assets/SA/Characters/<model> SA.prefab` and leaves your model unchanged. A warning `NO CLIPS FOUND` is fine here.
+2. Open that prefab.
+3. On **Rig Authoring** set **Engine** to **Cpu**.
+4. **Add Component > Shared Family Authoring**. Drag the Rig Authoring component into **Rig**, and add one clip of that character (any Humanoid take) to **Clips**. Save the prefab.
+5. Drag the prefab into your scene, right-click it in the Hierarchy and choose **New Sub Scene > From Selection...**, and save the scene.
+6. Select the recipe and press **Preview on character**. Unity enters Play mode and the character plays the bridge in a loop. The temporary `Inbetween Preview` object's **Status** says *Playing <recipe>*, or what it is waiting for.
+
 ## Try variations
 
 The same settings always give the same clip, so pressing Generate again will not give you something new. **Make variations** does:
@@ -59,18 +69,22 @@ Select one clip and choose **Inbetween Bridge**. The recipe goes from the end of
 - *Setup needed*: the message names the missing tool file. Open Project Settings.
 - *Generating failed*: the log under the message says why. The usual cause is a wrong model file.
 - Result looks off at the seam: use **At time** on the start so the bridge leaves the clip a little earlier, or lengthen the duration.
-- The character does not move in Preview: the scene needs exactly one SA shared-family character. The player's Status field says what it is waiting for.
+- The character does not move in Preview: the scene needs exactly one SA shared-family character in a SubScene (see "Preview on character" above). The player's Status field says what it is waiting for. A Console error `RigAuthoring Engine must be Cpu for timeline rigs` means step 3 there was skipped.
 - Do not enter Play mode while generating.
 - *Cannot preview this clip*: the result file is not an SA humanoid clip, or it is damaged. Generate again.
 
 ## Use your own character and clips (Mixamo, Synty, any Humanoid)
 
-1. In **Start from** or **Move to**, change the source kind to **Unity clip**.
-2. Pick the **Unity clip** (an FBX take or a `.anim`) and the **Character** (the model or prefab the clip belongs to, with a Humanoid avatar).
-3. Choose **at frame** and type the frame number you see in the Animation window, for example frame 60 of a jump.
-4. The first Generate converts the clip once (cached in `Library/SaInbetween`); later runs reuse it.
+1. Drag the FBX files (the character and its animations) into the Project window. Select them all, and in the Inspector's **Rig** tab set **Animation Type** to **Humanoid** (Avatar Definition: *Create From This Model*), then press **Apply**. Unity imports a new FBX as Generic; without a Humanoid avatar the bones are matched by name only and **Export > Humanoid clip** stays greyed out. The recipe shows a yellow note while a source character has no Humanoid avatar.
+2. Unfold the animation FBX files, select the start take, ctrl-click the goal take and ctrl-click the character model, then choose `Assets > Create > SA > Inbetween Bridge`. Both sources become **Unity clip** sources on the model each take came from, and the recipe's **Character** is the model you picked.
+3. On **Start from** choose **at frame** and type the frame number you see in the Animation window, for example frame 60 of a jump.
+4. Press **Generate**. The first Generate converts each clip once (cached in `Library/SaInbetween`); later runs reuse it.
+
+You can also build the recipe by hand: in **Start from** or **Move to** change the source kind to **Unity clip**, then pick the **Unity clip** (an FBX take or a `.anim`) and the **character** it belongs to.
 
 The start keeps the clip's real speed, including running and jumping, so the bridge continues the motion instead of restarting it. The converter maps bones through the Humanoid avatar, so Mixamo's `mixamorig:` names need no setup.
+
+Measured on a Mixamo character (Neophyte, Humanoid) from a clean project: start = frame 40 of a stab, goal = start of a sword slash, Duration 1.0 s: the generated clip has 30 frames, Generate took under 10 seconds, and the exported clips match the source frames to 0.04 degrees at both seams (bone directions), while the two source frames differ by 38 degrees on average.
 
 ## Save the result as a Unity clip
 

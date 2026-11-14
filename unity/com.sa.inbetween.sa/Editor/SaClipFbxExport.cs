@@ -28,13 +28,41 @@ namespace SA.Inbetween.Clips.Editor
             {
                 var inner = e;
                 while (inner.InnerException != null) inner = inner.InnerException;
-                error = NativeProblem + ": " + inner.Message.Split('\n')[0];
+                error = LinuxLibraryMissing("libxml2.so.2")
+                    ? NativeProblem + " because the system library libxml2.so.2 is missing. Link libxml2.so.16 as libxml2.so.2 in a folder on LD_LIBRARY_PATH and restart Unity (sa-inbetween docs/install.md, \"FBX export on Linux\")."
+                    : NativeProblem + ": " + inner.Message.Split('\n')[0];
                 return false;
             }
         }
 #endif
 
-        public const string MissingPackage = "Install the FBX Exporter package (com.unity.formats.fbx, built into the Editor) to export FBX.";
+        const int LoadLazily = 1;
+
+        [System.Runtime.InteropServices.DllImport("libdl.so.2", EntryPoint = "dlopen")]
+        static extern System.IntPtr OpenLibrary(string fileName, int flags);
+
+        [System.Runtime.InteropServices.DllImport("libdl.so.2", EntryPoint = "dlclose")]
+        static extern int CloseLibrary(System.IntPtr handle);
+
+        public static bool LinuxLibraryMissing(string fileName)
+        {
+            if (Application.platform != RuntimePlatform.LinuxEditor)
+                return false;
+            try
+            {
+                var handle = OpenLibrary(fileName, LoadLazily);
+                if (handle == System.IntPtr.Zero)
+                    return true;
+                CloseLibrary(handle);
+                return false;
+            }
+            catch (System.Exception e) when (e is System.DllNotFoundException || e is System.EntryPointNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        public const string MissingPackage = "To export FBX, add the FBX Exporter: \"com.unity.formats.fbx\": \"5.1.6\" in Packages/manifest.json (it ships with the Editor).";
 
 #if SA_FBX
         public static bool Available => true;

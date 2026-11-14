@@ -80,6 +80,41 @@ namespace SA.Inbetween.Clips.Tests
         }
 
         [Test]
+        public void Process_failures_say_what_to_install_or_fix()
+        {
+            StringAssert.Contains("Visual C++ Redistributable", StudioProcess.ExitHint(-1073741515));
+            Assert.AreEqual("", StudioProcess.ExitHint(1));
+            StringAssert.Contains("self-contained", StudioProcess.StartHint("dotnet"));
+            if (System.Environment.OSVersion.Platform != System.PlatformID.Unix)
+                return;
+            var launcher = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sa_launcher_" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                System.IO.File.WriteAllText(launcher, "#!/bin/sh\n");
+                var p = new StudioProcess();
+                Assert.IsFalse(p.Start(new StudioCommand { File = launcher, Args = new System.Collections.Generic.List<string>() }, out var e));
+                StringAssert.Contains("chmod +x", e);
+            }
+            finally
+            {
+                System.IO.File.Delete(launcher);
+            }
+        }
+
+        [Test]
+        public void Linux_library_probe_finds_libc_and_misses_an_absent_library()
+        {
+            if (UnityEngine.Application.platform != UnityEngine.RuntimePlatform.LinuxEditor)
+            {
+                Assert.IsFalse(SaClipFbxExport.LinuxLibraryMissing("anything.so"));
+                return;
+            }
+
+            Assert.IsFalse(SaClipFbxExport.LinuxLibraryMissing("libc.so.6"));
+            Assert.IsTrue(SaClipFbxExport.LinuxLibraryMissing("libsa-inbetween-absent.so.9"));
+        }
+
+        [Test]
         public void Generate_passes_every_context_pose_and_needs_one()
         {
             Assert.IsTrue(StudioCommands.TryGenerate(Valid(), out var c, out _));
@@ -111,6 +146,30 @@ namespace SA.Inbetween.Clips.Tests
                 var full = StudioDiscovery.Find(root);
                 Assert.IsTrue(full.Complete);
                 StringAssert.EndsWith("humanoid-v1.safamily", full.Family);
+            }
+            finally
+            {
+                System.IO.Directory.Delete(root, true);
+            }
+        }
+
+        [Test]
+        public void Discovery_prefers_the_self_contained_launcher_over_its_dll()
+        {
+            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "sa_studio_" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(root, "cli"));
+                System.IO.Directory.CreateDirectory(System.IO.Path.Combine(root, "bake"));
+                foreach (var name in new[] { "sa-inbetween.deps.json", "sa-inbetween.dll", "sa-inbetween.exe" })
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(root, "cli", name), "x");
+                foreach (var name in new[] { "SA.Soma.Bake.dll", "sa-soma-bake.dll", "sa-soma-bake.exe" })
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(root, "bake", name), "x");
+                var found = StudioDiscovery.Find(root);
+                StringAssert.EndsWith("sa-inbetween.exe", found.Cli);
+                StringAssert.EndsWith("sa-soma-bake.exe", found.Bake);
+                System.IO.File.Delete(System.IO.Path.Combine(root, "cli", "sa-inbetween.exe"));
+                StringAssert.EndsWith("sa-inbetween.dll", StudioDiscovery.Find(root).Cli);
             }
             finally
             {

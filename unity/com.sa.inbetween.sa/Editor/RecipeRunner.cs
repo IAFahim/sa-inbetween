@@ -142,11 +142,12 @@ namespace SA.Inbetween.Clips.Editor
         }
 
         public const float SourceRate = 30f;
+        const string SourceSampling = "fixed";
 
         public static string SourceKey(ClipFrame f)
         {
             var sb = new StringBuilder();
-            sb.Append(SourceRate.ToString("R", CultureInfo.InvariantCulture)).Append('|').Append(FamilyVersion());
+            sb.Append(SourceRate.ToString("R", CultureInfo.InvariantCulture)).Append(SourceSampling).Append('|').Append(FamilyVersion());
             AppendAsset(sb, f.Motion);
             AppendAsset(sb, f.Character);
             using var sha = SHA1.Create();
@@ -420,7 +421,7 @@ namespace SA.Inbetween.Clips.Editor
                 run.Log = run.Job.Log;
                 if (run.Job.ExitCode != 0)
                 {
-                    Fail(run, run.Current.Label + " failed (exit " + run.Job.ExitCode + ").");
+                    Fail(run, run.Current.Label + " failed (exit " + run.Job.ExitCode + ")." + StudioProcess.ExitHint(run.Job.ExitCode));
                     continue;
                 }
 

@@ -38,6 +38,8 @@ namespace SA.Inbetween.Clips.Editor
             return tools;
         }
 
+        static bool IsNativeLauncher(string found) => found != "" && !found.EndsWith(".dll", System.StringComparison.OrdinalIgnoreCase);
+
         static void Walk(string dir, int depth, ref StudioTools t)
         {
             string[] files;
@@ -55,9 +57,10 @@ namespace SA.Inbetween.Clips.Editor
             foreach (var f in files)
             {
                 var n = Path.GetFileName(f);
-                if (t.Cli == "" && (n == "sa-inbetween" || n == "sa-inbetween.exe")) t.Cli = f;
+                if (!IsNativeLauncher(t.Cli) && (n == "sa-inbetween" || n == "sa-inbetween.exe")) t.Cli = f;
                 else if (t.Cli == "" && n == "sa-inbetween.dll") t.Cli = f;
-                if (t.Bake == "" && (n == "sa-soma-bake" || n == "sa-soma-bake.exe" || n == "SA.Soma.Bake.dll")) t.Bake = f;
+                if (!IsNativeLauncher(t.Bake) && (n == "sa-soma-bake" || n == "sa-soma-bake.exe")) t.Bake = f;
+                else if (t.Bake == "" && n == "SA.Soma.Bake.dll") t.Bake = f;
                 if (t.Model == "" && n == "mmm_v6_soma_fp32.onnx") t.Model = f;
                 if (n.EndsWith(".safamily", System.StringComparison.Ordinal) && (t.Family == "" || n.StartsWith("humanoid-v1", System.StringComparison.Ordinal))) t.Family = f;
                 if (t.Rest == "" && n == "soma_rest.pose") t.Rest = f;

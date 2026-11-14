@@ -364,7 +364,7 @@ namespace SA.Inbetween.Clips.Editor
                 run.Finished++;
                 if (code != 0)
                 {
-                    Failed(run, run.Current.Label + " failed (exit " + code + ").");
+                    Failed(run, run.Current.Label + " failed (exit " + code + ")." + StudioProcess.ExitHint(code));
                     continue;
                 }
 

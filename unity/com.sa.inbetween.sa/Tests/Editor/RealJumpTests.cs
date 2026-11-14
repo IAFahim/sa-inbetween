@@ -298,7 +298,7 @@ namespace SA.Inbetween.Clips.Tests
 
         static void ImportRoundTrip(FamilyRigPlan plan, GameObject instance, AnimationClip clip, Gates gates)
         {
-            Assert.IsTrue(FamilyClips.TrySample(plan, clip, Hz, out var canonical, out var root, out var start, out var frames, out var error), error);
+            Assert.IsTrue(FamilyClips.TrySampleFixed(plan, clip, Hz, out var canonical, out var root, out var start, out var frames, out var error), error);
             Assert.IsTrue(FamilyClips.TryEncode(plan, canonical, root, Hz, out var bytes, out error), error);
             var loaded = Load(bytes);
             var decoded = new Pose[frames * FamilyClips.CanonicalBones];

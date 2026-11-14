@@ -49,9 +49,27 @@ namespace SA.Inbetween.Clips.Editor
             catch (Exception e) when (e is System.ComponentModel.Win32Exception || e is InvalidOperationException)
             {
                 process = null;
-                error = "Could not start " + command.File + ": " + e.Message;
+                error = "Could not start " + command.File + ": " + e.Message + StartHint(command.File);
                 return false;
             }
+        }
+
+        public static string StartHint(string file)
+        {
+            if (string.Equals(file, "dotnet", StringComparison.Ordinal))
+                return ". The tools folder has no self-contained sa-inbetween launcher next to sa-inbetween.dll; download the tools for this platform from the release page.";
+            if (Environment.OSVersion.Platform == PlatformID.Unix && System.IO.File.Exists(file))
+                return ". Make it executable: chmod +x \"" + file + "\"";
+            return "";
+        }
+
+        public static string ExitHint(int exitCode)
+        {
+            const int WindowsDllNotFound = -1073741515;
+            const int WindowsBadImage = -1073741701;
+            if (exitCode == WindowsDllNotFound || exitCode == WindowsBadImage)
+                return " Windows could not load a DLL the tool needs: install the Microsoft Visual C++ Redistributable 2015-2022 (x64) from https://aka.ms/vs/17/release/vc_redist.x64.exe and try again.";
+            return "";
         }
 
         public void Kill()
