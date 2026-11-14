@@ -137,3 +137,44 @@ worktree with `testables`; judged by the NUnit XML counts and `error CS` = 0.
 5. One recipe per Generate clip, named after the clip, in `<Timeline>_Generated/`; a rename makes a new recipe.
 6. Step clips live in a runtime assembly (Timeline needs a MonoScript) and are empty playables at run time.
 7. Samples are built from the user's own assets by a menu, like the existing demo scene.
+
+## Status (first slice, 2026-11-14)
+
+Built on `feat/timeline-gen` as planned; every clip type above, the bake, the plan file, the demo menu
+(`SA > Inbetween > Create Generation Demo`), **Assets > Create > SA > Inbetween Generation Timeline** from a selection, the Timeline
+window action, the Inspector buttons and `GenBatch.Bake` for `-executeMethod`. Docs: `docs/designer-guide.md` ("Author a generation on
+a Timeline") and `docs/timeline-generation.md` (toolbox programmers, adding a clip type).
+
+Decisions made while building:
+
+8. **Ticks decide which clips meet; seconds carry the values.** Windows and edges use tl's tick rule, but local times and lengths are
+   computed from the clips' exact seconds, so a layout gives the Bridge's recipe to the bit even off the 30 fps grid
+   (1.75 s rounds to tick 52 under banker's rounding).
+9. **A window the generator cannot fill is a fault, not a silent clamp** (the Bridge clamps and ripples; here the designer drew the
+   window). Token rounding is reported: *0.83 s on the timeline; its Generate clip is 0.80 s*.
+10. **Variations counts the kept version**; each version has a fixed recipe (`Name`, `Name_Shorter`, ...), so switching Keep re-exports
+    without generating. An impossible alternate is skipped with a note; an impossible Keep is a fault.
+11. A default-named Generate clip takes `<start>_to_<goal>` (as the Bridge names recipes); a renamed one names its files.
+
+Receipts. Fresh URP project, Unity 7000.0.0a16, Linux, batchmode under `flock /tmp/sa-unity.lock`, packages as `file:` from the worktree,
+`testables` com.sa.inbetween.sa.timeline, tools from `~/sa-inbetween-tools`, Synty test assets copied into the scratch project (not
+committed), FBX through the libxml2 link:
+
+| Configuration | EditMode | PlayMode | `error CS` / `warning CS` |
+|---|---|---|---|
+| with `com.tl.unity` (git URL, `#main`) | 78/78 (75 + 3 tl glue) | 1/1 | 0 / 0 |
+| without tl (glue assembly not compiled) | 75/75 | 1/1 | 0 / 0 |
+
+The real bake (`GenBakeTests`, 10-13 s): the Synty jump left at frame 60, 0.8 s to the soft landing; the recipe hash equals
+`TimelineBridge.Configure`'s, the `.saclip` bytes equal a Bridge-made recipe's, `.anim`, `_Humanoid.anim` and `.fbx` written and
+labelled, the Humanoid clip placed at 2.00 s on the Generated track (0.83 s long), and a second bake generates nothing (0 generated,
+1 up to date, same plan digest). The demo (`GenDemoTests`) lays out both sample timelines and bakes in its own scene with the director's
+bindings.
+
+Not done in this slice:
+
+- Hips matching on the Generated track (the Bridge's `MatchOffsets`): the generated clip starts at the origin facing +Z.
+- Source clips are not previewed in the Timeline window (GenClips are empty playables); only the Generated track plays.
+- "Model picks" variation (needs a token range on the recipe).
+- The Timeline window UI was not clicked by a person; it was driven through the same methods its buttons call.
+- Windows not run.
