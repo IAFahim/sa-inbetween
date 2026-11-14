@@ -34,9 +34,21 @@ to do about it.
 - **Preview on character (Play mode)** needs one SA shared-family character in a SubScene. The First Bridge window
   and the Inspector preview do not.
 - The Generic `.anim` starts at the origin facing +Z; place it where the previous clip left off.
+- **The Humanoid `.anim` keeps its up-and-down motion in the pose** (Root Transform Position Y: Bake Into Pose, based upon
+  Original), so a jump lands on the ground when an Animator plays it with root motion off, as the demo does. Sideways motion
+  and turning stay root motion: with root motion off the character jumps in place.
+- **4 Play in SA runtime** (First Bridge window) needs a Humanoid character and a demo scene with no other SubScene; it adds
+  one SubScene with the SA character and leaves the Animator character as it is.
+- **Generated track on a Timeline**: clips are lined up on the hips sideways and in facing; each keeps its own height, so a
+  small vertical step can show at a seam (Synty jump: 3.6 cm at the top, 6.1 cm at touchdown). Matching needs the timeline's
+  director in an open scene; without it the report says the hips were not matched.
+- The very first preview frame after the Editor starts can render dark for an instant while shaders load; the next frame is
+  lit.
 
 ## Workflow
 
+- **A Generate step that takes longer than two minutes is stopped** with a plain message (nothing is written). A very
+  slow PC can raise the limit in the Editor preferences key `SA.Inbetween.stepLimitSeconds`.
 - **Nothing regenerates by itself.** A recipe or Timeline bridge says *out of date* when its settings or a source
   clip change; press **Generate** (or **Regenerate Inbetween bridge**).
 - **Generating stops if Unity reloads scripts** (a script change, or Play mode with domain reload). The recipe then

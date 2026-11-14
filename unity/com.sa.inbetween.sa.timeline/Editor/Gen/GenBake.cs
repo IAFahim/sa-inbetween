@@ -233,6 +233,17 @@ namespace SA.Inbetween.Timeline.Editor
                 run.Current++;
             }
 
+            string sources;
+            try
+            {
+                sources = GenOutputs.PlaceSources(run);
+            }
+            catch (Exception e)
+            {
+                sources = "Generated track: the source clips around the generated motion were not placed (" + e.GetType().Name + ": " + e.Message + "). The generated clips are placed.";
+            }
+
+            if (sources != "") run.Report.Add(sources);
             Complete(run, run.Jobs.Any(j => j.Error != "") ? string.Join(" ", run.Jobs.Where(j => j.Error != "").Select(j => j.Error)) : "");
         }
 

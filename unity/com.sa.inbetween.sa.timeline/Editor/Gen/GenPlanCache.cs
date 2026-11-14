@@ -44,8 +44,18 @@ namespace SA.Inbetween.Timeline.Editor
 
         public static PlayableDirector DirectorOf(TimelineAsset timeline)
         {
+            if (timeline == null) return null;
             var director = TimelineEditor.inspectedDirector;
-            return director != null && director.playableAsset == timeline ? director : null;
+            if (director != null && director.playableAsset == timeline) return director;
+            PlayableDirector only = null;
+            foreach (var candidate in Object.FindObjectsByType<PlayableDirector>(FindObjectsInactive.Include))
+            {
+                if (candidate.playableAsset != timeline || EditorUtility.IsPersistent(candidate)) continue;
+                if (only != null) return null;
+                only = candidate;
+            }
+
+            return only;
         }
 
         static bool Contains(TimelineAsset timeline, Object asset)

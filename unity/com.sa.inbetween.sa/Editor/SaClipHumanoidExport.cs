@@ -117,6 +117,8 @@ namespace SA.Inbetween.Clips.Editor
             AnimationUtility.SetEditorCurves(clip, bindings.ToArray(), curves.ToArray());
             var settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.loopTime = false;
+            settings.loopBlendPositionY = true;
+            settings.keepOriginalPositionY = true;
             AnimationUtility.SetAnimationClipSettings(clip, settings);
             return clip;
         }

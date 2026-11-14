@@ -1,9 +1,28 @@
 {
   "name": "SA.Inbetween.Clips.Tests",
-  "references": ["SA.Inbetween.Clips", "SA.Inbetween.Clips.Editor", "SA.Runtime", "SA.Editor", "Unity.Collections", "Unity.Entities", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "SA.Inbetween.Clips",
+    "SA.Inbetween.Clips.Editor",
+    "SA.Runtime",
+    "SA.Editor",
+    "Unity.Collections",
+    "Unity.Entities",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "Unity.Scenes"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "overrideReferences": true,
-  "precompiledReferences": ["nunit.framework.dll", "SA.Animation.dll", "SA.Animation.Content.dll", "SA.Motion.dll"],
+  "precompiledReferences": [
+    "nunit.framework.dll",
+    "SA.Animation.dll",
+    "SA.Animation.Content.dll",
+    "SA.Motion.dll"
+  ],
   "autoReferenced": false,
-  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ]
 }

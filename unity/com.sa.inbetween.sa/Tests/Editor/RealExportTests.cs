@@ -99,6 +99,58 @@ namespace SA.Inbetween.Clips.Tests
         }
 
         [Test, Category("RealAssets")]
+        public void Humanoid_clip_keeps_the_jump_height_when_the_animator_has_root_motion_off()
+        {
+            var character = AssetDatabase.LoadAssetAtPath<GameObject>(SyntyCharacter);
+            var source = AssetDatabase.LoadAssetAtPath<SaClipAsset>(Result);
+            if (character == null || source == null) Assert.Ignore("Synty character or MidAirJump result missing");
+            Assert.IsTrue(SaClipHumanoidExport.TryBuild(source, character, out var humanoid, out var error), error);
+            var truth = UnityEngine.Object.Instantiate(character);
+            truth.hideFlags = HideFlags.HideAndDontSave;
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+            var played = UnityEngine.Object.Instantiate(character);
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(played, scene);
+            var graph = UnityEngine.Playables.PlayableGraph.Create("humanoid height");
+            try
+            {
+                Assert.IsTrue(FamilyClips.TryPlan(truth, out var plan, out error), error);
+                Assert.IsTrue(SaClipExport.TrySampleLocals(plan, source.Bytes, out var locals, out var frames, out error), error);
+                var animator = played.GetComponentInChildren<Animator>(true);
+                animator.applyRootMotion = false;
+                animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                graph.SetTimeUpdateMode(UnityEngine.Playables.DirectorUpdateMode.Manual);
+                var output = UnityEngine.Animations.AnimationPlayableOutput.Create(graph, "humanoid", animator);
+                var clipPlayable = UnityEngine.Animations.AnimationClipPlayable.Create(graph, humanoid);
+                UnityEngine.Playables.PlayableOutputExtensions.SetSourcePlayable(output, clipPlayable);
+                var playedHips = animator.GetBoneTransform(HumanBodyBones.Hips);
+                var report = new StringBuilder();
+                var heights = new float[2];
+                var frameOf = new[] { 0, frames - 1 };
+                for (var i = 0; i < 2; i++)
+                {
+                    SaClipExport.ApplyFrame(plan, locals, frameOf[i]);
+                    heights[i] = plan.Bones[plan.Hips].position.y;
+                    UnityEngine.Playables.PlayableExtensions.SetTime(clipPlayable, frameOf[i] / Hz);
+                    graph.Evaluate(0f);
+                    var playedHeight = playedHips.position.y;
+                    report.Append("frame ").Append(frameOf[i]).Append(": result hips ").Append(heights[i].ToString("0.000", CultureInfo.InvariantCulture))
+                        .Append(" m, Humanoid clip through an Animator with root motion off ").Append(playedHeight.ToString("0.000", CultureInfo.InvariantCulture)).Append(" m\n");
+                    Assert.AreEqual(heights[i], playedHeight, 0.05f, report.ToString());
+                }
+
+                Assert.Greater(heights[0] - heights[1], 0.2f, "the source clip should start mid-air and land: " + report);
+            }
+            finally
+            {
+                graph.Destroy();
+                UnityEngine.Object.DestroyImmediate(played);
+                UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene);
+                UnityEngine.Object.DestroyImmediate(truth);
+                UnityEngine.Object.DestroyImmediate(humanoid);
+            }
+        }
+
+        [Test, Category("RealAssets")]
         public void FbxReimportMatchesTheClips()
         {
             if (!SaClipFbxExport.Available) Assert.Ignore(SaClipFbxExport.MissingPackage);

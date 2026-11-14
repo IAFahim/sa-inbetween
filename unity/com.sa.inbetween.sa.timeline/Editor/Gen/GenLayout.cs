@@ -14,18 +14,18 @@ namespace SA.Inbetween.Timeline.Editor
         public const string BakeTrack = "Bake";
         public const double GenerateSeconds = 1.0;
 
-        public static TimelineAsset Create(string path, IReadOnlyList<ClipFrame> sources, GameObject character, double generateSeconds, int variations, double firstSeconds = 0)
+        public static TimelineAsset Create(string path, IReadOnlyList<ClipFrame> sources, GameObject character, double generateSeconds, int variations, double firstSeconds = 0, bool withFbx = false)
         {
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
             timeline.name = Path.GetFileNameWithoutExtension(path);
             AssetDatabase.CreateAsset(timeline, path);
-            Fill(timeline, sources, character, generateSeconds, variations, firstSeconds);
+            Fill(timeline, sources, character, generateSeconds, variations, firstSeconds, withFbx);
             EditorUtility.SetDirty(timeline);
             AssetDatabase.SaveAssets();
             return timeline;
         }
 
-        public static void Fill(TimelineAsset timeline, IReadOnlyList<ClipFrame> sources, GameObject character, double generateSeconds, int variations, double firstSeconds = 0)
+        public static void Fill(TimelineAsset timeline, IReadOnlyList<ClipFrame> sources, GameObject character, double generateSeconds, int variations, double firstSeconds = 0, bool withFbx = false)
         {
             var steps = timeline.CreateTrack<GenTrack>(null, StepsTrack);
             var bake = timeline.CreateTrack<GenTrack>(null, BakeTrack);
@@ -56,6 +56,9 @@ namespace SA.Inbetween.Timeline.Editor
             var export = bake.CreateClip<ExportClip>();
             export.start = 0;
             export.duration = time;
+            var exportPayload = ((ExportClip)export.asset).Payload;
+            exportPayload.Fbx = withFbx;
+            ((ExportClip)export.asset).Payload = exportPayload;
             GenOutputs.Track(timeline, true);
         }
     }

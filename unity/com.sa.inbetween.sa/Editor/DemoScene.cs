@@ -296,6 +296,7 @@ namespace SA.Inbetween.Clips.Editor
                 fresh.BuiltFrom = existing.BuiltFrom;
                 fresh.SavedClip = existing.SavedClip;
                 fresh.SavedFrom = existing.SavedFrom;
+                fresh.name = RecipeName;
                 EditorUtility.CopySerialized(fresh, existing);
                 Object.DestroyImmediate(fresh);
                 recipe = existing;
@@ -348,7 +349,10 @@ namespace SA.Inbetween.Clips.Editor
                 playable = human;
             }
 
-            var controllerPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(recipe)).Replace('\\', '/') + "/" + ControllerName + ".controller";
+            var fbxNote = "";
+            if (SaClipFbxExport.TryExport(recipe, out var fbx, out var fbxError)) files.Add(fbx);
+            else fbxNote = "FBX not written (the Unity clips are fine): " + fbxError;
+                        var controllerPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(recipe)).Replace('\\', '/') + "/" + ControllerName + ".controller";
             AssetDatabase.DeleteAsset(controllerPath);
             var controller = AnimatorController.CreateAnimatorControllerAtPathWithClip(controllerPath, playable);
             var state = controller.layers[0].stateMachine.defaultState;
@@ -371,7 +375,7 @@ namespace SA.Inbetween.Clips.Editor
                         files.Add(ScenePath);
                     }
 
-            saved = string.Join("\n", files);
+            saved = string.Join("\n", files) + (fbxNote == "" ? "" : "\n" + fbxNote);
             error = "";
             return true;
         }

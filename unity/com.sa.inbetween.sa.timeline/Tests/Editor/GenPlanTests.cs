@@ -116,7 +116,7 @@ namespace SA.Inbetween.Timeline.Tests
             Assert.That(asset.Payload.LandExactly, Is.True);
             Assert.That(asset.Payload.Variations, Is.EqualTo(1));
             var export = Add<ExportClip>(bake, 0, 1);
-            Assert.That(export.Payload.Anim && export.Payload.HumanoidAnim && export.Payload.PlaceOnTimeline && !export.Payload.Fbx, Is.True);
+            Assert.That(export.Payload.Anim && export.Payload.HumanoidAnim && export.Payload.PlaceOnTimeline && export.Payload.PlaceSources && !export.Payload.Fbx, Is.True);
             Assert.That(Add<LabelClip>(bake, 0, 1).Payload.Label, Is.EqualTo("Inbetween"));
         }
 

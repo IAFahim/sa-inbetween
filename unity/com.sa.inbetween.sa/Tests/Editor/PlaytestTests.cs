@@ -15,7 +15,7 @@ namespace SA.Inbetween.Clips.Tests
 {
     public class PlaytestTests
     {
-        const string Folder = "Assets/zz_playtest_test";
+        internal const string Folder = "Assets/zz_playtest_test";
 
         static string restoreTools;
 
@@ -29,7 +29,7 @@ namespace SA.Inbetween.Clips.Tests
             if (Directory.Exists(root)) Directory.Delete(root, true);
         }
 
-        sealed class FakeTools : IDisposable
+        internal sealed class FakeTools : IDisposable
         {
             public readonly string Root;
 
@@ -79,7 +79,7 @@ namespace SA.Inbetween.Clips.Tests
             return bytes;
         }
 
-        static SaPoseAsset Pose()
+        internal static SaPoseAsset Pose()
         {
             var pose = ScriptableObject.CreateInstance<SaPoseAsset>();
             pose.Values = new float[SaPoseAsset.FloatCount];
@@ -87,7 +87,7 @@ namespace SA.Inbetween.Clips.Tests
             return pose;
         }
 
-        static InbetweenRecipe PoseRecipe(string name, SaPoseAsset pose)
+        internal static InbetweenRecipe PoseRecipe(string name, SaPoseAsset pose)
         {
             var recipe = ScriptableObject.CreateInstance<InbetweenRecipe>();
             recipe.Start = new ClipFrame { Kind = SourceKind.Pose, Pose = pose };
@@ -97,13 +97,13 @@ namespace SA.Inbetween.Clips.Tests
             return recipe;
         }
 
-        static void Fresh()
+        internal static void Fresh()
         {
             AssetDatabase.DeleteAsset(Folder);
             AssetDatabase.CreateFolder("Assets", Path.GetFileName(Folder));
         }
 
-        static bool Alive(int pid)
+        internal static bool Alive(int pid)
         {
             try
             {
@@ -115,7 +115,7 @@ namespace SA.Inbetween.Clips.Tests
             }
         }
 
-        static IEnumerator Until(Func<bool> done, double seconds)
+        internal static IEnumerator Until(Func<bool> done, double seconds)
         {
             var begun = EditorApplication.timeSinceStartup;
             while (!done() && EditorApplication.timeSinceStartup - begun < seconds) yield return null;
@@ -468,6 +468,8 @@ namespace SA.Inbetween.Clips.Tests
                 Assert.IsTrue(DemoScene.TrySave(recipe, out var saved, out error), error);
                 StringAssert.Contains(".anim", saved);
                 Assert.IsTrue(File.Exists(SaClipHumanoidExport.ExportPath(recipe)));
+                if (SaClipFbxExport.CanExport(out var fbxProblem)) Assert.IsTrue(File.Exists(SaClipFbxExport.ExportPath(recipe)), "Save did not write the FBX: " + saved);
+                else StringAssert.Contains("FBX not written", saved, fbxProblem);
                 Assert.IsTrue(File.Exists(DemoScene.Folder + "/" + DemoScene.ControllerName + ".controller"));
                 foreach (var root in scene.GetRootGameObjects())
                     if (root.name == DemoScene.CharacterName)

@@ -19,7 +19,10 @@ namespace SA.Inbetween.Timeline.Gen
         [Tooltip("Put the result on the timeline's Generated track, at the Generate clip's time.")]
         public bool PlaceOnTimeline;
 
-        public static ExportPayload Default => new ExportPayload { Anim = true, HumanoidAnim = true, Fbx = false, PlaceOnTimeline = true };
+        [Tooltip("Also put the Unity clips it starts from and lands on around it on the Generated track, with the hips matched at each seam, so the Generated track plays from start to end.")]
+        public bool PlaceSources;
+
+        public static ExportPayload Default => new ExportPayload { Anim = true, HumanoidAnim = true, Fbx = false, PlaceOnTimeline = true, PlaceSources = true };
     }
 
     [DisplayName("Export")]

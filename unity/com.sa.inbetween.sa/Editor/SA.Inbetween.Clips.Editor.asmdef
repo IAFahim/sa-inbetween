@@ -6,7 +6,9 @@
     "SA.Editor",
     "SA.Runtime",
     "Unity.Formats.Fbx.Editor",
-    "Autodesk.Fbx"
+    "Autodesk.Fbx",
+    "Unity.Scenes",
+    "Unity.Entities"
   ],
   "includePlatforms": [
     "Editor"

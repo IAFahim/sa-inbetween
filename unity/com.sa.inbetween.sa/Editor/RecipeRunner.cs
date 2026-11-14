@@ -590,7 +590,16 @@ namespace SA.Inbetween.Clips.Editor
                     continue;
                 }
 
-                if (run.Job.Running) continue;
+                if (run.Job.Running)
+                {
+                    var limit = InbetweenSettings.StepLimitSeconds;
+                    if (EditorApplication.timeSinceStartup - run.StartedAt <= limit) continue;
+                    run.Job.Kill();
+                    run.Log = run.Job.Log;
+                    Fail(run, FailureAdvice.TookTooLong(run.Current.Label, limit));
+                    continue;
+                }
+
                 if (run.Job.ExitCode == int.MinValue || run.Job.Handled) continue;
                 run.Job.MarkHandled();
                 run.Log = run.Job.Log;

@@ -41,6 +41,7 @@ namespace SA.Inbetween.Clips.Editor
         internal StudioSettings Settings;
         internal StudioProcess Process;
         internal Job Current;
+        internal double StartedAt;
         public readonly List<VariationCandidate> Candidates = new List<VariationCandidate>();
         public int Total;
         public int Finished;
@@ -378,12 +379,22 @@ namespace SA.Inbetween.Clips.Editor
                 {
                     if (!Next(run)) { Finish(run); continue; }
                     run.Stage = run.Current.Label;
+                    run.StartedAt = EditorApplication.timeSinceStartup;
                     run.Process = new StudioProcess();
                     if (!run.Process.Start(run.Current.Command, out var error)) Failed(run, error);
                     continue;
                 }
 
-                if (run.Process.Running) continue;
+                if (run.Process.Running)
+                {
+                    var limit = InbetweenSettings.StepLimitSeconds;
+                    if (EditorApplication.timeSinceStartup - run.StartedAt <= limit) continue;
+                    run.Process.Kill();
+                    run.Log = run.Process.Log;
+                    run.Finished++;
+                    Failed(run, FailureAdvice.TookTooLong(run.Current.Label, limit));
+                    continue;
+                }
                 if (run.Process.ExitCode == int.MinValue || run.Process.Handled) continue;
                 run.Process.MarkHandled();
                 run.Log = run.Process.Log;

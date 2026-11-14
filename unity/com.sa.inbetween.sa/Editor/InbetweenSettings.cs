@@ -8,6 +8,14 @@ namespace SA.Inbetween.Clips.Editor
     {
         const string ToolsKey = "SA.Inbetween.tools";
         const string VerifyKey = "SA.Inbetween.verify";
+        const string StepLimitKey = "SA.Inbetween.stepLimitSeconds";
+        public const float DefaultStepLimitSeconds = 120f;
+
+        public static float StepLimitSeconds
+        {
+            get => EditorPrefs.GetFloat(StepLimitKey, DefaultStepLimitSeconds);
+            set => EditorPrefs.SetFloat(StepLimitKey, value);
+        }
 
         public static string ToolsFolder
         {

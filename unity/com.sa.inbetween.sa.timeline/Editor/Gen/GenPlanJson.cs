@@ -98,7 +98,7 @@ namespace SA.Inbetween.Timeline.Editor
             Key(json, 3, "rig").Append(Str(job.Rig.ToString())).Append(",\n");
             Key(json, 3, "footIK").Append(job.FootIK ? "true" : "false").Append(",\n");
             Key(json, 3, "export").Append("{ \"anim\": ").Append(Bool(job.Export.Anim)).Append(", \"humanoidAnim\": ").Append(Bool(job.Export.HumanoidAnim))
-                .Append(", \"fbx\": ").Append(Bool(job.Export.Fbx)).Append(", \"placeOnTimeline\": ").Append(Bool(job.Export.PlaceOnTimeline)).Append(" },\n");
+                .Append(", \"fbx\": ").Append(Bool(job.Export.Fbx)).Append(", \"placeOnTimeline\": ").Append(Bool(job.Export.PlaceOnTimeline)).Append(", \"placeSources\": ").Append(Bool(job.Export.PlaceSources)).Append(" },\n");
             Key(json, 3, "labels").Append('[').Append(string.Join(", ", job.Labels.Select(Str))).Append("],\n");
             Key(json, 3, "recipes").Append('[');
             for (var i = 0; i < job.Variants.Count; i++)

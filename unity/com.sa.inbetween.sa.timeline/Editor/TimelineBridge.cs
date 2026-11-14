@@ -396,6 +396,39 @@ namespace SA.Inbetween.Timeline.Editor
             return true;
         }
 
+        public const double ChainSeam = 1e-3;
+
+        public static Matrix4x4 DeltaOnGround(Pose to, Pose from)
+        {
+            var full = Delta(to, from);
+            var translation = (Vector3)full.GetColumn(3);
+            translation.y = 0f;
+            return Matrix4x4.TRS(translation, full.rotation, Vector3.one);
+        }
+
+        public static int MatchChain(TimelineAsset timeline, AnimationTrack track, PlayableDirector director, out string note)
+        {
+            note = "";
+            var bound = director != null && director.playableAsset == timeline ? BoundAnimator(director, track) : null;
+            if (bound == null) { note = "the Generated track has no bound character"; return 0; }
+            using var probe = new TrackProbe(timeline, track, bound);
+            if (!probe.Valid) { note = probe.Problem; return 0; }
+            var ordered = track.GetClips().Where(c => c.asset is AnimationPlayableAsset).OrderBy(c => c.start).ToList();
+            var matched = 0;
+            for (var i = 1; i < ordered.Count; i++)
+            {
+                var before = ordered[i - 1];
+                var after = ordered[i];
+                if (Math.Abs(after.start - before.end) > ChainSeam) continue;
+                var leaving = probe.Hips(before.end - Probe);
+                var arriving = probe.Hips(after.start + Probe);
+                Apply(probe, (AnimationPlayableAsset)after.asset, DeltaOnGround(leaving, arriving));
+                matched++;
+            }
+
+            return matched;
+        }
+
         /// <summary>World rigid delta (yaw + translation) that takes <paramref name="from"/> onto <paramref name="to"/>.</summary>
         public static Matrix4x4 Delta(Pose to, Pose from)
         {

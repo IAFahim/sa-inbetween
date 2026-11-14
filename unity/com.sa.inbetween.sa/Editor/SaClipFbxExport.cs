@@ -70,6 +70,16 @@ namespace SA.Inbetween.Clips.Editor
         public static bool Available => false;
 #endif
 
+        public static bool CanExport(out string error)
+        {
+#if SA_FBX
+            return NativeReady(out error);
+#else
+            error = MissingPackage;
+            return false;
+#endif
+        }
+
         public static string ExportPath(InbetweenRecipe recipe)
         {
             var path = SaClipExport.ExportPath(recipe);

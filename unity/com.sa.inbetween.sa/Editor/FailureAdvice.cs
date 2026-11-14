@@ -28,6 +28,9 @@ namespace SA.Inbetween.Clips.Editor
             return stage + " failed (exit code " + exitCode + ")" + (line == "" ? "." : ": " + line + ".") + " Press Generate again." + ReportHint;
         }
 
+        public static string TookTooLong(string stage, float limitSeconds) =>
+            stage + " took longer than " + limitSeconds.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " seconds, so it was stopped. Nothing was written to the project; the previous result, if any, is unchanged. Press Generate again. If it stops again, close other programs (generating needs about 1.5 GB of free memory) and try once more; then press Copy diagnostics." + ReportHint;
+
         public static string ForStart(string error)
         {
             if (string.IsNullOrEmpty(error)) return "";

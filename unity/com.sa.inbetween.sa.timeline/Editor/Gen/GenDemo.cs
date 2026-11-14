@@ -73,7 +73,7 @@ namespace SA.Inbetween.Timeline.Editor
             {
                 var existing = AssetDatabase.LoadAssetAtPath<TimelineAsset>(TimelinePath(name));
                 if (existing != null) AssetDatabase.DeleteAsset(TimelinePath(name));
-                GenLayout.Create(TimelinePath(name), new List<ClipFrame> { start, goal }, picks.Character, DemoScene.Duration, name == Takes ? 3 : 1, leave);
+                GenLayout.Create(TimelinePath(name), new List<ClipFrame> { start, goal }, picks.Character, DemoScene.Duration, name == Takes ? 3 : 1, leave, SaClipFbxExport.CanExport(out _));
             }
 
             var characterPath = AssetDatabase.GetAssetPath(picks.Character);
