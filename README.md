@@ -54,7 +54,7 @@ sa-inbetween inspect walk.saib
 
 ### In Unity (SA characters)
 
-Install first: `docs/install.md`. Then add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.6), select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
+Install first: `docs/install.md`. Then add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.7). New here: choose `SA > Inbetween > Create Demo Scene` and press the three buttons. Otherwise select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
 
 For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a complete caller of `PortedGenerator`) and `docs/ecs-integration.md` (where generation may and may not run).
 
@@ -101,4 +101,4 @@ Golden-based tests skip unless NVIDIA's evaluation-only recordings are placed in
 
 Apache-2.0 for the code in this repository. The MotionBricks weights are NVIDIA's, under the NVIDIA Open Model Agreement, and are not included. NVIDIA's sample motions and test recordings are evaluation-only and are never committed here. See `NOTICE`.
 
-What is finished, what is not, and what still needs review: `docs/status.md`.
+What is finished, what is not, and what still needs review: `docs/status.md`. Playtest readiness, versions and known limits: `docs/playtest.md`, `docs/compatibility.md`, `docs/known-limitations.md`.

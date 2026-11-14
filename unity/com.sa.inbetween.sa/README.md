@@ -2,6 +2,13 @@
 
 Imports `.saclip` files (baked by `sa-soma-bake`) and plays them on SA shared-family characters. Also makes new clips by bridging existing ones.
 
+## Start here
+
+`SA > Inbetween > Create Demo Scene` finds a Humanoid character and a jump in your project, builds a scene and a
+recipe that starts at the top of the jump and lands, and opens the **First Bridge** window with three buttons:
+Generate, Preview, Save. Every failure shows what to do; **Copy diagnostics** and `SA > Inbetween > Report a Bug`
+collect what a bug report needs.
+
 ## Bridge two clips
 
 Select two clips, then `Assets > Create > SA > Inbetween Bridge`. In the new recipe's Inspector press **Generate**. The result is a normal clip next to the recipe.
@@ -28,4 +35,4 @@ A start or goal can be a Unity clip instead of a `.saclip`: choose **Unity clip*
 
 Add `SaClipPlayer` to a GameObject, assign a clip, and enter Play mode with one SA shared-family character in the scene.
 
-Requires `com.sa.unity` 0.3.6 (`FamilyClips`).
+Requires `com.sa.unity` 0.3.7 (`FamilyClips`).

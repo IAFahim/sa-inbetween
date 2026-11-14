@@ -167,6 +167,30 @@ namespace SA.Inbetween.Clips.Editor
             return run != null && !run.Done;
         }
 
+        public static bool AnyRunning()
+        {
+            foreach (var run in Runs.Values)
+                if (!run.Done) return true;
+            return false;
+        }
+
+        internal static List<string> Interrupt()
+        {
+            var stopped = new List<string>();
+            foreach (var pair in Runs)
+            {
+                if (pair.Value.Done) continue;
+                pair.Value.Jobs.Clear();
+                pair.Value.Process?.Kill();
+                pair.Value.Process = null;
+                pair.Value.Error = RecipeRunner.InterruptedMessage;
+                pair.Value.Done = true;
+                stopped.Add("variations:" + pair.Key);
+            }
+
+            return stopped;
+        }
+
         static VariationRun Restore(InbetweenRecipe recipe)
         {
             var folder = Folder(recipe);
@@ -313,7 +337,10 @@ namespace SA.Inbetween.Clips.Editor
             var group = Undo.GetCurrentGroup();
             var record = ClipFileUndo.For(output, recipe);
             Undo.RecordObject(record, KeepUndoName);
-            record.Bytes = bytes;
+            record.Commit(bytes);
+            var animPath = recipe.SaveAnimationClip && SaClipExport.CharacterFor(recipe) != null ? SaClipExport.ExportPath(recipe) : "";
+            var animRecord = animPath == "" ? null : ClipFileUndo.For(animPath, null);
+            if (animRecord != null) Undo.RecordObject(animRecord, KeepUndoName);
             Undo.RecordObject(recipe, KeepUndoName);
             File.WriteAllBytes(output, bytes);
             AssetDatabase.ImportAsset(output, ImportAssetOptions.ForceUpdate);
@@ -331,8 +358,9 @@ namespace SA.Inbetween.Clips.Editor
             recipe.BuiltFrom = RecipeRunner.Hash(recipe);
             EditorUtility.SetDirty(recipe);
             AssetDatabase.SaveAssetIfDirty(recipe);
-            Undo.CollapseUndoOperations(group);
             SaClipExport.SaveAfterGenerate(recipe);
+            if (animRecord != null) animRecord.Commit(File.Exists(animPath) ? File.ReadAllBytes(animPath) : Array.Empty<byte>());
+            Undo.CollapseUndoOperations(group);
             Runs.Remove(Key(recipe));
             var folder = Folder(recipe);
             if (Directory.Exists(folder)) Directory.Delete(folder, true);

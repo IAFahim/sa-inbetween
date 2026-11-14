@@ -190,6 +190,54 @@ namespace SA.Inbetween.Clips.Tests
 
         static float Lowest(RigidPose[] model) => Math.Min(SoleHeight(model, 50), SoleHeight(model, 54));
 
+        public const double PenetrationFloorCm = 3.0;
+        public const double PenetrationAboveSourceCm = 1.0;
+
+        internal static double FootPenetrationLimitCm(double sourcePenetrationCm) => Math.Max(PenetrationFloorCm, Math.Max(0.0, sourcePenetrationCm) + PenetrationAboveSourceCm);
+
+        internal static double PenetrationCm(IEnumerable<RigidPose[]> models, double heightRatio)
+        {
+            var heights = new List<double>();
+            foreach (var model in models) heights.Add(Lowest(model) * heightRatio);
+            return PenetrationCm(new[] { heights.ToArray() });
+        }
+
+        static double PenetrationCm(IEnumerable<double[]> soleHeights)
+        {
+            var deepest = 0.0;
+            foreach (var heights in soleHeights)
+                foreach (var h in heights)
+                    deepest = Math.Max(deepest, -h);
+            return deepest * 100.0;
+        }
+
+        [Test]
+        public void FootPenetrationLimitIsTheSourceAnchorsPlusOneCentimetreWithAThreeCentimetreFloor()
+        {
+            Assert.AreEqual(3.0, FootPenetrationLimitCm(0.0), 1e-9);
+            Assert.AreEqual(3.0, FootPenetrationLimitCm(-4.0), 1e-9);
+            Assert.AreEqual(3.0, FootPenetrationLimitCm(2.0), 1e-9);
+            Assert.AreEqual(3.5, FootPenetrationLimitCm(2.5), 1e-9);
+            Assert.AreEqual(5.25, FootPenetrationLimitCm(4.25), 1e-9);
+        }
+
+        [Test]
+        public void SourcePenetrationIsTheDeepestSoleOverTheAnchorFrames()
+        {
+            RigidPose[] Standing(float leftFootY, float rightFootY)
+            {
+                var model = new RigidPose[FamilyClips.CanonicalBones];
+                for (var i = 0; i < model.Length; i++) model[i] = RigidPose.Identity;
+                model[50] = new RigidPose(new Float3(0.1f, leftFootY, 0f), Quaternion.Identity);
+                model[54] = new RigidPose(new Float3(-0.1f, rightFootY, 0f), Quaternion.Identity);
+                return model;
+            }
+
+            Assert.AreEqual(0.0, PenetrationCm(new[] { Standing(0.15f, 0.2f) }, 1.0), 1e-4, "soles 5 cm above the ground");
+            Assert.AreEqual(2.5, PenetrationCm(new[] { Standing(0.2f, 0.2f), Standing(0.075f, 0.3f), Standing(0.09f, 0.09f) }, 1.0), 1e-4, "deepest of all frames and both feet");
+            Assert.AreEqual(1.25, PenetrationCm(new[] { Standing(0.075f, 0.3f) }, 0.5), 1e-4, "scaled by the height ratio");
+        }
+
         internal static double Degrees(Quaternion a, Quaternion b)
         {
             double x = a.X, y = a.Y, z = a.Z, w = a.W;
@@ -424,7 +472,10 @@ namespace SA.Inbetween.Clips.Tests
             gates.Check("G3 hips Y RMSE over " + overlap + " frames", Math.Sqrt(squares / Math.Max(1, overlap)) * 100.0, 8.0, "cm", enforced);
             var touch = outTouch < 0 || sourceTouch < 0 ? 99 : Math.Abs(outTouch - sourceTouch);
             gates.Check("G3 touchdown frame difference (output " + outTouch + ", source " + sourceTouch + ")", touch, 3.0, "frames", enforced);
-            gates.Check("G3 foot penetration", Math.Max(0.0, -lowest) * 100.0, 3.0, "cm", enforced);
+            var anchors = new List<RigidPose[]>();
+            for (var k = anchor - 3; k <= anchor; k++) anchors.Add(SourceWorld(source, anchor, Math.Max(0, k)));
+            var sourcePenetration = PenetrationCm(anchors, plan.HeightRatio);
+            gates.Check("G3 foot penetration (source start frames " + (anchor - 3) + ".." + anchor + ": " + sourcePenetration.ToString("0.00", CultureInfo.InvariantCulture) + " cm)", PenetrationCm(new[] { new[] { lowest } }), FootPenetrationLimitCm(sourcePenetration), "cm", enforced);
             gates.Check("G3 MPJPE (soft)", mpjpe / Math.Max(1, joints) * 100.0, 12.0, "cm", false);
             gates.Note("  start anchor lowest sole " + (Lowest(SourceWorld(source, anchor, anchor)) * plan.HeightRatio * 100.0).ToString("0.0", CultureInfo.InvariantCulture) + " cm");
         }

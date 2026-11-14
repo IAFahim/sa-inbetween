@@ -2,9 +2,30 @@
 
 You do not need a terminal. You pick two clips you already have, and Inbetween makes the motion that carries the character from one to the other. The result is an ordinary clip you can play like any other.
 
+## Your first 10 minutes
+
+1. Your technical artist has done the one-time setup below (or follow `docs/install.md` yourself).
+2. Drag a Humanoid character and a jump animation into the Project window. Mixamo works: download a character
+   (FBX for Unity) and a "Jump" animation. Any Humanoid FBX works (Synty, your own).
+3. Choose **SA > Inbetween > Create Demo Scene** in the menu bar. The **First Bridge** window opens.
+   - If it says your files are not Humanoid yet, press **Set to Humanoid** (it sets Rig > Animation Type to Humanoid
+     on them and reimports), then **Make demo scene**.
+   - If a line says *Tools folder: missing*, press **Open Project Settings**: it says which file is missing and where
+     it goes.
+4. The window says what it picked, for example *From 'Jump' at frame 41, the top of the jump (hips 0.80 m up) to the
+   first frame of 'Idle'*. A new scene `Assets/SA Inbetween Demo/Inbetween Demo.unity` holds your character, a
+   ground and a camera; the recipe `Jump_MidAir_to_Landing` is next to it.
+5. Press **1 Generate** (about 10 seconds), **2 Preview** (the character lands, in the window; drag to turn it), and
+   **3 Save** (writes the Unity clips and sets the demo character to play them).
+6. Press **Play** at the top of Unity: the character plays the bridge in a loop in the Game view.
+
+From here, make your own bridges as below. Every message says what to do next; if one does not, press
+**Copy diagnostics** (in the window, the recipe Inspector, or **SA > Inbetween > Copy Diagnostics**) and send it with
+**SA > Inbetween > Report a Bug**.
+
 ## One-time setup (your technical artist does this once)
 
-Follow `docs/install.md`: three package lines in `Packages/manifest.json`, the **tools folder** `SaInbetween` next to `Assets` (it holds `sa-inbetween`, `sa-soma-bake`, `humanoid-v1.safamily`, and the two NVIDIA files `mmm_v6_soma_fp32.onnx` and `soma_rest.pose`), and a look at `Edit > Project Settings > SA Inbetween`, where every line should say *found*.
+Follow `docs/install.md`: four package lines in `Packages/manifest.json`, the **tools folder** `SaInbetween` next to `Assets` (it holds `sa-inbetween`, `sa-soma-bake`, `humanoid-v1.safamily`, and the two NVIDIA files `mmm_v6_soma_fp32.onnx` and `soma_rest.pose`), and a look at `Edit > Project Settings > SA Inbetween`, where every line should say *found*.
 
 ## Make a bridge
 
@@ -66,11 +87,26 @@ Select one clip and choose **Inbetween Bridge**. The recipe goes from the end of
 
 ## If something goes wrong
 
-- *Setup needed*: the message names the missing tool file. Open Project Settings.
-- *Generating failed*: the log under the message says why. The usual cause is a wrong model file.
+Every message in the recipe Inspector and the First Bridge window names the problem and the fix. The common ones:
+
+| You see | What to do |
+|---|---|
+| *Inbetween needs its tools before it can generate. Missing: ...* | The message says where each file goes: the tools archive unpacked as `SaInbetween` next to `Assets`, the model in `SaInbetween/model`, `soma_rest.pose` in `SaInbetween`. **Open Project Settings** shows each file as found or missing. |
+| *The model file is not the one Inbetween needs* | The model is a different version or an unfinished download. Download `mmm_v6_soma_fp32.onnx` again (757,864,273 bytes). |
+| *This character has no Humanoid Avatar* (yellow) or *Inbetween cannot find a humanoid skeleton on it* | Select the FBX, **Rig > Animation Type: Humanoid**, **Apply**. Non-humanoid rigs are not supported. |
+| *'X' is a Legacy clip* | Same fix: set the FBX to Humanoid (or Generic). |
+| *... is at frame N, past the end of 'X' (frames 0 to M)* | Choose a frame up to M; the Animation window shows the clip's frames. |
+| *The FBX SDK native library could not load because libxml2.so.2 is missing* | Linux only, Export > FBX only: `docs/install.md` step 4. |
+| *Generating stopped because Unity reloaded its scripts* | A script changed or Play mode started. Nothing was written; press Generate again. |
+| *Settings changed since the last generate (or a source clip changed)* | The result is stale. Press **Generate again**. |
+| *Cancelled* | Nothing was written; the previous result, if any, is unchanged. |
+| *... failed (exit code N): ...* | Press Generate again. If it repeats, press **Copy diagnostics** and **Report a bug**. |
+
+- Undo (ctrl-Z) right after **Generate** puts back the previous clip and `.anim` (or removes them after a first Generate).
+- Renaming or moving a recipe takes its result files (`.saclip`, `.anim`, `_Humanoid.anim`, `.fbx`) along. Moving or renaming the source clips does not make the recipe out of date.
+- Play mode does not start while a recipe is generating; press Play again when it says *Up to date*.
 - Result looks off at the seam: use **At time** on the start so the bridge leaves the clip a little earlier, or lengthen the duration.
 - The character does not move in Preview: the scene needs exactly one SA shared-family character in a SubScene (see "Preview on character" above). The player's Status field says what it is waiting for. A Console error `RigAuthoring Engine must be Cpu for timeline rigs` means step 3 there was skipped.
-- Do not enter Play mode while generating.
 - *Cannot preview this clip*: the result file is not an SA humanoid clip, or it is damaged. Generate again.
 
 ## Use your own character and clips (Mixamo, Synty, any Humanoid)

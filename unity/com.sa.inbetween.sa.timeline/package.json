@@ -1,11 +1,11 @@
 {
   "name": "com.sa.inbetween.sa.timeline",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "displayName": "SA Inbetween Timeline bridges",
   "description": "Right-click two clips on an Animation Track and get an Inbetween bridge between them: a standard .anim clip placed on the same track, regenerated in place when the clips change.",
   "unity": "7000.0",
   "dependencies": {
-    "com.sa.inbetween.sa": "0.9.2",
+    "com.sa.inbetween.sa": "0.9.3",
     "com.unity.timeline": "6.7.0"
   }
 }

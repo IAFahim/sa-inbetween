@@ -37,3 +37,16 @@ jobs:
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Cli.Tests
       - name: ONNX tests
         run: dotnet test --no-build -c Release --project tests/SA.Inbetween.Onnx.Tests
+      - name: Windows smoke script parses (PowerShell 7)
+        shell: pwsh
+        run: |
+          $errors = $null; $tokens = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("$PWD/scripts/windows-smoke.ps1", [ref]$tokens, [ref]$errors)
+          if ($errors.Count) { $errors | ForEach-Object { $_.ToString() }; exit 1 }
+      - name: Windows smoke script parses (Windows PowerShell 5.1)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $errors = $null; $tokens = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("$PWD\scripts\windows-smoke.ps1", [ref]$tokens, [ref]$errors)
+          if ($errors.Count) { $errors | ForEach-Object { $_.ToString() }; exit 1 }

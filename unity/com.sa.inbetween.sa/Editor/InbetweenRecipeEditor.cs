@@ -132,6 +132,14 @@ namespace SA.Inbetween.Clips.Editor
             DrawPreview(recipe, busy);
             EditorGUILayout.Space(8);
             DrawVariations(recipe, busy);
+            EditorGUILayout.Space(8);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(new GUIContent("Copy diagnostics", "Copies versions, tool files, the last error and its log to the clipboard, for a bug report"), EditorStyles.miniButton, GUILayout.Width(110)))
+                InbetweenDiagnostics.Copy(recipe);
+            if (GUILayout.Button("Report a bug", EditorStyles.miniButton, GUILayout.Width(90)))
+                InbetweenDiagnostics.ReportBug(recipe);
+            EditorGUILayout.EndHorizontal();
         }
 
         void DrawStatus(InbetweenRecipe recipe)
@@ -144,7 +152,7 @@ namespace SA.Inbetween.Clips.Editor
                     EditorGUILayout.HelpBox(RecipeRunner.Problem(recipe), MessageType.Warning);
                     break;
                 case RecipeState.NeedsSetup:
-                    EditorGUILayout.HelpBox("Inbetween needs its tools before it can generate: " + string.Join(", ", InbetweenSettings.Tools().Missing()) + ".", MessageType.Warning);
+                    EditorGUILayout.HelpBox("Inbetween needs its tools before it can generate. " + InbetweenSettings.SetupAdvice(InbetweenSettings.Tools()), MessageType.Warning);
                     if (GUILayout.Button("Open Project Settings", GUILayout.Width(170)))
                         SettingsService.OpenProjectSettings("Project/SA Inbetween");
                     break;
@@ -165,6 +173,12 @@ namespace SA.Inbetween.Clips.Editor
                     break;
                 case RecipeState.Failed:
                     EditorGUILayout.HelpBox(run.Error, MessageType.Error);
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button(new GUIContent("Copy diagnostics", "Copies versions, tool files, this error and its log to the clipboard"), GUILayout.Width(130)))
+                        InbetweenDiagnostics.Copy(recipe);
+                    if (GUILayout.Button("Report a bug", GUILayout.Width(100)))
+                        InbetweenDiagnostics.ReportBug(recipe);
+                    EditorGUILayout.EndHorizontal();
                     if (!string.IsNullOrEmpty(run.Log))
                     {
                         logScroll = EditorGUILayout.BeginScrollView(logScroll, GUILayout.MinHeight(60), GUILayout.MaxHeight(160));

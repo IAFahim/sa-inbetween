@@ -39,6 +39,19 @@ namespace SA.Inbetween.Clips.Editor
             return a;
         }
 
+        public static string SetupAdvice(StudioTools t)
+        {
+            if (t.Complete) return "";
+            var steps = new System.Collections.Generic.List<string>();
+            if (t.Cli == "" || t.Bake == "" || t.Family == "")
+                steps.Add("Download SaInbetween-tools for " + (Application.platform == RuntimePlatform.WindowsEditor ? "Windows (win-x64 .zip)" : "Linux (linux-x64 .tar.gz)") + " from the sa-inbetween release page and unpack it into the project folder, next to Assets, so the folder is called SaInbetween (docs/install.md step 2).");
+            if (t.Model == "")
+                steps.Add("Put NVIDIA's model mmm_v6_soma_fp32.onnx (757,864,273 bytes) in SaInbetween/model (docs/install.md step 3).");
+            if (t.Rest == "")
+                steps.Add("Put soma_rest.pose (2,156 bytes) in SaInbetween (docs/install.md step 3).");
+            return "Missing: " + string.Join(", ", t.Missing()) + ". To fix: " + string.Join(" ", steps) + " Inbetween finds the files on its own; this message goes away when they are there.";
+        }
+
         [SettingsProvider]
         public static SettingsProvider Provider() => new SettingsProvider("Project/SA Inbetween", SettingsScope.Project)
         {
@@ -72,9 +85,16 @@ namespace SA.Inbetween.Clips.Editor
             Row("Character family", t.Family);
             Row("Rest pose", t.Rest);
             if (!t.Complete)
-                EditorGUILayout.HelpBox("Still missing: " + string.Join(", ", t.Missing()), MessageType.Warning);
+                EditorGUILayout.HelpBox(SetupAdvice(t), MessageType.Warning);
             else
-                EditorGUILayout.HelpBox("Ready. Select two clips in the Project window and choose Assets > Create > SA > Inbetween Bridge.", MessageType.None);
+                EditorGUILayout.HelpBox("Ready. New here? Choose SA > Inbetween > Create Demo Scene. Otherwise select two clips in the Project window and choose Assets > Create > SA > Inbetween Bridge.", MessageType.None);
+            EditorGUILayout.Space(4);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Copy diagnostics", GUILayout.Width(140)))
+                InbetweenDiagnostics.Copy(null);
+            if (GUILayout.Button("Install guide", GUILayout.Width(110)))
+                Application.OpenURL(InbetweenDiagnostics.InstallUrl);
+            EditorGUILayout.EndHorizontal();
         }
 
         static void Row(string label, string path)

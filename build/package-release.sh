@@ -25,5 +25,6 @@ build/pack-unity.sh >/dev/null
 tar -czf "dist/com.sa.inbetween-$version.tgz" -C unity com.sa.inbetween
 tar -czf "dist/com.sa.inbetween.sa-$version.tgz" -C unity com.sa.inbetween.sa
 tar -czf "dist/com.sa.inbetween.sa.timeline-$version.tgz" -C unity com.sa.inbetween.sa.timeline
+cp scripts/windows-smoke.ps1 dist/
 (cd dist && sha256sum * > SHA256SUMS)
 cat dist/SHA256SUMS

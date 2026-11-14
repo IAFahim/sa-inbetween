@@ -34,3 +34,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "${GITHUB_REF_NAME}" dist/* --title "${GITHUB_REF_NAME}" --generate-notes
+
+  windows-smoke:
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - name: Download the Windows tools, SHA256SUMS and the smoke script from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ github.ref_name }}" -R "${{ github.repository }}" -p "SaInbetween-tools-*-win-x64.zip" -p SHA256SUMS -p windows-smoke.ps1
+      - name: Smoke test in Windows PowerShell 5.1 (no NVIDIA model here, so steps 6 and 7 skip)
+        shell: powershell
+        run: .\windows-smoke.ps1
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-smoke-report
+          path: windows-smoke-report.txt

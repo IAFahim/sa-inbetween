@@ -97,14 +97,14 @@ namespace SA.Inbetween.Clips.Tests
             var guids = UnityEditor.AssetDatabase.FindAssets("t:SaClipAsset");
             if (guids.Length == 0) Assert.Ignore("no .saclip in the project");
             var clip = UnityEditor.AssetDatabase.LoadAssetAtPath<SaClipAsset>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
-            var players = Object.FindObjectsByType<SaClipPlayer>(FindObjectsSortMode.None).Length;
+            var players = Object.FindObjectsByType<SaClipPlayer>(FindObjectsInactive.Exclude).Length;
             var roots = scene.rootCount;
             try
             {
                 RecipePreview.Request(clip);
                 Assert.AreEqual(clip, RecipePreview.Pending());
                 Assert.IsFalse(scene.isDirty, "requesting a preview dirtied the scene");
-                Assert.AreEqual(players, Object.FindObjectsByType<SaClipPlayer>(FindObjectsSortMode.None).Length);
+                Assert.AreEqual(players, Object.FindObjectsByType<SaClipPlayer>(FindObjectsInactive.Exclude).Length);
                 Assert.AreEqual(roots, scene.rootCount);
                 var character = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/AnimationBaseLocomotion/Meshes/PolygonSyntyCharacter.fbx");
                 if (character == null) return;

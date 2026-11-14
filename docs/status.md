@@ -1,6 +1,6 @@
 # Status
 
-What is built, what is verified, and what is not. Updated 2026-11-14.
+What is built, what is verified, and what is not. Updated 2026-11-14 (0.9.3).
 
 ## Production-ready
 - Contract, wire codec, motion file (`.saib`), recipe hashing: tested, property-tested, zero-allocation kernels.
@@ -16,12 +16,17 @@ What is built, what is verified, and what is not. Updated 2026-11-14.
 - Contacts into leg IK and root travel in the family bake (P16). Clips are attached at runtime, not through a subscene baker.
 - Video poses (P27) and move tuning (P28).
 
-## Designer pilot (v0.9.2)
-- Clean install on Linux, from the published Git URLs and release tools, through the whole designer guide with Mixamo clips: `docs/reports/clean-install-2026-11-14.md`.
-- Not run on Windows yet; the Windows tools zip is checked statically in that report, with the steps a Windows tester runs.
+## Designer pilot (v0.9.3)
+- Play-test ready on Linux: first-10-minutes demo (`SA > Inbetween > Create Demo Scene`), plain failure messages with
+  Copy diagnostics and a bug-report template, robustness sweep with fixes and tests: `docs/playtest.md`.
+- Versions and timings: `docs/compatibility.md`. Honest limits: `docs/known-limitations.md`.
+- Clean install on Linux through the whole designer guide (0.9.2): `docs/reports/clean-install-2026-11-14.md`.
+- Windows: tools checked statically and started by the release workflow on GitHub's Windows runner; no Generate on
+  Windows yet. A tester follows `docs/windows-tester-checklist.md` with `scripts/windows-smoke.ps1`.
+- SA.Shape (SH4, wardrobe) is out of the playtest scope.
 
 ## Needs a person
-- `RealJumpTests.SyntyJumpGates` G3 foot penetration is 3.45 cm against a 3 cm gate since com.sa.unity 0.3.6 (the start frame itself converts 2.5 cm below the ground). Decide: gate relative to the start frame, or a ground correction in the calibration.
+- A Windows tester run (`docs/windows-tester-checklist.md`).
 - Foot gate in the SOMA retarget: sole is the lower of mid-foot and toe-ball, hip reference lowered to 0.9864 m.
 - Arm, forearm and hand twist on a skinned character.
 - 77-entry skeleton parent table: confirm the NVIDIA licence allows it in source.
