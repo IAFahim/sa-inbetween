@@ -407,6 +407,8 @@ namespace SA.Inbetween.Clips.Editor
             var character = SaClipExport.CharacterFor(recipe);
             if (character != null && actor.Bind(character, recipe.Output.Bytes))
             {
+                actor.ShowGhosts = Ghosts;
+                actor.GhostsFor(recipe);
                 if (actor.Orbit(rect)) Repaint();
                 actor.Draw(rect, preview.Time);
                 return;

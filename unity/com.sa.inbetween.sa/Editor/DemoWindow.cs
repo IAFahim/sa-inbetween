@@ -334,6 +334,7 @@ namespace SA.Inbetween.Clips.Editor
                 return;
             }
 
+            actor.GhostsFor(recipe);
             var duration = actor.Duration;
             var t = paused ? Mathf.Min((float)clock, duration) : PreviewMath.Wrap(clock, duration);
             if (actor.Orbit(rect)) Repaint();

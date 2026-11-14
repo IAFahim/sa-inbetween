@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using SA.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Pose = SA.Motion.Numerics.Pose;
 
 namespace SA.Inbetween.Clips.Editor
@@ -19,6 +21,18 @@ namespace SA.Inbetween.Clips.Editor
         MeshRenderer[] props = Array.Empty<MeshRenderer>();
         int frames;
         float height = 1.8f;
+        static Material faded;
+        MaterialPropertyBlock tint;
+        byte[] startBytes;
+        byte[] goalBytes;
+        string ghostKey = "";
+        float startSeconds = -1f;
+        float goalSeconds = -1f;
+        bool ghostsBaked;
+        readonly List<(Mesh Mesh, Matrix4x4 Matrix, Color Color)> ghosts = new List<(Mesh Mesh, Matrix4x4 Matrix, Color Color)>();
+
+        public bool ShowGhosts = true;
+        public int GhostMeshes => ghosts.Count;
 
         public float Yaw = 150f;
         public float Pitch = 10f;
@@ -47,6 +61,85 @@ namespace SA.Inbetween.Clips.Editor
             plan = null;
             frames = 0;
             locals = Array.Empty<Pose>();
+            ClearGhosts();
+        }
+
+        void ClearGhosts()
+        {
+            foreach (var ghost in ghosts)
+                if (ghost.Mesh != null) UnityEngine.Object.DestroyImmediate(ghost.Mesh);
+            ghosts.Clear();
+            ghostsBaked = false;
+        }
+
+        public void GhostsFor(InbetweenRecipe recipe)
+        {
+            if (recipe == null) return;
+            var start = RecipeRunner.PreviewBytes(recipe, recipe.Start);
+            var last = recipe.Goals.Count == 0 ? default : recipe.Goals[recipe.Goals.Count - 1];
+            var goal = recipe.Goals.Count == 0 ? null : RecipeRunner.PreviewBytes(recipe, last);
+            var key = recipe.Start.Where + "|" + recipe.Start.AnchorSeconds + "|" + last.Where + "|" + last.AnchorSeconds;
+            if (ReferenceEquals(start, startBytes) && ReferenceEquals(goal, goalBytes) && key == ghostKey) return;
+            startBytes = start;
+            goalBytes = goal;
+            ghostKey = key;
+            startSeconds = SourceSeconds(start, recipe.Start);
+            goalSeconds = SourceSeconds(goal, last);
+            ClearGhosts();
+        }
+
+        static float SourceSeconds(byte[] bytes, ClipFrame frame) =>
+            bytes != null && bytes.Length > 0 && SaClipPose.TryLoad(bytes, out var pose, out _) ? PreviewMath.FrameSeconds(frame, pose.Duration) : -1f;
+
+        void BakeGhosts()
+        {
+            ghostsBaked = true;
+            BakeGhost(startBytes, startSeconds, 0, SkeletonPreview.StartColor);
+            BakeGhost(goalBytes, goalSeconds, frames - 1, SkeletonPreview.GoalColor);
+        }
+
+        void BakeGhost(byte[] source, float seconds, int resultFrame, Color color)
+        {
+            if (source == null || source.Length == 0 || seconds < 0f) return;
+            if (!SaClipExport.TrySampleLocals(plan, source, out var sourcePoses, out var sourceFrames, out _) || sourceFrames == 0) return;
+            SaClipExport.ApplyFrame(plan, locals, resultFrame);
+            var resultHips = plan.Bones[plan.Hips].position;
+            SaClipExport.ApplyFrame(plan, sourcePoses, Mathf.Clamp(Mathf.RoundToInt(seconds * SaClipExport.Rate), 0, sourceFrames - 1));
+            var sourceHips = plan.Bones[plan.Hips].position;
+            var shift = new Vector3(resultHips.x - sourceHips.x, 0f, resultHips.z - sourceHips.z);
+            foreach (var skin in skins)
+            {
+                var mesh = new Mesh { hideFlags = HideFlags.HideAndDontSave };
+                skin.BakeMesh(mesh, true);
+                Shade(mesh, skin.transform.rotation);
+                ghosts.Add((mesh, Matrix4x4.TRS(skin.transform.position + shift, skin.transform.rotation, Vector3.one), color));
+            }
+        }
+
+        static void Shade(Mesh mesh, Quaternion rotation)
+        {
+            var normals = mesh.normals;
+            var colors = new Color32[mesh.vertexCount];
+            var light = new Vector3(0.3f, 0.8f, 0.5f).normalized;
+            for (var i = 0; i < colors.Length; i++)
+            {
+                var lit = i < normals.Length ? 0.55f + 0.45f * Mathf.Max(0f, Vector3.Dot(rotation * normals[i], light)) : 1f;
+                var level = (byte)Mathf.RoundToInt(255f * lit);
+                colors[i] = new Color32(level, level, level, 255);
+            }
+
+            mesh.colors32 = colors;
+        }
+
+        static Material Faded()
+        {
+            if (faded != null) return faded;
+            faded = new Material(Shader.Find("Hidden/Internal-Colored")) { hideFlags = HideFlags.HideAndDontSave, renderQueue = (int)RenderQueue.Transparent };
+            faded.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
+            faded.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
+            faded.SetInt("_Cull", (int)CullMode.Back);
+            faded.SetInt("_ZWrite", 0);
+            return faded;
         }
 
         public bool Bind(GameObject target, byte[] clip)
@@ -152,6 +245,7 @@ namespace SA.Inbetween.Clips.Editor
 
         void Render(float seconds)
         {
+            if (ShowGhosts && !ghostsBaked) BakeGhosts();
             Pose(seconds);
             var hips = plan.Bones[plan.Hips].position;
             var focus = new Vector3(hips.x, Mathf.Max(height * 0.5f, hips.y), hips.z);
@@ -177,6 +271,18 @@ namespace SA.Inbetween.Clips.Editor
                 for (var m = 0; m < baked[i].subMeshCount && m < materials.Length; m++)
                     utility.DrawMesh(baked[i], matrix, materials[m], m);
             }
+            if (ShowGhosts && ghosts.Count > 0)
+            {
+                tint ??= new MaterialPropertyBlock();
+                var material = Faded();
+                foreach (var ghost in ghosts)
+                {
+                    tint.SetColor("_Color", ghost.Color);
+                    for (var m = 0; m < ghost.Mesh.subMeshCount; m++)
+                        utility.DrawMesh(ghost.Mesh, ghost.Matrix, material, m, tint);
+                }
+            }
+
             foreach (var prop in props)
             {
                 var filter = prop.GetComponent<MeshFilter>();

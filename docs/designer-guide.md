@@ -15,7 +15,8 @@ You do not need a terminal. You pick two clips you already have, and Inbetween m
 4. The window says what it picked, for example *From 'Jump' at frame 41, the top of the jump (hips 0.80 m up) to the
    first frame of 'Idle'*. A new scene `Assets/SA Inbetween Demo/Inbetween Demo.unity` holds your character, a
    ground and a camera; the recipe `Jump_MidAir_to_Landing` is next to it.
-5. Press **1 Generate** (about 10 seconds), **2 Preview** (the character lands, in the window; drag to turn it), and
+5. Press **1 Generate** (about 10 seconds), **2 Preview** (the character lands, in the window; drag to turn it; a faded
+   green copy shows the start pose and a faded orange one the goal), and
    **3 Save** (writes the Generic and Humanoid `.anim`, an `.fbx` with the clip as a take, and sets the demo character to
    play the Humanoid clip). Without the FBX Exporter (or, on Linux, the `libxml2.so.2` link) Save still writes the
    `.anim` files and says why the FBX was skipped.
@@ -63,7 +64,7 @@ Once the recipe has a result, the Inspector shows a preview strip under **Result
 
 - **Play / Pause** and a **scrub slider** with the time and length. Dragging the slider pauses.
 - A small 3D view with **your character** playing the clip, root motion included, over a ground grid. Drag in it to orbit, scroll to zoom. The camera follows the hips. The character is the recipe's **Character** field, filled in from a Unity clip source; with no character the view shows the SA skeleton instead.
-- **Ghost start and goal** draws the start pose in faded green and the goal pose in faded orange, so you can see how close the bridge leaves and lands. The goal ghost stands where the bridge ends.
+- **Ghost start and goal** draws the start pose in faded green and the goal pose in faded orange, on your character's mesh (or on the SA skeleton when there is no character), so you can see how close the bridge leaves and lands. Each ghost stands where the bridge starts or ends, at its own height.
 - **Show in Scene view** draws the same skeleton and ghosts as lines in the Scene view, at the scene origin, while the recipe is selected.
 
 The preview reads the clip directly and never adds anything to your scene. **Preview on character** (Play mode) also leaves the open scene untouched: its player exists only while playing.
