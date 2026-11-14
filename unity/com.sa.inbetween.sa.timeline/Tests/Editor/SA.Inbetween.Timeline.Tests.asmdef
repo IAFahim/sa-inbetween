@@ -2,6 +2,7 @@
   "name": "SA.Inbetween.Timeline.Tests",
   "references": [
     "SA.Inbetween.Timeline",
+    "SA.Inbetween.Timeline.Gen",
     "SA.Inbetween.Timeline.Editor",
     "SA.Inbetween.Clips",
     "SA.Inbetween.Clips.Editor",
@@ -20,5 +21,12 @@
   "autoReferenced": false,
   "defineConstraints": [
     "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.formats.fbx",
+      "expression": "5.0.0",
+      "define": "SA_FBX"
+    }
   ]
 }

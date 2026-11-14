@@ -161,8 +161,105 @@ To change a bridge, change the clips around it (trim A, change B's clip-in, or d
 
 Measured on Synty (jump `A_Jump_Walking_RootMotionVertical_Masc_Full`, then `A_Idle_Standing_Masc` 0.8 s later, sampled through the timeline): the hips move 0.0000 cm and 0.0000 degrees across both seams (feet, hand and head below 0.03 cm), against 1.7 cm and 3.5 degrees at the start and 3.9 cm and 13.8 degrees at the end without the root matching.
 
+## Author a generation on a Timeline
+
+Needs `com.sa.inbetween.sa.timeline` 0.2.0. Instead of a recipe, you lay the generation out in the Timeline window: what the
+character does before, the gap to fill, what it does after, who it is for and which files to write. **Bake Timeline** makes them.
+The files are the same ones the Bridge and the recipe make (`.saclip`, `.anim`, `_Humanoid.anim`, `.fbx`), and the result lands on
+the timeline so you can scrub and play it.
+
+### First timeline in two minutes
+
+1. **SA > Inbetween > Create Generation Demo** builds `Assets/SA Inbetween Generation Demo/` from your own Humanoid character and a
+   jump in your project (the same picks as Create Demo Scene): two timelines and a scene, with the Timeline window open.
+   Or select two clips (and your character model) in the Project window and choose
+   **Assets > Create > SA > Inbetween Generation Timeline**.
+2. The timeline has three rows:
+
+   | Row | Clips |
+   |---|---|
+   | **Steps** (SA Inbetween Generation Track) | **Source** (the jump), **Generate** (the gap to fill), **Source** (the landing) |
+   | **Bake** (SA Inbetween Generation Track) | **Retarget / Bake** (your character) and **Export** (which files), stretched over the Generate clip |
+   | **Generated** (Animation Track) | empty until you bake; then the generated clip, at the Generate clip's time |
+
+3. Select the Generate clip. The Inspector says what it will make, for example *Writes 'A_Jump_to_A_Idle': from 'A_Jump' at 2.00 s
+   (frame 60) to 'A_Idle' at its first frame, 0.80 s, on PolygonSyntyCharacter.* Press **Bake Timeline** (about 10 seconds).
+4. Press Play in the Timeline window: the Generated row plays the new motion on your character.
+
+### How the timeline is read
+
+Time is the wiring between clips. Nothing points at anything else; where a clip sits says what it is for.
+
+- A **Generate** clip makes the motion that fills its own time. Its length is the length of the motion (0.6 to 1.93 s per move).
+- It **starts** from the pose at its first frame: the Source clip under that time (its pose at that moment), else the Source clip that
+  ended last before it (its last frame). So leaving a jump at its top is: let the Generate clip start where the jump is at its top.
+- It **lands** on the pose at its end: the Source clip under that time, else the next Source clip (its first frame).
+- **Start Pose** over the start of a Generate clip, or **Goal Pose** over its end, replaces that pose: *Source* (the source there),
+  *Source Frame* (frame N of that source, as in the Animation window), or *Pose Asset* (a `.pose` file or a captured pose).
+- A **Goal Pose** wholly inside a Generate clip is a goal on the way: the character passes through it, up to four moves in all.
+  Every move takes the same time, so the Inspector says when such a goal is really reached.
+- **Retarget / Bake** and **Export** apply to the Generate clips they overlap. Without a Retarget / Bake clip the character is the one
+  bound to the track; without an Export clip you get the `.saclip`, `.anim`, `_Humanoid.anim` and the clip on the Generated row.
+- **Label** puts an asset label on every file of the Generate clips under it (search the Project window with `l:YourLabel`).
+- Rows are only for tidiness. The order things happen in is fixed: sources, poses, generate, retarget, export, label.
+
+### The clips and their Inspector fields
+
+| Clip | Fields |
+|---|---|
+| Source | Kind (Unity Clip, Sa Clip, Pose), the clip or pose, Character (optional). Trim it and change its speed like any clip |
+| Start Pose, Goal Pose | From (Source, Source Frame, Pose Asset), Frame, Pose |
+| Generate | Land Exactly, Keep (As Set, Shorter, Longer, Other Landing), Variations (1 to 4) |
+| Retarget / Bake | Character (model or prefab), Rig (Auto, Humanoid, Generic: which clip goes on the Generated row), Foot IK |
+| Export | `.anim`, Humanoid `.anim`, FBX, Place on Timeline |
+| Label | Label |
+
+**Variations** makes that many versions, the kept one first: with Variations 3 and Keep *As Set* you get *As Set*, *Shorter* and
+*Longer*. They are written next to each other (`Land.saclip`, `Land_Shorter.saclip`, ...). Switch **Keep** to one of them and bake
+again: nothing is generated, the other version is exported and put on the timeline at once.
+
+### Where the files go
+
+Next to the timeline, in `<Timeline>_Generated/`: one recipe per Generate clip, named after the clip
+(`<name>.asset`), and its files (`<name>.saclip`, `<name>.anim`, `<name>_Humanoid.anim`, `<name>.fbx`). A Generate clip still called
+*Generate* is named after what it joins (`A_Jump_to_A_Idle`). Rename the clip in the Timeline window to name its files. The recipe is
+a normal recipe: select it to preview, make variations or export by hand.
+
+`<Timeline>.genplan.json` in the same folder is what the bake read, as text: every clip with its frame numbers and values, every
+generation with its start, goals, length and files, and a checksum. The same timeline always gives the same file.
+
+Baking again regenerates only what changed. Bake from the Inspector of a Generate clip or of a Generation Track, from the Timeline
+window's right-click menu (**Bake Generation Timeline**), from **SA > Inbetween > Bake Generation Timeline**, or with the timeline
+selected in the Project window, **Assets > SA > Bake Generation Timeline**.
+
+### If something is wrong
+
+A clip with a problem turns red in the Timeline window; point at it to read why, or select it to read it in the Inspector. Every
+message names the clip, what is wrong and what to do. The common ones:
+
+| You see | What to do |
+|---|---|
+| *there is nothing to start from* | Put a Source clip that ends at or covers the Generate clip's start, or a Start Pose over its start |
+| *there is nothing to land on* | Put a Source clip that starts at or covers its end, or a Goal Pose over its end |
+| *one move takes at most 1.93 s* | Shorten the Generate clip, or put a Goal Pose inside it to make two moves |
+| *one move takes at least 0.60 s* | Make the Generate clip longer |
+| *two Source clips meet its start* | Two sources end at the same moment on different rows; move or delete one |
+| *no character is set to play it on* | Bind the track to your character in the scene, or set Character on a Retarget / Bake clip |
+| *another Generate clip also writes 'X'* | Rename one of the two Generate clips |
+| *it overlaps the Generate clip ...* | Two generations cannot fill the same time; move one |
+| *it covers no Generate clip, so it is not used* | Stretch the Retarget / Bake, Export or Label clip over the Generate clips it is for |
+| *Inbetween needs its tools before it can bake* | The tools folder: `Edit > Project Settings > SA Inbetween` |
+
+### With Tl
+
+If the project also has Tl (`com.tl.unity`), the Timeline asset's **Tl** section works on generation timelines too:
+**When it ends: Loop** makes a Generate clip at the very end land on the first source (a loop), and **When it ends: Next** bakes the
+timeline named in **Play next** right after this one. Without Tl nothing changes.
+
 ## What it does not do yet
 
+- Generation timelines bake only when you press Bake; the generated clip starts at the origin facing forward, so on the Generated row
+  it does not yet line up its hips with the clips around it (the Bridge does).
 - Timeline bridges are not regenerated by themselves when a neighbour changes; press **Regenerate Inbetween bridge**. A bridge that is generating when Unity reloads scripts is not placed; regenerate it.
 - The neck is a single bone on the SA rig, so a source clip's neck is smoothed slightly when it is read back. The head's position can move by up to about 2 cm at the seam.
 

@@ -19,6 +19,12 @@ Open `Packages/manifest.json` in your project and add these lines at the top of 
 - `com.sa.unity` brings Entities and Entities Graphics 6.7.0.
 - `com.unity.formats.fbx` is the FBX Exporter (it ships with the Editor). It is only needed for **Export > FBX**.
 - Optional, for the Timeline bridge track: `"com.sa.inbetween.sa.timeline": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#v0.9.3"`.
+- Generation timelines (author and bake in the Timeline window) are in `com.sa.inbetween.sa.timeline` **0.2.0**, on branch
+  `feat/timeline-gen` until it is released: `"com.sa.inbetween.sa.timeline": "https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#feat/timeline-gen"`
+  (it works with `com.sa.inbetween.sa` v0.9.3).
+- Optional, only if the project also uses Tl: `"com.tl.unity": "https://github.com/IAFahim/tl.unity.git?path=/com.tl.unity#main"`.
+  The SA packages do not need it. With it, a generation timeline's Tl Settings (When it ends: Loop or Next) are honoured by Bake
+  Timeline. Tl needs the newest Unity 7 editor and brings Entities Graphics 7.0.0; read its `docs/USING-ECS.md` first.
 
 Go back to Unity. It downloads the packages and compiles; the Console shows no errors.
 

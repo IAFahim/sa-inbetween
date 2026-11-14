@@ -1,0 +1,20 @@
+{
+  "name": "SA.Inbetween.Timeline.PlayTests",
+  "rootNamespace": "SA.Inbetween.Timeline.PlayTests",
+  "references": [
+    "SA.Inbetween.Timeline.Gen",
+    "Unity.Timeline",
+    "UnityEngine.TestRunner"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "noEngineReferences": false
+}

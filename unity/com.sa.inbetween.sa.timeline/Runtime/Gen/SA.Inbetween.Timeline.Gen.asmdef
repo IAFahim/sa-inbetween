@@ -1,0 +1,10 @@
+{
+  "name": "SA.Inbetween.Timeline.Gen",
+  "rootNamespace": "SA.Inbetween.Timeline.Gen",
+  "references": [
+    "SA.Inbetween.Clips",
+    "Unity.Timeline"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

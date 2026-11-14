@@ -1,8 +1,8 @@
 {
   "name": "com.sa.inbetween.sa.timeline",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "displayName": "SA Inbetween Timeline bridges",
-  "description": "Right-click two clips on an Animation Track and get an Inbetween bridge between them: a standard .anim clip placed on the same track, regenerated in place when the clips change.",
+  "description": "Author generations in Unity's Timeline window: Source, Generate, pose, Retarget / Bake and Export clips on an SA Inbetween Generation Track, then Bake Timeline writes the same .saclip, .anim and .fbx files as the Inbetween Bridge and places the result on the timeline. Also: right-click two clips on an Animation Track for an Inbetween bridge.",
   "unity": "7000.0",
   "dependencies": {
     "com.sa.inbetween.sa": "0.9.3",

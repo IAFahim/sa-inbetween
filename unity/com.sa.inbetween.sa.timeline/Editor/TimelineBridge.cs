@@ -129,7 +129,7 @@ namespace SA.Inbetween.Timeline.Editor
             var local = BridgePlan.LocalEnd(a.clipIn, a.duration, a.timeScale, length, loop);
             var rate = clip != null && clip.frameRate > 0 ? clip.frameRate : 30f;
             var anchor = BridgePlan.Anchor(local, length, rate);
-            return Frame(clip, character, anchor == BridgeAnchor.End ? FrameWhere.End : FrameWhere.Time, local);
+            return UnityFrame(clip, character, anchor == BridgeAnchor.End ? FrameWhere.End : FrameWhere.Time, local);
         }
 
         /// <summary>Source frame at the start of B: Start when B starts at its clip's first frame, else the exact time.</summary>
@@ -140,10 +140,10 @@ namespace SA.Inbetween.Timeline.Editor
             var local = BridgePlan.LocalStart(b.clipIn, length, clip != null && clip.isLooping);
             var rate = clip != null && clip.frameRate > 0 ? clip.frameRate : 30f;
             var anchor = BridgePlan.Anchor(local, length, rate);
-            return Frame(clip, character, anchor == BridgeAnchor.Start ? FrameWhere.Start : FrameWhere.Time, local);
+            return UnityFrame(clip, character, anchor == BridgeAnchor.Start ? FrameWhere.Start : FrameWhere.Time, local);
         }
 
-        static ClipFrame Frame(AnimationClip clip, GameObject character, FrameWhere where, double seconds)
+        public static ClipFrame UnityFrame(AnimationClip clip, GameObject character, FrameWhere where, double seconds)
         {
             var rate = clip != null && clip.frameRate > 0 ? clip.frameRate : 30f;
             return new ClipFrame

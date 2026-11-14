@@ -1,0 +1,24 @@
+{
+  "name": "SA.Inbetween.Timeline.TlGlue",
+  "rootNamespace": "SA.Inbetween.Timeline.TlGlue",
+  "references": [
+    "SA.Inbetween.Timeline.Editor",
+    "Tl.Unity.Tracks",
+    "Unity.Timeline"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "SA_TL"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.tl.unity",
+      "expression": "0.0.0",
+      "define": "SA_TL"
+    }
+  ],
+  "noEngineReferences": false
+}
