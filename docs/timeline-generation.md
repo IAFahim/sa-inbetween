@@ -38,7 +38,9 @@ fixed order. Nothing here references tl. With `com.tl.unity` installed, one opti
 5. **Finish, by stage.** When a job's recipes are up to date, every clip overlapping the job gets `Finish(frame, clip, context)`, again
    by stage then authored order. Export writes the files through `SaClipExport`, `SaClipHumanoidExport` and `SaClipFbxExport` and
    places the clip on the **Generated** Animation Track (`GenOutputs`); a job no Export clip covers gets `ExportPayload.Default`.
-   Label labels what Export wrote.
+   Label labels what Export wrote. After all jobs, `GenOutputs.PlaceSources` puts the Unity source clips around each placed clip
+   on the Generated track (named `... (source)`, when the job's Export has `PlaceSources`), recomputes the clip holds and matches
+   the hips along the track (`TimelineBridge.MatchChain`: XZ and yaw, heights kept) on a hidden copy of the bound character.
 6. **Plan file.** `<Timeline>_Generated/<Timeline>.genplan.json` (`GenPlanJson`): canonical JSON in tl's timeline-JSON shape
    (`name`, `tickRate`, `duration`, `tracks[].clips[]` with `namespace`, `type`, `start`, `end`, `data`), then `generations` sorted by
    name with their start, goals, length, character, exports and recipe hashes, then `faults` and a `sha256:` digest of everything
