@@ -71,3 +71,17 @@ touched.
 - Unity seems frozen during Generate: it is not; the generator runs in its own process. **Cancel** in the window stops
   it at once.
 - Unity crashed: start it again (step 1 of the evening before), then **Demo Backup > Restore**.
+
+## After the demo: a chain on one row (0.10.0, not in the v0.9.4 demo project)
+
+The `~/investor-demo` project runs v0.9.4; this needs 0.10.0 (`docs/install.md`, one Git URL). Verified headless on this PC
+(IAFahim/sa-inbetween#4) from an empty project installed by Git URL, with the Synty pack copied in:
+
+| Click | You see | Time |
+|---|---|---|
+| **SA > Inbetween > Create Chain Demo** | One **Chain** row: run, jump, land, roll (Synty has no roll; a crouch is used), walk, with an in-between in every gap, and the Timeline window open | about 5 s |
+| (nothing) | The in-betweens bake on their own (progress bar bottom right, Cancel works): 4 generated | about 18 s from the menu click |
+| Press Play in the Timeline window | The character runs, jumps, lands, crouches and walks off; the joins are flat (largest step 0.05 cm, 0.2 degrees) | |
+| Move the walk block a little | Only the gap before it is generated again | about 5 s |
+
+Say: "Each block is a clip the team already has. Every gap is generated, and changing one block only regenerates its gap."
