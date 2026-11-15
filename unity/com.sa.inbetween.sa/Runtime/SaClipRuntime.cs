@@ -8,7 +8,10 @@ namespace SA.Inbetween.Clips
 {
     public static class SaClipRuntime
     {
-        public static bool TryAttach(EntityManager manager, Entity entity, byte[] bytes, bool loop, out int clipIndex, out string error)
+        public static bool TryAttach(EntityManager manager, Entity entity, byte[] bytes, bool loop, out int clipIndex, out string error) =>
+            TryAttach(manager, entity, bytes, loop, false, out clipIndex, out error);
+
+        public static bool TryAttach(EntityManager manager, Entity entity, byte[] bytes, bool loop, bool startExactly, out int clipIndex, out string error)
         {
             clipIndex = -1;
             error = string.Empty;
@@ -72,6 +75,14 @@ namespace SA.Inbetween.Clips
             contribution.Speed = 1f;
             contribution.Offset = 0f;
             contribution.Sample = 0.0;
+            if (startExactly && manager.HasComponent<SharedClock>(entity))
+            {
+                var clock = manager.GetComponentData<SharedClock>(entity);
+                contribution.Offset = (float)-clock.Seconds;
+                clock.Seek = 1;
+                manager.SetComponentData(entity, clock);
+            }
+
             contributions.Add(contribution);
             SharedFamilyControl.PlaySingle(ref contributions, clipIndex);
             return true;

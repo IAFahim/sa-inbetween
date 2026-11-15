@@ -1,8 +1,8 @@
 {
   "name": "com.sa.inbetween.sa",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "displayName": "SA Inbetween for SA Animation",
-  "description": "Import .saclip files baked by sa-soma-bake and play them on SA shared-family characters. No scripts to write.",
+  "description": "Import .saclip files baked by sa-soma-bake and play them on SA shared-family characters (SaClipPlayer, SaChainPlayer; Assets > SA > Add SA Character That Plays This Clip). Generated in-betweens are inertialized into the clips around them and keep planted feet still. No scripts to write.",
   "unity": "7000.0",
   "dependencies": {
     "com.sa.unity": "0.3.7"

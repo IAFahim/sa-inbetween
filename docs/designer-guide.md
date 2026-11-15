@@ -37,7 +37,10 @@ From here, make your own bridges as below. Every message says what to do next; i
 
 ## One-time setup (your technical artist does this once)
 
-Follow `docs/install.md`: four package lines in `Packages/manifest.json`, the **tools folder** `SaInbetween` next to `Assets` (it holds `sa-inbetween`, `sa-soma-bake`, `humanoid-v1.safamily`, and the two NVIDIA files `mmm_v6_soma_fp32.onnx` and `soma_rest.pose`), and a look at `Edit > Project Settings > SA Inbetween`, where every line should say *found*.
+Follow `docs/install.md`: add one Git URL in the Package Manager (`com.sa.inbetween.install`). It adds the other packages, downloads
+the **tools folder** `SaInbetween` next to `Assets` (`sa-inbetween`, `sa-soma-bake`, `humanoid-v1.safamily`), asks once before it
+fetches NVIDIA's model and makes `soma_rest.pose`, and **SA > Inbetween > Setup** shows a **Fix** for anything left. Then
+`Edit > Project Settings > SA Inbetween` says *found* on every line.
 
 ## Make a bridge
 
@@ -271,18 +274,72 @@ If the project also has Tl (`com.tl.unity`), the Timeline asset's **Tl** section
 **When it ends: Loop** makes a Generate clip at the very end land on the first source (a loop), and **When it ends: Next** bakes the
 timeline named in **Play next** right after this one. Without Tl nothing changes.
 
+## A chain of poses on one row
+
+Needs `com.sa.inbetween.sa.timeline` 0.3.0. One row holds the whole move: **run, in-between, jump, in-between, land, in-between,
+roll, in-between, walk**. You place the blocks; every gap between two blocks is an in-between that Inbetween generates and bakes.
+
+### First chain in a minute
+
+1. **SA > Inbetween > Create Chain Demo** looks for a run, a jump, a landing, a roll (or, if there is none, a crouch) and a walk
+   among your Humanoid clips, lays them out on one **Chain** row with a 0.8 s gap between each, and opens a scene with your
+   character and the Timeline window. With the Synty locomotion pack it picks `A_Run_F_Masc`, `A_Jump_Running_Masc`,
+   `A_Land_IdleMedium_Masc`, `A_Idle_Crouching_Masc` (there is no roll clip in that pack) and `A_Walk_F_Masc`.
+   Or select your own clips in the order they should play, plus your character model, and choose
+   **Assets > Create > SA > Inbetween Chain Timeline**; or add **SA Inbetween > Chain Track** to any timeline with **+** and put
+   Source clips on it.
+2. The in-betweens bake **on their own** a second after the chain stops changing (a progress bar at the bottom right of Unity;
+   its **Cancel** stops it, and so does **Cancel bake** in the track's Inspector). With the Synty demo: four in-betweens, about
+   five seconds each.
+3. Press Play in the Timeline window, or drag the playhead: the **Generated** row plays block, in-between, block, ... with the hips
+   carried from one piece to the next.
+4. Move a block, change its length or add a new one: the gaps follow, and only the in-betweens whose gap changed are generated
+   again (each gap has its own recipe and digest; an unchanged gap is *already up to date*).
+
+### What you can do on the row
+
+| Where | Right-click (Timeline window) | Also |
+|---|---|---|
+| The Chain track | **SA Inbetween > Bake all**, **Regenerate all**, **Reveal outputs** | the same buttons in the track's Inspector; **SA > Inbetween > Chain > Bake All / Regenerate All / Reveal Outputs / Cancel Bake** |
+| An in-between (the Generate clip in a gap) | **SA Inbetween > Bake this gap**, **Regenerate this gap**, **Reveal outputs** | select it to set Land Exactly, Keep and Variations for that gap only |
+
+The Chain track's Inspector holds the settings for the whole chain: **Auto Bake**, **Character** (empty: the bound character),
+**Rig**, **Land Exactly** for new gaps, **Seams** (below), what each in-between writes (**Export**), and the whole-chain files.
+
+### What it writes
+
+In `<Timeline>_Generated/`, next to the timeline:
+
+- per in-between: its recipe and `.saclip`, `.anim`, `_Humanoid.anim` (and `.fbx` when Export asks for it);
+- `Pieces/`: the part of each block that plays on the Generated row, as `.saclip` and `.anim`;
+- the whole chain as one clip: `<Timeline>_Chain.saclip` and `<Timeline>_Chain_Humanoid.anim` (Generic `.anim` and FBX on
+  request), and `<Timeline>_Chain.asset`, the chain library: every piece in order with its time, length, clip and digest.
+
+Play the chain in the SA runtime with an **SA Chain Player** (drop the `_Chain` asset on it): **Whole** plays the one clip,
+**Piece By Piece** plays each block and in-between in turn and hands over to the next when one ends. An **SA Clip Player** with
+`<Timeline>_Chain.saclip` plays the whole chain too.
+
+### Seams
+
+Every join is made smooth on purpose, in two parts. The in-between starts exactly where the block before it leaves off and lands
+exactly where the next one begins: the difference at each end (hips height and tilt, and every joint) dies away over a short time
+(**Seconds**: the half-life with **Critically Damped**, the full length with **Quintic**), so it carries the speed through the
+join. Then **Feet**: a foot that is planted stays where it is (foot lock with leg IK, blended in and out over three frames), and no
+sole goes below the ground the blocks stand on. On the Synty chain every one of the eight joins measures under 0.1 cm in height
+and sideways and under 0.2 degrees. Turn Seconds to 0 and Feet off to get the generator's raw output.
+
 ## What it does not do yet
 
-- Generation timelines bake only when you press Bake. On the Generated row each clip is moved so its hips continue from the clip
-  before it sideways and in facing; its height stays its own, so the feet stay on the ground and a small step up or down can show
-  at a seam (Synty jump: 3.6 cm at the top of the jump, 6.1 cm at touchdown). Source clips play only on the Generated row; the
-  Source clips on the Steps row are layout and do not move the character.
+- Generation tracks (not Chain tracks) bake only when you press Bake. A Chain track bakes on its own while its timeline is open
+  in the Timeline window.
+- A chain block can be a Unity clip or a `.saclip`. A pose block (one SOMA pose) is not placed on the Generated row.
 - Timeline bridges are not regenerated by themselves when a neighbour changes; press **Regenerate Inbetween bridge**. A bridge that is generating when Unity reloads scripts is not placed; regenerate it.
 - The neck is a single bone on the SA rig, so a source clip's neck is smoothed slightly when it is read back. The head's position can move by up to about 2 cm at the seam.
 
 ## Tools folder, for the technical artist
 
-`tools/make_pose_library.py` writes `soma_rest.pose` (a SOMA skeleton rest pose, which the baker needs for the joint offsets and finger rotations) together with a sample pose library:
+The installer makes `soma_rest.pose` (the SOMA skeleton rest pose the baker needs for the joint offsets and finger rotations) from
+frame 0 of NVIDIA's sample after you accept NVIDIA's terms. To make it by hand, or a sample pose library, `tools/make_pose_library.py`:
 
 ```bash
 ~/GitHub/motionbricks/.venv/bin/python tools/make_pose_library.py --out ~/sa-inbetween-library

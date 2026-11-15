@@ -116,7 +116,7 @@ namespace SA.Inbetween.Clips
                 return;
             }
 
-            if (!SaClipRuntime.TryAttach(world.EntityManager, entity, clip.Bytes, whole && Loop, out clipIndex, out var error))
+            if (!SaClipRuntime.TryAttach(world.EntityManager, entity, clip.Bytes, whole && Loop, index == 0, out clipIndex, out var error))
             {
                 Status = error;
                 return;

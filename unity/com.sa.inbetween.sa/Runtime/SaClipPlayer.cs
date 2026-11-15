@@ -10,6 +10,8 @@ namespace SA.Inbetween.Clips
         public SaClipAsset Clip;
         public bool Loop = true;
         public bool PlayOnStart = true;
+        [Tooltip("Start the clip on its own first frame instead of blending in from whatever the character was doing.")]
+        public bool StartExactly = true;
         public string Status = "Waiting for the character...";
 
         World world;
@@ -109,7 +111,7 @@ namespace SA.Inbetween.Clips
             }
 
             using var entities = query.ToEntityArray(Allocator.Temp);
-            if (!SaClipRuntime.TryAttach(manager, entities[0], Clip.Bytes, Loop, out clipIndex, out var error))
+            if (!SaClipRuntime.TryAttach(manager, entities[0], Clip.Bytes, Loop, StartExactly, out clipIndex, out var error))
             {
                 Status = error;
                 wanted = false;
