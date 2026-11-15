@@ -205,5 +205,79 @@ namespace SA.Inbetween.Clips.Tests
                 AssetDatabase.DeleteAsset(Folder);
             }
         }
+
+        [UnityTest, Category("RealAssets")]
+        public IEnumerator A_chain_plays_piece_by_piece_and_hands_over_to_the_next_piece()
+        {
+            if (!Application.isBatchMode) Assert.Ignore("replaces the open scene and enters Play mode; run it in batch mode");
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(SyntyCharacter);
+            var sources = Clips.Select(AssetDatabase.LoadAssetAtPath<SaClipAsset>).ToList();
+            if (model == null || sources.Any(c => c == null)) Assert.Ignore("Synty character or the test .saclips missing");
+            if (AssetDatabase.IsValidFolder(Folder)) AssetDatabase.DeleteAsset(Folder);
+            AssetDatabase.CreateFolder("Assets", "zz_runtime_start");
+            var paths = new List<string>();
+            foreach (var source in sources)
+            {
+                var path = Folder + "/" + source.name + ".saclip";
+                System.IO.File.WriteAllBytes(path, source.Bytes);
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+                paths.Add(path);
+            }
+
+            try
+            {
+                var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+                Assert.IsTrue(EditorSceneManager.SaveScene(scene, Folder + "/Chain Start.unity"));
+                model = AssetDatabase.LoadAssetAtPath<GameObject>(SyntyCharacter);
+                var clips = paths.Select(AssetDatabase.LoadAssetAtPath<SaClipAsset>).ToList();
+                Assert.IsTrue(SaCharacterSetup.TryCreate(model, clips[0], scene, Vector3.zero, out var single, out var error), error);
+                var holder = single.gameObject;
+                UnityEngine.Object.DestroyImmediate(single);
+                var chain = ScriptableObject.CreateInstance<SaChainAsset>();
+                var start = 0f;
+                foreach (var clip in clips)
+                {
+                    Assert.IsTrue(SaClipPose.TryLoad(clip.Bytes, out var pose, out error), error);
+                    chain.Pieces.Add(new ChainPiece { Name = clip.name, Kind = ChainPieceKind.Block, Start = start, Duration = pose.Duration, Speed = 1f, Clip = clip, Digest = "" });
+                    start += pose.Duration;
+                }
+
+                chain.Whole = clips[0];
+                AssetDatabase.CreateAsset(chain, Folder + "/Chain.asset");
+                var player = holder.AddComponent<SaChainPlayer>();
+                player.Chain = chain;
+                player.Playback = ChainPlayback.PieceByPiece;
+                player.Loop = false;
+                EditorSceneManager.MarkSceneDirty(scene);
+                Assert.IsTrue(EditorSceneManager.SaveScene(scene));
+                var firstDuration = chain.Pieces[0].Duration;
+                yield return new EnterPlayMode();
+                player = UnityEngine.Object.FindAnyObjectByType<SaChainPlayer>();
+                Assert.IsNotNull(player);
+                var begun = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - begun < 90f && !player.IsPlaying) yield return null;
+                Assert.IsTrue(player.IsPlaying, player.Status);
+                Assert.AreEqual(0, player.Piece);
+                var gameStart = Time.time;
+                begun = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - begun < firstDuration + 30f && player.Piece == 0) yield return null;
+                var handedAt = Time.time - gameStart;
+                Assert.AreEqual(1, player.Piece, "the second piece takes over: " + player.Status);
+                Assert.IsTrue(player.IsPlaying, player.Status);
+                Assert.That(player.Status, Does.Contain(chain.Pieces[1].Name));
+                begun = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - begun < chain.Pieces[1].Duration + 30f && player.Piece == 1) yield return null;
+                Assert.AreEqual(-1, player.Piece, "nothing follows the last piece without Loop");
+                Assert.That(player.Status, Does.StartWith("Finished"));
+                TestContext.WriteLine("first piece " + firstDuration.ToString("0.000", CultureInfo.InvariantCulture) + " s handed over after " + handedAt.ToString("0.000", CultureInfo.InvariantCulture) + " s of game time");
+                yield return new ExitPlayMode();
+            }
+            finally
+            {
+                if (EditorApplication.isPlaying) EditorApplication.isPlaying = false;
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                AssetDatabase.DeleteAsset(Folder);
+            }
+        }
     }
 }
