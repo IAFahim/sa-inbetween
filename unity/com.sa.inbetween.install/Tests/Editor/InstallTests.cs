@@ -198,6 +198,8 @@ namespace SA.Inbetween.Install.Tests
             Assert.That(names, Does.Contain("Rest pose (NVIDIA sample)"));
             Assert.That(names, Does.Contain("Render pipeline"));
             Assert.That(steps.All(s => s.Detail.Length > 20), Is.True);
+            if (UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline == null && UnityEngine.QualitySettings.GetRenderPipelineAssetAt(UnityEngine.QualitySettings.GetQualityLevel()) != null)
+                Assert.That(steps.Single(s => s.Name == "Render pipeline").State, Is.EqualTo(SetupState.Done), "a URP asset on the quality levels counts; the template sets none in Graphics");
             var model = steps.Single(s => s.Name == "Motion model (NVIDIA)");
             if (!InbetweenSetup.HasModel() && !InbetweenSetup.NvidiaAccepted) Assert.That(model.State, Is.EqualTo(SetupState.NeedsConsent), "the model is never downloaded without an answer");
         }

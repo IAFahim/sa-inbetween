@@ -1,22 +1,23 @@
 # Versions and compatibility
 
-What SA Inbetween 0.9.4 was built and tested with. "Tested" means a run with its counts recorded in
+What SA Inbetween 0.10.0 was built and tested with. "Tested" means a run with its counts recorded in
 `docs/playtest.md` or `docs/reports/`; anything else is marked.
 
 ## Packages that go together
 
 | Package | Version | Git ref in `Packages/manifest.json` |
 |---|---|---|
-| `com.sa.inbetween.sa` (recipes, importer, Inspector, demo) | 0.9.4 | `https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa#v0.9.4` |
-| `com.sa.inbetween.sa.timeline` (optional: Timeline bridges and generation timelines) | 0.2.0 | `https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#v0.9.4` |
+| `com.sa.inbetween.install` (the one Git URL; adds the rest) | 0.10.0 | `https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.install#v0.10.0` |
+| `com.sa.inbetween.sa` (recipes, importer, Inspector, demo, SA runtime players) | 0.10.0 | `https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa#v0.10.0` |
+| `com.sa.inbetween.sa.timeline` (Chain and Generation tracks, Timeline bridges) | 0.3.0 | `https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.sa.timeline#v0.10.0` |
 | `com.sa.unity` | 0.3.7 | `https://github.com/IAFahim/com.sa.unity.git#v0.3.7` |
 | `com.sa.motion.unity` | 0.1.0 | `https://github.com/IAFahim/sa-motion.git?path=packages/com.sa.motion.unity#e56b12fe81fb7166c2c8a0984025220e3c07bb48` |
 | `com.unity.formats.fbx` (only for Export > FBX) | 5.1.6 | registry |
-| Tools archive (`SaInbetween/`: generator, baker, family file) | v0.9.4 | release asset `SaInbetween-tools-v0.9.4-<os>.zip/.tar.gz` |
+| Tools archive (`SaInbetween/`: generator, baker, family file) | v0.10.0 | release asset `SaInbetween-tools-v0.10.0-<os>.zip/.tar.gz` (the installer downloads it) |
 | NVIDIA model `mmm_v6_soma_fp32.onnx` | MotionBricks v6 SOMA fp32 | 757,864,273 bytes, SHA-256 `856419dc...60f4fb` (checked before each Generate) |
 
-Mixing releases is not supported: `com.sa.inbetween.sa` 0.9.4 declares `com.sa.unity` 0.3.7, and the tools of an
-older release may not read files the 0.9.4 Editor code writes. Older pairs: sa-inbetween 0.9.3 with com.sa.unity 0.3.7, 0.9.2 with com.sa.unity 0.3.6,
+Mixing releases is not supported: `com.sa.inbetween.sa` 0.10.0 declares `com.sa.unity` 0.3.7, and the tools of an
+older release may not read files the 0.10.0 Editor code writes. Older pairs: sa-inbetween 0.9.4 and 0.9.3 with com.sa.unity 0.3.7, 0.9.2 with com.sa.unity 0.3.6,
 0.9.1 with 0.3.6, 0.9.0 with 0.3.4.
 
 ## Unity
@@ -24,7 +25,7 @@ older release may not read files the 0.9.4 Editor code writes. Older pairs: sa-i
 | Unity | Render pipeline | Status |
 |---|---|---|
 | 7000.0.0a12 | URP 17.7 (Universal 3D template) | **Tested** on Linux: clean install (`docs/reports/clean-install-2026-11-14.md`) and the 0.9.3 test runs in `docs/playtest.md` |
-| 7000.0.0a16 | URP 17.7 (Universal 3D template) | **Tested** on Linux for 0.9.4: the gate runs and the investor-demo dry run in IAFahim/sa-inbetween#3 |
+| 7000.0.0a16 | URP 17.7 (Universal 3D template) | **Tested** on Linux for 0.10.0 (gates with and without Tl, clean Git-URL install, Linux CoreCLR player, IAFahim/sa-inbetween#4) and 0.9.4 (investor-demo dry run, #3) |
 | Unity 6 (6000.x) and older | any | **Not supported**: the packages declare `"unity": "7000.0"` and use Unity 7 APIs |
 
 The packages need Entities 6.7.0 and Entities Graphics 6.7.0 (pulled by `com.sa.unity`) and, for the Timeline

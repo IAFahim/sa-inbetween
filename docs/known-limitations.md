@@ -1,4 +1,4 @@
-# Known limitations (0.9.4)
+# Known limitations (0.10.0)
 
 What SA Inbetween does not do, or does differently from what you might expect. Each item says what you see and what
 to do about it.
@@ -13,8 +13,9 @@ to do about it.
   unavailable and unusual names may not be found. Set the FBX's **Rig > Animation Type** to **Humanoid** and press
   **Apply**; the First Bridge window has a **Set to Humanoid** button for this.
 - **Legacy clips are not read.** Switch the FBX to Humanoid or Generic.
-- **Fingers and hand ends** hold the last pose before the bridge (up to 0.36 degrees from NVIDIA's reference mid-clip).
-  The neck is one bone on the SA rig, so the head can move up to about 2 cm at a seam.
+- **Fingers and hand ends** hold the last pose before the bridge while it plays (up to 0.36 degrees from NVIDIA's reference
+  mid-clip); since 0.10.0 they blend into the next clip's hands over the last tenth of a second, so the join does not pop.
+  The neck is one bone on the SA rig, so a source's neck is smoothed slightly when it is read back.
 - **Duration is 0.6 to 1.93 s per move**, in steps of 4 frames (about 0.13 s). Longer transitions need more goals.
 - **The result is always 30 fps.** A 60 fps source is read at 30 fps; a start frame is counted at the clip's own rate.
 
@@ -39,9 +40,10 @@ to do about it.
   and turning stay root motion: with root motion off the character jumps in place.
 - **4 Play in SA runtime** (First Bridge window) needs a Humanoid character and a demo scene with no other SubScene; it adds
   one SubScene with the SA character and leaves the Animator character as it is.
-- **Generated track on a Timeline**: clips are lined up on the hips sideways and in facing; each keeps its own height, so a
-  small vertical step can show at a seam (Synty jump: 3.6 cm at the top, 6.1 cm at touchdown). Matching needs the timeline's
-  director in an open scene; without it the report says the hips were not matched.
+- **Generated track on a Timeline**: each in-between is fitted to its gap (the generator works in steps of 4 frames, so it
+  plays up to 12 % faster or slower than generated); a **Model Picks** take keeps its own length, so the block after it starts
+  that much later into its clip. Hips matching needs the timeline's director in an open scene; without it the report says the
+  hips were not matched.
 - The very first preview frame after the Editor starts can render dark for an instant while shaders load; the next frame is
   lit.
 
@@ -49,8 +51,13 @@ to do about it.
 
 - **A Generate step that takes longer than two minutes is stopped** with a plain message (nothing is written). A very
   slow PC can raise the limit in the Editor preferences key `SA.Inbetween.stepLimitSeconds`.
-- **Nothing regenerates by itself.** A recipe or Timeline bridge says *out of date* when its settings or a source
-  clip change; press **Generate** (or **Regenerate Inbetween bridge**).
+- **Only Chain tracks regenerate by themselves**, and only while their timeline is open in the Timeline window. A recipe,
+  a Timeline bridge or a Generation track says *out of date* when its settings or a source clip change; press **Generate**
+  (or **Regenerate Inbetween bridge**, or **Bake**).
+- **Recipes from before 0.10.0 say *out of date* once** (their seams are now blended and their feet kept still, which
+  changes the result). Press Generate once.
+- **A chain block that is a single pose** (a SOMA `.pose`) bakes its in-betweens but is not placed on the Generated row or in
+  the whole-chain clip.
 - **Generating stops if Unity reloads scripts** (a script change, or Play mode with domain reload). The recipe then
   says so and nothing is written; press Generate again. Play mode does not start while a recipe is generating.
 - **Recipes from before 0.9.3 say *out of date* once** after the upgrade (the source fingerprint now survives moving and
@@ -64,6 +71,8 @@ to do about it.
 
 ## Platforms
 
+- **The Git-URL installer was run end to end on Linux only.** On Windows it downloads the `win-x64.zip` the same way, but no
+  person has run it there.
 - **Windows has not been run by a person.** The tools zip is checked statically and started on GitHub's Windows
   runner (`scripts/windows-smoke.ps1`), but no Generate has run on Windows. A Windows tester follows
   `docs/windows-tester-checklist.md`. The model runtime needs the Microsoft Visual C++ Redistributable 2015-2022 (x64).
@@ -75,7 +84,10 @@ to do about it.
 - The motion model `mmm_v6_soma_fp32.onnx` is NVIDIA's MotionBricks model under the **NVIDIA Open Model Agreement**. It
   is not in this repository or in the tools archive; each user obtains it from NVIDIA (MotionBricks
   `assets/onnx/soma/`) and keeps NVIDIA's notices (`NOTICE`). The code here is Apache-2.0.
-- NVIDIA's sample motions and test recordings are evaluation-only and are never shipped. `soma_rest.pose` is made from
-  them with `tools/make_pose_library.py`, so it is not redistributed either; a technical artist makes it once.
+- NVIDIA's sample motions and test recordings are evaluation-only and are never shipped. `soma_rest.pose` is frame 0 of one
+  of them (`combat_quickstep_ff_idle_180_R_002__A365.bvh`); the installer downloads that file from NVIDIA's repository after
+  the user accepts NVIDIA's terms and makes the pose on the user's computer, so it is not redistributed either. Its sample
+  licence is for evaluation; a rest pose with redistribution rights for production use is still an open question for the
+  owner (`docs/status.md`).
 - The engine embeds the 77-entry SOMA skeleton parent table (topology only, no motion or bind data). Whether the NVIDIA
   licence allows that table in source is still to be confirmed by the owner (`docs/status.md`).

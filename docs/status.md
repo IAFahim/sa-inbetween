@@ -1,6 +1,6 @@
 # Status
 
-What is built, what is verified, and what is not. Updated 2026-11-15 (0.9.4).
+What is built, what is verified, and what is not. Updated 2026-11-15 (0.10.0).
 
 ## Production-ready
 - Contract, wire codec, motion file (`.saib`), recipe hashing: tested, property-tested, zero-allocation kernels.
@@ -13,8 +13,27 @@ What is built, what is verified, and what is not. Updated 2026-11-15 (0.9.4).
 ## Not built
 - GPU/TensorRT sidecar (P05, P06, P14, P15). The CPU path is the supported one; the sidecar is a speed optimisation only.
 - BenchmarkDotNet suite (P19) and mutation testing (P20). Allocation is covered by `EngineAllocationSpec`.
-- Contacts into leg IK and root travel in the family bake (P16). Clips are attached at runtime, not through a subscene baker.
+- Root travel in the family bake (P16). Clips are attached at runtime, not through a subscene baker. (Contacts now drive the foot lock
+  on generated clips at bake time, 0.10.0.)
 - Video poses (P27) and move tuning (P28).
+
+## 0.10.0: chain on one row, seams, Git-URL install (IAFahim/sa-inbetween#4)
+- **Chain Track** (`com.sa.inbetween.sa.timeline` 0.3.0): one Timeline row of blocks; every gap is an in-between that bakes on
+  its own (digest per gap, progress with Cancel, right-click Bake all / Bake this gap / Regenerate / Reveal outputs), plays on the
+  Generated row, and is written per gap and as one whole-chain `.saclip` + Humanoid `.anim` + chain asset (`SaChainPlayer`,
+  Whole or Piece By Piece with Next). `SA > Inbetween > Create Chain Demo`. Verified on Synty run, jump, land, crouch (no roll clip
+  in the pack) and walk: 4 in-betweens, 8 seams under 0.1 cm and 0.2 degrees.
+- **Seams fixed**: the 3.6 / 6.1 cm steps came from playing the raw source takes (their own root-motion import settings) next to
+  the exported in-between and from a one-frame lag after token rounding; the Generated row now plays SA-converted pieces and fitted
+  in-betweens (0.04-0.05 cm). Every generated clip is inertialized onto both neighbours (critically damped or quintic) and its
+  planted feet are locked with leg IK and kept above the ground: hand pop at the joins 22.9 / 30.3 deg -> 0.00, loose landing
+  1.09 cm -> 0.00, planted-foot slide 8.9 cm -> 0.0.
+- **SA runtime from frame 0**: `SaClipPlayer`/`SaChainPlayer` start a clip with a seek, so head, hands, feet and fingers are where
+  the clip puts them on the first frame (they lagged up to 41 cm for 0.2 s after a load hitch). `Assets > SA > Add SA Character That
+  Plays This Clip` sets up the character in one step; a Linux CoreCLR player build plays a baked clip with no NVIDIA file.
+- **Git-URL install** (`com.sa.inbetween.install`): adds the other packages to the manifest, downloads the tools with SHA-256,
+  asks once before NVIDIA's model and rest-pose sample, makes `soma_rest.pose` locally, fixes the render pipeline, Setup window
+  with Fix all.
 
 ## Investor demo (v0.9.4)
 - A 10-minute script with exact clicks, timings, known limits and a fallback for every step: `docs/investor-demo.md`.
@@ -38,6 +57,9 @@ What is built, what is verified, and what is not. Updated 2026-11-15 (0.9.4).
 ## Needs a person
 - A Windows tester run (`docs/windows-tester-checklist.md`).
 - Foot gate in the SOMA retarget: sole is the lower of mid-foot and toe-ball, hip reference lowered to 0.9864 m.
+- A rest pose with redistribution rights: `soma_rest.pose` is frame 0 of an NVIDIA evaluation sample, made on the user's computer
+  by the installer after they accept NVIDIA's terms. Whether that is fine for production use is the owner's call.
+- The Git-URL installer and a chain bake on Windows.
 - Arm, forearm and hand twist on a skinned character.
 - 77-entry skeleton parent table: confirm the NVIDIA licence allows it in source.
 - Finger and hand joints are filled from the last context pose; up to 0.36 degrees from the official engine mid-clip.

@@ -54,9 +54,9 @@ sa-inbetween inspect walk.saib
 
 ### In Unity (SA characters)
 
-Install first: `docs/install.md`. Then add `unity/com.sa.inbetween.sa` to your project (it needs `com.sa.unity` 0.3.7). New here: choose `SA > Inbetween > Create Demo Scene` and press the three buttons. Otherwise select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
+Install: Package Manager > **+** > **Install package from git URL** > `https://github.com/IAFahim/sa-inbetween.git?path=unity/com.sa.inbetween.install#v0.10.0`. That one package adds the others, downloads the tools and, after asking you once, NVIDIA's model (`docs/install.md`). New here: choose `SA > Inbetween > Create Demo Scene` and press the three buttons. Otherwise select two clips in the Project window, choose `Assets > Create > SA > Inbetween Bridge` and press **Generate** in the Inspector. The tools folder is set once in `Edit > Project Settings > SA Inbetween`. Step by step: `docs/designer-guide.md`.
 
-To author generations in the Timeline window, add `unity/com.sa.inbetween.sa.timeline` (0.2.0): Source, Generate, Start/Goal Pose, Retarget / Bake, Export and Label clips on an **SA Inbetween/Generation Track**, then **Bake Timeline** writes the same files and puts the result on the timeline. Try `SA > Inbetween > Create Generation Demo`. Designers: `docs/designer-guide.md` ("Author a generation on a Timeline"); programmers adding clip types: `docs/timeline-generation.md`.
+To chain moves on one Timeline row, add an **SA Inbetween/Chain Track** and put clips on it (run, jump, land, roll, walk): every gap becomes a generated in-between that bakes on its own, plays in the Timeline window, and the whole chain is written as one `.saclip`. Try `SA > Inbetween > Create Chain Demo`. To author single generations, `com.sa.inbetween.sa.timeline` (0.3.0) also has Source, Generate, Start/Goal Pose, Retarget / Bake, Export and Label clips on an **SA Inbetween/Generation Track**; **Bake Timeline** writes the same files and puts the result on the timeline. Try `SA > Inbetween > Create Generation Demo`. Designers: `docs/designer-guide.md` ("Author a generation on a Timeline"); programmers adding clip types: `docs/timeline-generation.md`.
 
 For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a complete caller of `PortedGenerator`) and `docs/ecs-integration.md` (where generation may and may not run).
 
@@ -72,7 +72,8 @@ For use from your own C# code, read `apps/SA.Inbetween.Cli/Program.cs` (a comple
 | `apps/SA.Inbetween.Cli` | `sa-inbetween` tool |
 | `unity/com.sa.inbetween` | Unity package of the core libraries (`build/pack-unity.sh` builds the DLLs; they are not committed) |
 | `unity/com.sa.inbetween.sa` | Unity package: Inbetween Bridge recipes, `.saclip` importer and `SaClipPlayer` (needs `com.sa.unity`) |
-| `unity/com.sa.inbetween.sa.timeline` | Unity package: generation timelines (author and bake in the Timeline window) and the right-click Timeline bridge |
+| `unity/com.sa.inbetween.sa.timeline` | Unity package: chain and generation timelines (author and bake in the Timeline window) and the right-click Timeline bridge |
+| `unity/com.sa.inbetween.install` | Unity package: the one Git URL to install (adds the other packages, tools, NVIDIA files after asking, settings) |
 | `docs/` | Contract, engine spec and measured parity, reports |
 
 ## Accuracy

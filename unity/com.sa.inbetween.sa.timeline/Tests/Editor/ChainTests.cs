@@ -88,6 +88,39 @@ namespace SA.Inbetween.Timeline.Tests
         }
 
         [Test]
+        public void Dropping_a_clip_from_the_Project_window_on_the_row_makes_a_block_that_plays_it()
+        {
+            var editor = typeof(UnityEditor.Timeline.TimelineEditor).Assembly;
+            var flags = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+            var handled = (System.Collections.IEnumerable)editor.GetType("UnityEditor.Timeline.TypeUtility").GetMethod("GetPlayableAssetsHandledByTrack", flags).Invoke(null, new object[] { typeof(ChainTrack) });
+            Assert.That(handled.Cast<Type>(), Does.Contain(typeof(SourceClip)), "a Chain row takes Source clips");
+            var fieldType = editor.GetType("UnityEditor.Timeline.ObjectReferenceField");
+            var fields = (Array)fieldType.GetMethod("FindObjectReferences", flags, null, new[] { typeof(Type) }, null).Invoke(null, new object[] { typeof(SourceClip) });
+            var found = fields.Cast<object>().Select(f => (Path: (string)fieldType.GetField("propertyPath").GetValue(f), Type: (Type)fieldType.GetField("type").GetValue(f))).ToList();
+            Assert.That(found.Any(f => f.Type == typeof(AnimationClip) && f.Path == "Payload.Motion"), Is.True,
+                "Timeline drops an AnimationClip on the row as a Source clip with this field set: " + string.Join(", ", found.Select(f => f.Path + ":" + f.Type.Name)));
+            var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+            var motion = new AnimationClip { name = "Run" };
+            try
+            {
+                var track = timeline.CreateTrack<ChainTrack>(null, "Chain");
+                var dropped = track.CreateClip<SourceClip>();
+                var serialized = new SerializedObject(dropped.asset);
+                serialized.FindProperty("Payload.Motion").objectReferenceValue = motion;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var source = (SourceClip)dropped.asset;
+                Assert.That(source.Payload.Kind, Is.EqualTo(SourceKind.UnityClip), "a new block is a Unity clip block");
+                Assert.That(source.Payload.Motion, Is.SameAs(motion));
+                Assert.That(source.HasSource, Is.True);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(motion);
+                UnityEngine.Object.DestroyImmediate(timeline);
+            }
+        }
+
+        [Test]
         public void A_chain_plans_one_generation_per_gap_with_the_chains_settings_and_unique_names()
         {
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();

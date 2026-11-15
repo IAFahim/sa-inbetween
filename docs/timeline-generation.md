@@ -206,6 +206,45 @@ Then:
    `Every_clip_type_has_one_step` already fails if your clip has no step.
 2. A step whose `Finish` writes files needs the tools; follow `GenBakeTests` and `Assert.Ignore` when they or the assets are missing.
 
+## Chain tracks
+
+A **Chain Track** (`ChainTrack : GenTrack`, `[DisplayName("SA Inbetween/Chain Track")]`) is a Generation Track whose gaps are
+generations. The clip types and steps above stay the same; the chain adds four small pieces, each with one job:
+
+| Piece | Job | Input to output |
+|---|---|---|
+| `ChainPayload` (on the track) | what the designer sets once for the whole row | Inspector fields: Auto Bake, Character, Rig, Land Exactly, `SeamSettings`, `ExportPayload`, whole-chain files |
+| `ChainSync` | keep exactly one `GenerateClip` in every gap between two neighbouring `SourceClip`s | the row's clips to Generate clips created, moved or deleted (a gap clip keeps its settings when a block moves); `Signature` is the row as text |
+| `GenPlanner` (chain rules in `Seal`) | give chain jobs the chain's settings and unique default names | a `GenJob` with `Chain`, `Seam`, `Rig`, `Export` from the payload unless a Retarget / Bake or Export clip covers it |
+| `GenPieces` | put each block on the Generated row as the SA-converted piece the Timeline shows (same export path as the in-betweens), fit each in-between to its gap, match the hips, measure every seam | `GenBakeRun` to `Pieces/<block>_<start>-<end>.saclip` + `.anim`, `run.Pieces`, `run.Seams` |
+| `GenChain` | the whole row as one clip and a chain library | the Generated row's pieces in order to `<Timeline>_Chain.saclip`, `_Humanoid.anim` and `SaChainAsset` (pieces with start, length, speed, clip, digest; one digest over all) |
+| `ChainAuto` | bake on its own when the inspected timeline's chain changes and settles for a second, if anything is stale (`ChainAuto.Stale` compares each gap's would-be recipe hash) | Editor update loop to `GenBake.Start(..., new GenBakeOptions { Auto = true })` |
+
+`GenBakeOptions` carries `Only` (bake those gaps; other stale gaps are reported, not generated), `Force` (regenerate even when the
+recipe hash says up to date) and `Auto`. Right-click entries are `TrackAction`/`ClipAction` classes in `ChainCommands`
+(**SA Inbetween > Bake all / Regenerate all / Reveal outputs** on a track, **Bake this gap / Regenerate this gap / Reveal outputs**
+on a Generate clip); the menu items under **SA > Inbetween > Chain** call the same methods. Every bake shows a `Progress` item with
+Cancel.
+
+### Seams (com.sa.inbetween.sa)
+
+Seams are fixed where the motion is made, so every output (the `.saclip`, both `.anim` files, the FBX, the SA runtime) gets them:
+`RecipeRunner.Finish` runs `SeamBake.TryFixFile` on the baked clip before it is imported (the generator's own clip is kept as
+`<name>.raw.saclip` in the work folder, and `<name>.seams.txt` says what changed). The layers are pure functions on canonical
+poses (56 bones, 30 Hz):
+
+| Layer | Job | Law (tested) |
+|---|---|---|
+| `SeamDecay` | an offset and its velocity dying away, critically damped (`e^-yt (x0 + (v0 + x0 y) t)`, `y = 2 ln2 / half-life`) or quintic (Bollo) | value `x0` and slope `v0` at the join, zero after, no overshoot without `v0` |
+| `SeamFix.Blend` | inertialize both ends of an in-between onto its neighbours: hips height and tilt (the yaw and sideways place belong to hips matching) and every joint's rotation, with the joins' velocities | frame 0 equals the start side, the last frame equals the goal, the middle of a long clip is unchanged |
+| `FootFix.Apply` | contact frames from the generator's contact weights, the sole height and speed; lock a planted foot, blend in and out over three frames, keep soles above the ground the joins stand on, solve the leg with two-bone IK keeping the foot's own rotation | a sliding planted foot stops, the end frames never move, IK reaches reachable targets within 1 mm |
+| `SeamBake` | read the sides from the recipe's own start and goal sources and write the fixed clip | before and after numbers for both joins and the feet |
+
+`RecipeRunner.Hash` includes `InbetweenRecipe.Seam` (`|seam1:<curve>:<seconds>:<feet>`), so turning seams off or changing them
+regenerates. Measuring tests: `SeamTests` (synthetic and the real Synty jump, exact and loose landing), `ChainTests` (the
+five-block chain: every Timeline seam), `GenDemoTests` (the demo timelines, 1 cm gate), `RuntimeStartTests` (the SA runtime from the
+first frame).
+
 ## Bake from a script or CI
 
 ```sh

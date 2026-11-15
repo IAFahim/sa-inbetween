@@ -144,7 +144,14 @@ namespace SA.Inbetween.Install
 
         public static bool HasRest() => File.Exists(RestPath) && new FileInfo(RestPath).Length == SomaRestPose.Bytes;
 
-        public static bool HasPipeline() => GraphicsSettings.defaultRenderPipeline != null;
+        public static bool HasPipeline()
+        {
+            if (GraphicsSettings.defaultRenderPipeline != null || GraphicsSettings.currentRenderPipeline != null) return true;
+            for (var level = 0; level < QualitySettings.names.Length; level++)
+                if (QualitySettings.GetRenderPipelineAssetAt(level) != null)
+                    return true;
+            return false;
+        }
 
         public static List<SetupStep> Check()
         {
@@ -321,8 +328,9 @@ namespace SA.Inbetween.Install
 
             var url = Environment.GetEnvironmentVariable(ModelVariable);
             var pin = InstallPlan.Model;
-            Fetch("Downloading NVIDIA's motion model", new Download(string.IsNullOrEmpty(url) ? pin.Url : url, ModelPath, pin.Sha256, pin.Bytes), done =>
-                Debug.Log("SA Inbetween setup: " + InstallPlan.ModelFile + " downloaded from NVIDIA and checked (SHA-256 " + pin.Sha256 + ")."));
+            var from = string.IsNullOrEmpty(url) ? pin.Url : url;
+            Fetch("Downloading NVIDIA's motion model", new Download(from, ModelPath, pin.Sha256, pin.Bytes), done =>
+                Debug.Log("SA Inbetween setup: " + InstallPlan.ModelFile + " downloaded from " + from + " and checked (SHA-256 " + pin.Sha256 + ")."));
         }
 
         public static void FixRest()
@@ -348,7 +356,7 @@ namespace SA.Inbetween.Install
                 Directory.CreateDirectory(ToolsFolder);
                 File.WriteAllBytes(RestPath, pose);
                 File.Delete(file);
-                Debug.Log("SA Inbetween setup: " + InstallPlan.RestFile + " made from frame 0 of " + InstallPlan.RestSourceFile + " (" + pose.Length + " bytes).");
+                Debug.Log("SA Inbetween setup: " + InstallPlan.RestFile + " made from frame 0 of " + InstallPlan.RestSourceFile + " (" + pose.Length + " bytes), downloaded from " + done.Url + ".");
             });
         }
 
