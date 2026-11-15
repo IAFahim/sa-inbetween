@@ -69,6 +69,9 @@ namespace SA.Inbetween.Timeline.Editor
         public ExportPayload Export = ExportPayload.Default;
         public bool HasExport;
         public readonly List<string> Labels = new List<string>();
+        public SeamSettings Seam = SeamSettings.Default;
+
+        public ChainTrack Chain => Frame.Track as ChainTrack;
 
         public GenSpan Span => Frame.Span;
 

@@ -91,6 +91,7 @@ namespace SA.Inbetween.Timeline.Editor
             recipe.DurationSeconds = seconds;
             recipe.LandExactly = landExactly;
             recipe.ModelPicksLength = variant == GenVariant.ModelPicks;
+            recipe.Seam = job.Seam;
             recipe.SaveAnimationClip = job.Character != null && (job.Export.Anim || (job.Export.PlaceOnTimeline && !GenOutputs.PlacesHumanoid(job)));
             return JsonUtility.ToJson(recipe) != before;
         }

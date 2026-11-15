@@ -1,0 +1,8 @@
+{
+  "name": "com.sa.inbetween.install",
+  "version": "0.10.0",
+  "displayName": "SA Inbetween (install from Git)",
+  "description": "Add this one package by Git URL in an empty Unity project. It adds the other SA Inbetween packages to the manifest (Package Manager cannot follow Git dependencies), downloads the tools from the matching GitHub release and checks their SHA-256, asks once before it downloads NVIDIA's motion model and the SOMA rest-pose sample from NVIDIA's own repository, fills the project settings, and shows a one-click Fix for anything still missing (SA > Inbetween > Setup). Nothing from NVIDIA is shipped in this package or in the tools.",
+  "unity": "7000.0",
+  "dependencies": {}
+}

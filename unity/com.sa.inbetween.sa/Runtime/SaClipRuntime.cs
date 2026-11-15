@@ -77,6 +77,20 @@ namespace SA.Inbetween.Clips
             return true;
         }
 
+        public static void SetSpeed(EntityManager manager, Entity entity, int clipIndex, float speed)
+        {
+            if (clipIndex < 0 || !manager.Exists(entity) || !manager.HasBuffer<SharedContribution>(entity)) return;
+            manager.CompleteAllTrackedJobs();
+            var contributions = manager.GetBuffer<SharedContribution>(entity);
+            for (var i = 0; i < contributions.Length; i++)
+            {
+                if (contributions[i].Clip != clipIndex) continue;
+                var c = contributions[i];
+                c.Speed = speed;
+                contributions[i] = c;
+            }
+        }
+
         public static void Detach(EntityManager manager, Entity entity, int clipIndex)
         {
             if (clipIndex < 0 || !manager.Exists(entity) || !manager.HasBuffer<SharedClipAsset>(entity) || !manager.HasBuffer<SharedContribution>(entity))

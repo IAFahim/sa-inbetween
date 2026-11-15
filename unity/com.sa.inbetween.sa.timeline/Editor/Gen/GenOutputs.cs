@@ -14,8 +14,10 @@ namespace SA.Inbetween.Timeline.Editor
     {
         public const string TrackName = "Generated";
 
-        public static bool PlacesHumanoid(GenJob job) =>
-            job.Rig == GenRig.Humanoid || (job.Rig == GenRig.Auto && TimelineBridge.IsHumanoid(job.Character));
+        public static bool PlacesHumanoid(GenJob job) => PlacesHumanoid(job.Rig, job.Character);
+
+        public static bool PlacesHumanoid(GenRig rig, GameObject character) =>
+            rig == GenRig.Humanoid || (rig == GenRig.Auto && TimelineBridge.IsHumanoid(character));
 
         public static bool Export(GenBakeContext context, ExportPayload payload, out string error)
         {
@@ -81,75 +83,8 @@ namespace SA.Inbetween.Timeline.Editor
         }
 
         public const string SourceSuffix = " (source)";
-        const double Seam = 1e-3;
-        const double ShortestPiece = 1.0 / 30.0;
 
         public static bool IsSourceCopy(TimelineClip clip) => clip.displayName != null && clip.displayName.EndsWith(SourceSuffix, StringComparison.Ordinal);
-
-        public static string PlaceSources(GenBakeRun run)
-        {
-            var timeline = run.Timeline;
-            var track = Track(timeline, false);
-            var jobs = run.Jobs.Where(j => j.Error == "" && j.Job.Export.PlaceOnTimeline && j.Job.Export.PlaceSources).ToList();
-            if (track == null || jobs.Count == 0) return "";
-            Undo.RegisterCompleteObjectUndo(track, GenBake.UndoName);
-            var generated = track.GetClips().Where(c => !IsSourceCopy(c)).OrderBy(c => c.start).ToList();
-            var unused = track.GetClips().Where(IsSourceCopy).ToList();
-            var sources = new List<GenSource>();
-            foreach (var job in jobs)
-                foreach (var source in new[] { job.Job.StartSource, job.Job.GoalSource })
-                    if (source != null && source.Payload.Kind == SA.Inbetween.Clips.SourceKind.UnityClip && source.Payload.Motion != null && !sources.Contains(source))
-                        sources.Add(source);
-            var copies = 0;
-            foreach (var source in sources.OrderBy(s => s.Start))
-            {
-                var start = source.Start;
-                var end = source.Start + source.Duration;
-                foreach (var clip in generated)
-                {
-                    if (clip.start <= start + Seam && clip.end > start) start = clip.end;
-                    else if (clip.start > start + Seam && clip.start < end) end = clip.start;
-                }
-
-                if (end - start < ShortestPiece) continue;
-                var name = source.Frame.Clip.displayName + SourceSuffix;
-                var copy = unused.FirstOrDefault(c => c.displayName == name);
-                if (copy != null)
-                {
-                    unused.Remove(copy);
-                    if (copy.asset != null) Undo.RecordObject(copy.asset, GenBake.UndoName);
-                }
-                else
-                {
-                    copy = track.CreateClip(source.Payload.Motion);
-                    if (copy.asset != null) Undo.RegisterCreatedObjectUndo(copy.asset, GenBake.UndoName);
-                }
-
-                var asset = (AnimationPlayableAsset)copy.asset;
-                asset.clip = source.Payload.Motion;
-                asset.ResetOffsets();
-                copy.start = start;
-                copy.timeScale = source.TimeScale;
-                copy.clipIn = source.ClipIn + (start - source.Start) * source.TimeScale;
-                copy.duration = end - start;
-                copy.easeInDuration = 0;
-                copy.easeOutDuration = 0;
-                copy.displayName = name;
-                copies++;
-            }
-
-            foreach (var leftover in unused)
-                timeline.DeleteClip(leftover);
-            RecalculateHolds(track);
-            var matched = TimelineBridge.MatchChain(timeline, track, run.Director, out var why);
-            EditorUtility.SetDirty(track);
-            EditorUtility.SetDirty(timeline);
-            AssetDatabase.SaveAssetIfDirty(timeline);
-            if (TimelineEditor.inspectedAsset == timeline) TimelineEditor.Refresh(RefreshReason.ContentsAddedOrRemoved);
-            if (copies == 0) return "";
-            return "Generated track: " + copies + (copies == 1 ? " source clip" : " source clips") + " around the generated motion, so it plays from start to end; " +
-                   (why == "" ? "hips matched at " + matched + (matched == 1 ? " seam." : " seams.") : "hips not matched (" + why + "); bake with the timeline open in the Timeline window on its director to match them.");
-        }
 
         static readonly System.Reflection.MethodInfo CalculateHolds =
             typeof(TimelineClip).Assembly.GetType("UnityEngine.Timeline.Extrapolation")?.GetMethod("CalculateExtrapolationTimes", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
@@ -163,6 +98,11 @@ namespace SA.Inbetween.Timeline.Editor
             Undo.RegisterCompleteObjectUndo(timeline, "Bake Generation Timeline");
             return timeline.CreateTrack<AnimationTrack>(null, TrackName);
         }
+
+        public const double MostFitted = 0.12;
+
+        public static bool Fits(GenJob job, double length) =>
+            job.Payload.Keep != GenVariant.ModelPicks && length > 0 && job.WindowSeconds > 0 && Math.Abs(length / job.WindowSeconds - 1.0) <= MostFitted;
 
         public static TimelineClip Place(GenBakeContext context, AnimationClip clip)
         {
@@ -183,10 +123,11 @@ namespace SA.Inbetween.Timeline.Editor
             asset.loop = AnimationPlayableAsset.LoopMode.Off;
             asset.applyFootIK = job.FootIK;
             asset.ResetOffsets();
+            var fit = Fits(job, clip.length);
             placed.start = job.StartSeconds;
             placed.clipIn = 0;
-            placed.timeScale = 1;
-            placed.duration = clip.length;
+            placed.timeScale = fit ? clip.length / job.WindowSeconds : 1;
+            placed.duration = fit ? job.WindowSeconds : clip.length;
             placed.easeInDuration = 0;
             placed.easeOutDuration = 0;
             placed.displayName = job.Name;
@@ -203,7 +144,7 @@ namespace SA.Inbetween.Timeline.Editor
                 }
             }
 
-            if (Math.Abs(clip.length - job.WindowSeconds) > 0.5 / GenRules.TicksPerSecond)
+            if (!fit && Math.Abs(clip.length - job.WindowSeconds) > 0.5 / GenRules.TicksPerSecond)
                 context.Note("'" + job.Name + "' is " + GenRules.Text(clip.length) + " s on the timeline; its Generate clip is " + GenRules.Text(job.WindowSeconds) + " s (the generator works in steps of 4 frames).");
             EditorUtility.SetDirty(track);
             EditorUtility.SetDirty(timeline);

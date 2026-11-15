@@ -15,6 +15,16 @@ using Object = UnityEngine.Object;
 
 namespace SA.Inbetween.Timeline.Editor
 {
+    public struct TimelineSeam
+    {
+        public double Time;
+        public string Before;
+        public string After;
+        public float HeightStep;
+        public float SideStep;
+        public float Degrees;
+    }
+
     /// <summary>A bridge being generated. Finishes on its own; poll <see cref="Done"/> or listen to <see cref="TimelineBridge.Finished"/>.</summary>
     public sealed class BridgeJob
     {
@@ -429,6 +439,41 @@ namespace SA.Inbetween.Timeline.Editor
             return matched;
         }
 
+        public static List<TimelineSeam> MeasureSeams(TimelineAsset timeline, AnimationTrack track, PlayableDirector director, out string note)
+        {
+            note = "";
+            var seams = new List<TimelineSeam>();
+            var bound = director != null && director.playableAsset == timeline ? BoundAnimator(director, track) : null;
+            if (bound == null) { note = "the track has no bound character"; return seams; }
+            using var probe = new TrackProbe(timeline, track, bound);
+            if (!probe.Valid) { note = probe.Problem; return seams; }
+            var ordered = track.GetClips().Where(c => c.asset is AnimationPlayableAsset).OrderBy(c => c.start).ToList();
+            for (var i = 1; i < ordered.Count; i++)
+            {
+                var before = ordered[i - 1];
+                var after = ordered[i];
+                if (Math.Abs(after.start - before.end) > ChainSeam) continue;
+                var leaving = probe.Hips(before.end - Probe);
+                var leavingBones = probe.Rotations();
+                var arriving = probe.Hips(after.start + Probe);
+                var arrivingBones = probe.Rotations();
+                var degrees = 0f;
+                for (var b = 1; b < leavingBones.Length; b++) degrees = Mathf.Max(degrees, Quaternion.Angle(leavingBones[b], arrivingBones[b]));
+                var side = arriving.position - leaving.position;
+                seams.Add(new TimelineSeam
+                {
+                    Time = after.start,
+                    Before = before.displayName,
+                    After = after.displayName,
+                    HeightStep = Mathf.Abs(side.y),
+                    SideStep = new Vector2(side.x, side.z).magnitude,
+                    Degrees = degrees,
+                });
+            }
+
+            return seams;
+        }
+
         /// <summary>World rigid delta (yaw + translation) that takes <paramref name="from"/> onto <paramref name="to"/>.</summary>
         public static Matrix4x4 Delta(Pose to, Pose from)
         {
@@ -487,6 +532,14 @@ namespace SA.Inbetween.Timeline.Editor
                 director.extrapolationMode = DirectorWrapMode.Hold;
                 director.playableAsset = timeline;
                 director.SetGenericBinding(track, animator);
+            }
+
+            public Quaternion[] Rotations()
+            {
+                var bones = root.GetComponentsInChildren<Transform>(true);
+                var rotations = new Quaternion[bones.Length];
+                for (var i = 0; i < bones.Length; i++) rotations[i] = bones[i].rotation;
+                return rotations;
             }
 
             public Pose Hips(double time)

@@ -132,6 +132,19 @@ namespace SA.Inbetween.Timeline.Editor
         {
             foreach (var job in plan.Jobs)
             {
+                var chain = job.Chain;
+                if (chain != null)
+                {
+                    job.Seam = chain.Chain.Seams;
+                    if (!job.HasRetarget)
+                    {
+                        job.Rig = chain.Chain.Rig;
+                        if (chain.Chain.Character != null) job.Character = TimelineBridge.CharacterAsset(chain.Chain.Character);
+                    }
+
+                    if (!job.HasExport) job.Export = chain.Chain.Export;
+                }
+
                 if (job.Character == null) job.Character = plan.BoundCharacter(job.Frame.Track);
                 if (job.Character == null && job.StartSource != null && job.StartSource.Payload.Character != null) job.Character = TimelineBridge.CharacterAsset(job.StartSource.Payload.Character);
                 if (job.Character == null && job.GoalSource != null && job.GoalSource.Payload.Character != null) job.Character = TimelineBridge.CharacterAsset(job.GoalSource.Payload.Character);
@@ -144,6 +157,14 @@ namespace SA.Inbetween.Timeline.Editor
                         ? "it starts from or lands on a Unity clip, but no character is set to play it on. Bind this track to your character, or set Character on a Retarget / Bake clip over it."
                         : "no character is set to export the result for. Bind this track to your character, or set Character on a Retarget / Bake clip over it.");
                 job.Name = TimelineBridge.SafeName(IsDefaultName(job.Frame.Clip.displayName) ? DerivedName(job) : job.Frame.Clip.displayName);
+            }
+
+            foreach (var group in plan.Jobs.Where(j => j.Chain != null && IsDefaultName(j.Frame.Clip.displayName)).GroupBy(j => j.Name, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1).ToList())
+            {
+                var n = 1;
+                foreach (var job in group.OrderBy(j => j.StartSeconds))
+                    if (n++ > 1)
+                        job.Name = job.Name + "_" + (n - 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
             }
 
             foreach (var group in plan.Jobs.GroupBy(j => j.Name, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
@@ -172,7 +193,7 @@ namespace SA.Inbetween.Timeline.Editor
 
         public static bool IsDefaultName(string name)
         {
-            if (string.IsNullOrWhiteSpace(name) || name == "Generate") return true;
+            if (string.IsNullOrWhiteSpace(name) || name == "Generate" || name == ChainTrack.GapName) return true;
             if (!name.StartsWith("Generate ", StringComparison.Ordinal)) return false;
             return name.Substring("Generate ".Length).All(char.IsDigit);
         }

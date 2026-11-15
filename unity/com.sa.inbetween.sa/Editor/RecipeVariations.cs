@@ -39,6 +39,7 @@ namespace SA.Inbetween.Clips.Editor
         internal readonly Queue<Job> Jobs = new Queue<Job>();
         internal readonly Queue<VariationSpec> Spares = new Queue<VariationSpec>();
         internal StudioSettings Settings;
+        internal InbetweenRecipe Recipe;
         internal StudioProcess Process;
         internal Job Current;
         internal double StartedAt;
@@ -223,6 +224,7 @@ namespace SA.Inbetween.Clips.Editor
             foreach (var step in steps)
                 run.Jobs.Enqueue(new VariationRun.Job { Label = step.Label, Command = step.Command, Candidate = -1 });
             run.Settings = settings;
+            run.Recipe = recipe;
             var tokens = StudioCommands.TokensForSeconds(recipe.DurationSeconds);
             foreach (var spare in Spares(tokens, recipe.LandExactly)) run.Spares.Enqueue(spare);
             var specs = Plan(tokens, recipe.LandExactly);
@@ -262,6 +264,16 @@ namespace SA.Inbetween.Clips.Editor
             {
                 candidate.Error = "The baker wrote no clip.";
                 return;
+            }
+
+            try
+            {
+                if (!SeamBake.TryFixFile(run.Recipe, run.Settings.WorkFolder, candidate.ClipFile, out _, out var seamError))
+                    Debug.LogWarning("SA Inbetween: a variation's seams were not blended (" + seamError + ").");
+            }
+            catch (Exception e) when (!(e is IOException) && !(e is UnauthorizedAccessException))
+            {
+                Debug.LogWarning("SA Inbetween: a variation's seams were not blended (" + e.Message + ").");
             }
 
             var bytes = File.ReadAllBytes(candidate.ClipFile);

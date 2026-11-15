@@ -79,6 +79,8 @@ namespace SA.Inbetween.Clips.Editor
             return true;
         }
 
+        public static AnimationClip SaveAs(AnimationClip clip, string path) => Save(clip, path);
+
         internal static AnimationClip Save(AnimationClip clip, string path)
         {
             clip.name = Path.GetFileNameWithoutExtension(path);
@@ -89,7 +91,8 @@ namespace SA.Inbetween.Clips.Editor
                 UnityEngine.Object.DestroyImmediate(clip);
                 EditorUtility.SetDirty(existing);
                 AssetDatabase.SaveAssetIfDirty(existing);
-                return existing;
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+                return AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
             }
 
             AssetDatabase.CreateAsset(clip, path);

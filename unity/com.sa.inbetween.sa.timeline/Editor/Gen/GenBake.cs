@@ -19,6 +19,7 @@ namespace SA.Inbetween.Timeline.Editor
         public readonly List<InbetweenRecipe> Recipes = new List<InbetweenRecipe>();
         public readonly List<string> Files = new List<string>();
         public string Error = "";
+        public bool Skipped;
         internal int Next;
         internal bool Waiting;
 
@@ -40,12 +41,26 @@ namespace SA.Inbetween.Timeline.Editor
         public string PlanPath = "";
         public string Digest = "";
         public GenBakeRun Then;
+        public GenBakeOptions Options = new GenBakeOptions();
+        public readonly List<TimelineSeam> Seams = new List<TimelineSeam>();
+        public readonly List<GenPiece> Pieces = new List<GenPiece>();
+        public readonly List<SaChainAsset> Chains = new List<SaChainAsset>();
         internal readonly List<TimelineAsset> Chain = new List<TimelineAsset>();
         internal int Current;
+        internal int ProgressId = -1;
 
         public bool Ok => Done && Error == "";
 
         public int Total => Jobs.Sum(j => j.Recipes.Count);
+    }
+
+    public sealed class GenBakeOptions
+    {
+        public readonly HashSet<TimelineClip> Only = new HashSet<TimelineClip>();
+        public bool Force;
+        public bool Auto;
+
+        public bool Includes(GenJob job) => Only.Count == 0 || Only.Contains(job.Frame.Clip);
     }
 
     public sealed class GenBakeContext
@@ -100,14 +115,17 @@ namespace SA.Inbetween.Timeline.Editor
             return "";
         }
 
-        public static GenBakeRun Start(TimelineAsset timeline, PlayableDirector director, out string error) => Start(timeline, director, null, out error);
+        public static GenBakeRun Start(TimelineAsset timeline, PlayableDirector director, out string error) => Start(timeline, director, null, null, out error);
 
-        static GenBakeRun Start(TimelineAsset timeline, PlayableDirector director, GenBakeRun before, out string error)
+        public static GenBakeRun Start(TimelineAsset timeline, PlayableDirector director, GenBakeOptions options, out string error) => Start(timeline, director, null, options, out error);
+
+        static GenBakeRun Start(TimelineAsset timeline, PlayableDirector director, GenBakeRun before, GenBakeOptions options, out string error)
         {
+            if (timeline != null && Running(timeline) == null && ChainSync.HasChains(timeline)) ChainSync.Sync(timeline);
             var plan = GenPlanner.Plan(timeline, director);
             error = Problem(plan);
             if (error != "") return null;
-            var run = new GenBakeRun { Timeline = timeline, Director = plan.Director, Plan = plan };
+            var run = new GenBakeRun { Timeline = timeline, Director = plan.Director, Plan = plan, Options = options ?? new GenBakeOptions() };
             if (before != null) run.Chain.AddRange(before.Chain);
             run.Chain.Add(timeline);
             foreach (var job in plan.Jobs)
@@ -133,6 +151,12 @@ namespace SA.Inbetween.Timeline.Editor
 
             Runs.Add(run);
             Last[timeline] = run;
+            run.ProgressId = Progress.Start("Bake '" + timeline.name + "'", "SA Inbetween generation", Progress.Options.None);
+            Progress.RegisterCancelCallback(run.ProgressId, () =>
+            {
+                Cancel(run);
+                return true;
+            });
             if (!hooked)
             {
                 EditorApplication.update += Tick;
@@ -210,14 +234,24 @@ namespace SA.Inbetween.Timeline.Editor
                         continue;
                     }
 
-                    if (!GenRecipes.NeedsGeneration(recipe))
+                    var included = run.Options.Includes(job.Job);
+                    if (!GenRecipes.NeedsGeneration(recipe) && !(run.Options.Force && included))
                     {
                         run.Reused++;
                         job.Next++;
                         continue;
                     }
 
+                    if (!included)
+                    {
+                        job.Skipped = true;
+                        job.Next = job.Recipes.Count;
+                        run.Report.Add("'" + job.Job.Name + "' is out of date and was not generated (only the chosen in-between was baked).");
+                        continue;
+                    }
+
                     run.Stage = "Generating '" + recipe.name + "' (" + (Done(run) + 1) + " of " + run.Total + ")";
+                    Report(run);
                     if (!RecipeRunner.Start(recipe, out var error))
                     {
                         Fail(run, job, "Generating '" + recipe.name + "' could not start: " + error);
@@ -228,7 +262,14 @@ namespace SA.Inbetween.Timeline.Editor
                     return;
                 }
 
+                if (job.Skipped)
+                {
+                    run.Current++;
+                    continue;
+                }
+
                 run.Stage = "Exporting '" + job.Job.Name + "'";
+                Report(run);
                 Finish(run, job);
                 run.Current++;
             }
@@ -236,7 +277,7 @@ namespace SA.Inbetween.Timeline.Editor
             string sources;
             try
             {
-                sources = GenOutputs.PlaceSources(run);
+                sources = GenPieces.Place(run, run.Pieces);
             }
             catch (Exception e)
             {
@@ -244,10 +285,26 @@ namespace SA.Inbetween.Timeline.Editor
             }
 
             if (sources != "") run.Report.Add(sources);
+            try
+            {
+                foreach (var line in GenChain.Write(run)) run.Report.Add(line);
+            }
+            catch (Exception e)
+            {
+                run.Report.Add("The whole chain was not written (" + e.GetType().Name + ": " + e.Message + ").");
+            }
+
             Complete(run, run.Jobs.Any(j => j.Error != "") ? string.Join(" ", run.Jobs.Where(j => j.Error != "").Select(j => j.Error)) : "");
         }
 
         static int Done(GenBakeRun run) => run.Jobs.Sum(j => Math.Min(j.Next, j.Recipes.Count));
+
+        static void Report(GenBakeRun run)
+        {
+            if (run.ProgressId < 0 || !Progress.Exists(run.ProgressId)) return;
+            var total = Math.Max(1, run.Total);
+            Progress.Report(run.ProgressId, Math.Min(1f, Done(run) / (float)total), run.Stage);
+        }
 
         static void Fail(GenBakeRun run, GenBakeJob job, string error)
         {
@@ -310,6 +367,9 @@ namespace SA.Inbetween.Timeline.Editor
             run.Error = error;
             run.Done = true;
             run.Stage = error == "" ? "Done" : "Stopped";
+            if (run.ProgressId >= 0 && Progress.Exists(run.ProgressId))
+                Progress.Finish(run.ProgressId, error == "" ? Progress.Status.Succeeded : error.StartsWith("Cancelled", StringComparison.Ordinal) ? Progress.Status.Canceled : Progress.Status.Failed);
+            run.ProgressId = -1;
             try
             {
                 WritePlan(run);
@@ -330,7 +390,7 @@ namespace SA.Inbetween.Timeline.Editor
         {
             var next = run.Plan.Next;
             if (run.Error != "" || next == null || run.Chain.Contains(next) || !GenPlanner.HasGenTracks(next)) return;
-            run.Then = Start(next, null, run, out var error);
+            run.Then = Start(next, null, run, null, out var error);
             run.Report.Add(run.Then != null ? "Next: baking '" + next.name + "' (the timeline's Tl Settings say Next)." : "Next: '" + next.name + "' was not baked: " + error);
         }
 

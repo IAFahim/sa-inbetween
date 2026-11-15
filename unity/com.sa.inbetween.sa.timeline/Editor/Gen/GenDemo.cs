@@ -17,6 +17,7 @@ namespace SA.Inbetween.Timeline.Editor
         public const string SceneName = "Generation Demo";
         public const string CharacterName = "Generation Demo Character";
         public const string DirectorName = "Generation";
+        public const string TakesDirectorName = "Generation (Three Takes)";
         public const string Landing = "Jump to Landing";
         public const string Takes = "Jump to Landing, Three Takes";
 
@@ -51,6 +52,21 @@ namespace SA.Inbetween.Timeline.Editor
             Selection.activeObject = director.gameObject;
             EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
             EditorUtility.DisplayDialog("Generation demo", "The timeline '" + Landing + "' is open: the jump, the Generate clip that lands it and the landing clip, with a Retarget / Bake and an Export clip under them.\n\nSelect the Generate clip and press Bake Timeline in the Inspector (about 10 seconds), then press Play in the Timeline window.", "OK");
+        }
+
+        [MenuItem("SA/Inbetween/Open Three Takes", false, 22)]
+        public static void OpenTakes()
+        {
+            var takes = AssetDatabase.LoadAssetAtPath<TimelineAsset>(TimelinePath(Takes));
+            var director = takes != null ? GenPlanCache.DirectorOf(takes) : null;
+            if (director == null)
+            {
+                EditorUtility.DisplayDialog("Three Takes", "Open the generation demo scene first (SA > Inbetween > Create Generation Demo, or " + ScenePath + ").", "OK");
+                return;
+            }
+
+            Selection.activeObject = director.gameObject;
+            EditorApplication.ExecuteMenuItem("Window/Sequencing/Timeline");
         }
 
         public static TimelineAsset Create(DemoPicks picks, NewSceneMode mode, out Scene scene, out PlayableDirector director, out string error)
@@ -99,6 +115,20 @@ namespace SA.Inbetween.Timeline.Editor
             foreach (var track in timeline.GetOutputTracks())
                 if (track is GenTrack || track is AnimationTrack)
                     director.SetGenericBinding(track, animator);
+            var takes = AssetDatabase.LoadAssetAtPath<TimelineAsset>(TimelinePath(Takes));
+            if (takes != null)
+            {
+                var takesHolder = new GameObject(TakesDirectorName);
+                SceneManager.MoveGameObjectToScene(takesHolder, scene);
+                var takesDirector = takesHolder.AddComponent<PlayableDirector>();
+                takesDirector.playOnAwake = false;
+                takesDirector.extrapolationMode = DirectorWrapMode.Loop;
+                takesDirector.playableAsset = takes;
+                foreach (var track in takes.GetOutputTracks())
+                    if (track is GenTrack || track is AnimationTrack)
+                        takesDirector.SetGenericBinding(track, animator);
+            }
+
             foreach (var root in scene.GetRootGameObjects())
                 if (root.TryGetComponent<Camera>(out var camera))
                 {

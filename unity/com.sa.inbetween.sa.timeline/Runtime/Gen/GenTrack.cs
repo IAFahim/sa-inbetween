@@ -8,7 +8,7 @@ namespace SA.Inbetween.Timeline.Gen
     [TrackColor(0.29f, 0.71f, 0.55f)]
     [TrackClipType(typeof(GenClip))]
     [TrackBindingType(typeof(Animator))]
-    public sealed class GenTrack : TrackAsset
+    public class GenTrack : TrackAsset
     {
         protected override void OnCreateClip(TimelineClip clip)
         {

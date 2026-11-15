@@ -118,15 +118,39 @@ namespace SA.Inbetween.Timeline.Tests
                         }
                     }
 
+                    var layout = string.Join("\n", clips.Select(c => c.displayName + " [" + c.start.ToString("0.000") + ", " + c.end.ToString("0.000") + ") scale " + c.timeScale.ToString("0.000") + " pos " + ((AnimationPlayableAsset)c.asset).position.ToString("F4") + " rot " + ((AnimationPlayableAsset)c.asset).rotation.eulerAngles.ToString("F2") + " clip " + ((AnimationPlayableAsset)c.asset).clip.name + " hold " + c.extrapolatedStart.ToString("0.000") + "+" + c.extrapolatedDuration.ToString("0.000")));
+                    TestContext.WriteLine("bake " + (bake + 1) + ":\n" + layout);
                     foreach (var seam in new[] { placed.start, placed.end })
                     {
                         var before = Hips(timeline, director, seam - 1e-4);
                         var after = Hips(timeline, director, seam + 1e-4);
                         var across = new Vector2(after.x - before.x, after.z - before.z).magnitude;
-                        Assert.That(across, Is.LessThan(0.01f), "hips jump " + across + " m sideways at " + seam + " s");
-                        Assert.That(Mathf.Abs(after.y - before.y), Is.LessThan(0.10f), "hips jump " + (after.y - before.y) + " m up or down at " + seam + " s");
+                        Assert.That(across, Is.LessThan(0.01f), "hips jump " + across + " m sideways at " + seam + " s, bake " + (bake + 1) + "\n" + layout + "\n" + report);
+                        Assert.That(Mathf.Abs(after.y - before.y), Is.LessThanOrEqualTo(0.01f), "hips jump " + (after.y - before.y) + " m up or down at " + seam + " s");
+                    }
+
+                    foreach (var seam in run.Seams)
+                    {
+                        Assert.That(seam.HeightStep, Is.LessThanOrEqualTo(0.01f), seam.Before + " > " + seam.After + ": " + seam.HeightStep);
+                        Assert.That(seam.Degrees, Is.LessThanOrEqualTo(3f), seam.Before + " > " + seam.After + ": " + seam.Degrees + " deg");
                     }
                 }
+
+                var takes = AssetDatabase.LoadAssetAtPath<TimelineAsset>(GenDemo.TimelinePath(GenDemo.Takes));
+                var takesDirector = GenPlanCache.DirectorOf(takes);
+                Assert.That(takesDirector, Is.Not.Null, "the Three Takes timeline has its own director in the demo scene");
+                Assert.That(takesDirector.gameObject.name, Is.EqualTo(GenDemo.TakesDirectorName));
+                Assert.That(takesDirector.playOnAwake, Is.False, "only the main demo timeline plays on Play");
+                Assert.That(director.playOnAwake, Is.True);
+                Assert.That(takesDirector.GetGenericBinding(GenOutputs.Track(takes, false)), Is.SameAs(animator), "Three Takes plays on the demo character");
+                var takesRun = GenBake.Start(takes, takesDirector, out error);
+                Assert.That(takesRun, Is.Not.Null, error);
+                var started = EditorApplication.timeSinceStartup;
+                while (!takesRun.Done && EditorApplication.timeSinceStartup - started < 400.0) yield return null;
+                var takesReport = string.Join("\n", takesRun.Report);
+                Assert.That(takesRun.Error, Is.Empty, takesReport);
+                Assert.That(takesReport, Does.Contain("hips matched at 2 seams"), takesReport);
+                foreach (var seam in takesRun.Seams) Assert.That(seam.HeightStep, Is.LessThanOrEqualTo(0.01f), takesReport);
             }
             finally
             {

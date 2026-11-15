@@ -40,6 +40,7 @@ namespace SA.Inbetween.Clips.Editor
         public string Stage = "";
         public string Error = "";
         public string Log = "";
+        public string Seams = "";
         public bool Done;
     }
 
@@ -206,6 +207,7 @@ namespace SA.Inbetween.Clips.Editor
             foreach (var g in recipe.Goals) Add(sb, g);
             sb.Append(recipe.DurationSeconds.ToString("R", CultureInfo.InvariantCulture)).Append(recipe.LandExactly ? "L" : "l");
             if (recipe.ModelPicksLength) sb.Append("|pick");
+            if (recipe.Seam.Active) sb.Append("|seam1:").Append(recipe.Seam.Key);
             using var sha = SHA1.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString()));
             return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
@@ -536,6 +538,21 @@ namespace SA.Inbetween.Clips.Editor
             }
 
             outputPath = OutputPath(recipe) == "" ? outputPath : OutputPath(recipe);
+            SeamReport seams = null;
+            string seamError;
+            bool seamed;
+            try
+            {
+                seamed = SeamBake.TryFixFile(recipe, Path.GetDirectoryName(baked) ?? "", baked, out seams, out seamError);
+            }
+            catch (Exception e) when (!(e is IOException) && !(e is UnauthorizedAccessException))
+            {
+                seamed = false;
+                seamError = e.GetType().Name + ": " + e.Message;
+            }
+
+            if (!seamed) Debug.LogWarning("SA Inbetween: '" + recipe.name + "' was generated, but its seams were not blended (" + seamError + "). The clip is kept as generated.", recipe);
+            run.Seams = seams != null ? seams.Text : "";
             Undo.IncrementCurrentGroup();
             Undo.SetCurrentGroupName(GenerateUndoName);
             var group = Undo.GetCurrentGroup();

@@ -1,16 +1,22 @@
 {
-  "name": "SA.Inbetween.Timeline.Editor",
-  "rootNamespace": "SA.Inbetween.Timeline.Editor",
-  "references": [
-    "SA.Inbetween.Timeline",
-    "SA.Inbetween.Timeline.Gen",
-    "SA.Inbetween.Clips",
-    "SA.Inbetween.Clips.Editor",
-    "Unity.Timeline",
-    "Unity.Timeline.Editor"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "autoReferenced": true
+    "name": "SA.Inbetween.Timeline.Editor",
+    "rootNamespace": "SA.Inbetween.Timeline.Editor",
+    "references": [
+        "SA.Inbetween.Timeline",
+        "SA.Inbetween.Timeline.Gen",
+        "SA.Inbetween.Clips",
+        "SA.Inbetween.Clips.Editor",
+        "Unity.Timeline",
+        "Unity.Timeline.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "SA.Motion.dll",
+        "SA.Animation.dll",
+        "SA.Animation.Content.dll"
+    ],
+    "autoReferenced": true
 }

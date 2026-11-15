@@ -1,0 +1,9 @@
+{
+    "name": "SA.Inbetween.Install.Editor",
+    "rootNamespace": "SA.Inbetween.Install",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": true
+}

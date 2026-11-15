@@ -51,6 +51,7 @@ namespace SA.Inbetween.Clips
         public float DurationSeconds = 1.0f;
         public bool LandExactly = true;
         public bool ModelPicksLength;
+        public SeamSettings Seam = SeamSettings.Default;
         public SaClipAsset Output;
         public string BuiltFrom = "";
         public GameObject Character;
