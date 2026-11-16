@@ -12,6 +12,8 @@ namespace SA.Inbetween.Clips
         public bool PlayOnStart = true;
         [Tooltip("Start the clip on its own first frame instead of blending in from whatever the character was doing.")]
         public bool StartExactly = true;
+        [Tooltip("Name of the character this player drives: the object that has Shared Family Authoring. Leave empty when the scene has one SA character.")]
+        public string Character = "";
         public string Status = "Waiting for the character...";
 
         World world;
@@ -102,16 +104,13 @@ namespace SA.Inbetween.Clips
             }
 
             var manager = active.EntityManager;
-            using var query = manager.CreateEntityQuery(ComponentType.ReadOnly<SharedClipAsset>(), ComponentType.ReadOnly<SharedContribution>());
-            var count = query.CalculateEntityCount();
-            if (count != 1)
+            if (!SaCharacterPick.TryFind(manager, Character, out var found, out var waiting))
             {
-                Status = count == 0 ? "Waiting for the character..." : "Found " + count + " shared-family characters; this player needs exactly one";
+                Status = waiting;
                 return;
             }
 
-            using var entities = query.ToEntityArray(Allocator.Temp);
-            if (!SaClipRuntime.TryAttach(manager, entities[0], Clip.Bytes, Loop, StartExactly, out clipIndex, out var error))
+            if (!SaClipRuntime.TryAttach(manager, found, Clip.Bytes, Loop, StartExactly, out clipIndex, out var error))
             {
                 Status = error;
                 wanted = false;
@@ -119,7 +118,7 @@ namespace SA.Inbetween.Clips
             }
 
             world = active;
-            entity = entities[0];
+            entity = found;
             Status = "Playing " + Clip.name;
             wanted = false;
         }

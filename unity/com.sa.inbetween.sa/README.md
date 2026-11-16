@@ -34,5 +34,6 @@ A start or goal can be a Unity clip instead of a `.saclip`: choose **Unity clip*
 ## Play a clip
 
 Add `SaClipPlayer` to a GameObject, assign a clip, and enter Play mode with one SA shared-family character in the scene.
+With several characters, set **Character** on the player to the name of the object that has Shared Family Authoring.
 
 Requires `com.sa.unity` 0.3.7 (`FamilyClips`).

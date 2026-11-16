@@ -21,6 +21,8 @@ namespace SA.Inbetween.Clips
 
         public bool Loop = true;
         public bool PlayOnStart = true;
+        [Tooltip("Name of the character this player drives: the object that has Shared Family Authoring. Leave empty when the scene has one SA character.")]
+        public string Character = "";
         public string Status = "Waiting for the character...";
 
         World world;
@@ -91,17 +93,14 @@ namespace SA.Inbetween.Clips
             }
 
             var manager = active.EntityManager;
-            using var query = manager.CreateEntityQuery(ComponentType.ReadOnly<SharedClipAsset>(), ComponentType.ReadOnly<SharedContribution>());
-            var count = query.CalculateEntityCount();
-            if (count != 1)
+            if (!SaCharacterPick.TryFind(manager, Character, out var found, out var waiting))
             {
-                Status = count == 0 ? "Waiting for the character..." : "Found " + count + " shared-family characters; this player needs exactly one";
+                Status = waiting;
                 return;
             }
 
-            using var entities = query.ToEntityArray(Allocator.Temp);
             world = active;
-            entity = entities[0];
+            entity = found;
             wanted = false;
             Attach(0, 0f);
         }

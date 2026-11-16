@@ -67,7 +67,17 @@ namespace SA.Inbetween.Clips
             manager.CompleteAllTrackedJobs();
             clips = manager.GetBuffer<SharedClipAsset>(entity);
             clipIndex = clips.Length;
-            clips.Add(new SharedClipAsset { Value = blob });
+            for (var i = 0; i < clips.Length; i++)
+            {
+                if (clips[i].Value.IsCreated) continue;
+                clipIndex = i;
+                break;
+            }
+
+            if (clipIndex == clips.Length)
+                clips.Add(new SharedClipAsset { Value = blob });
+            else
+                clips[clipIndex] = new SharedClipAsset { Value = blob };
             var contributions = manager.GetBuffer<SharedContribution>(entity);
             var contribution = contributions.Length > 0 ? contributions[0] : new SharedContribution { Mask = ushort.MaxValue, Speed = 1f };
             contribution.Clip = clipIndex;
@@ -112,10 +122,14 @@ namespace SA.Inbetween.Clips
                 if (contributions[i].Clip == clipIndex)
                     contributions.RemoveAt(i);
             var clips = manager.GetBuffer<SharedClipAsset>(entity);
-            if (clipIndex != clips.Length - 1)
+            if (clipIndex >= clips.Length)
                 return;
             var blob = clips[clipIndex].Value;
-            clips.RemoveAt(clipIndex);
+            clips[clipIndex] = default;
+            var kept = clips.Length;
+            while (kept > 0 && !clips[kept - 1].Value.IsCreated)
+                kept--;
+            clips.ResizeUninitialized(kept);
             if (blob.IsCreated)
                 blob.Dispose();
         }

@@ -124,5 +124,88 @@ namespace SA.Inbetween.Clips.Tests
             Assert.IsFalse(SaClipRuntime.TryAttach(world.EntityManager, entity, bytes, true, out _, out var error));
             StringAssert.Contains("rejected", error);
         }
+
+        [Test]
+        public void DetachingAnEarlierClipFreesItAndKeepsLaterClipsInPlace()
+        {
+            var bytes = EncodeIdleClip(out _);
+            var seed = SA.Editor.SharedFamilyBake.MakeClipBlob(bytes, 0.1, 4, true);
+            var manager = world.EntityManager;
+            manager.GetBuffer<SharedClipAsset>(entity).Add(new SharedClipAsset { Value = seed });
+            Assert.IsTrue(SaClipRuntime.TryAttach(manager, entity, bytes, true, out var first, out var error), error);
+            Assert.IsTrue(SaClipRuntime.TryAttach(manager, entity, bytes, true, out var second, out error), error);
+            Assert.AreEqual(1, first);
+            Assert.AreEqual(2, second);
+            var freed = manager.GetBuffer<SharedClipAsset>(entity)[first].Value;
+            SaClipRuntime.Detach(manager, entity, first);
+            var clips = manager.GetBuffer<SharedClipAsset>(entity);
+            Assert.AreEqual(3, clips.Length);
+            Assert.IsFalse(clips[first].Value.IsCreated);
+            Assert.IsTrue(clips[second].Value.IsCreated);
+            Assert.Throws<System.InvalidOperationException>(() => Touch(freed));
+            var contributions = manager.GetBuffer<SharedContribution>(entity);
+            Assert.AreEqual(1, contributions.Length);
+            Assert.AreEqual(second, contributions[0].Clip);
+            Assert.IsTrue(SaClipRuntime.TryAttach(manager, entity, bytes, true, out var reused, out error), error);
+            Assert.AreEqual(first, reused);
+            SaClipRuntime.Detach(manager, entity, second);
+            Assert.AreEqual(2, manager.GetBuffer<SharedClipAsset>(entity).Length);
+            SaClipRuntime.Detach(manager, entity, reused);
+            SaClipRuntime.Detach(manager, entity, reused);
+            Assert.AreEqual(1, manager.GetBuffer<SharedClipAsset>(entity).Length);
+            Assert.AreEqual(0, manager.GetBuffer<SharedContribution>(entity).Length);
+        }
+
+        static double Touch(BlobAssetReference<SharedClipData> blob) => blob.Value.Duration;
+
+        Entity Character(string name)
+        {
+            var manager = world.EntityManager;
+            var character = manager.CreateEntity();
+            manager.AddBuffer<SharedClipAsset>(character);
+            manager.AddBuffer<SharedContribution>(character);
+            var text = new FixedString64Bytes();
+            text.CopyFromTruncated(name);
+            manager.AddComponentData(character, new SharedRig { NameHash = SA.Names.Hash(text) });
+            return character;
+        }
+
+        [Test]
+        public void OneCharacterIsFoundWithoutAName()
+        {
+            Assert.IsTrue(SaCharacterPick.TryFind(world.EntityManager, "", out var found, out var status), status);
+            Assert.AreEqual(entity, found);
+        }
+
+        [Test]
+        public void SeveralCharactersAreToldApartByName()
+        {
+            var hero = Character("Hero");
+            var guard = Character("Guard");
+            var manager = world.EntityManager;
+            Assert.IsFalse(SaCharacterPick.TryFind(manager, "", out var none, out var status));
+            Assert.AreEqual(Entity.Null, none);
+            StringAssert.Contains("3 SA characters", status);
+            StringAssert.Contains("Character", status);
+            Assert.IsTrue(SaCharacterPick.TryFind(manager, "Guard", out var found, out status), status);
+            Assert.AreEqual(guard, found);
+            Assert.IsTrue(SaCharacterPick.TryFind(manager, "Hero", out found, out status), status);
+            Assert.AreEqual(hero, found);
+            Assert.IsFalse(SaCharacterPick.TryFind(manager, "Nobody", out found, out status));
+            Assert.AreEqual(Entity.Null, found);
+            StringAssert.Contains("No SA character named 'Nobody'", status);
+            Character("Guard");
+            Assert.IsFalse(SaCharacterPick.TryFind(manager, "Guard", out found, out status));
+            Assert.AreEqual(Entity.Null, found);
+            StringAssert.Contains("2 SA characters named 'Guard'", status);
+        }
+
+        [Test]
+        public void NoCharacterYetSaysItIsWaiting()
+        {
+            using var empty = new World("SaClipRuntimeTests.Empty");
+            Assert.IsFalse(SaCharacterPick.TryFind(empty.EntityManager, "Hero", out _, out var status));
+            StringAssert.Contains("Waiting", status);
+        }
     }
 }
