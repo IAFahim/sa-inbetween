@@ -52,6 +52,8 @@ What is built, what is verified, and what is not. Updated 2026-11-15 (0.10.0).
 - Clean install on Linux through the whole designer guide (0.9.2): `docs/reports/clean-install-2026-11-14.md`.
 - Windows: tools checked statically and started by the release workflow on GitHub's Windows runner; no Generate on
   Windows yet. A tester follows `docs/windows-tester-checklist.md` with `scripts/windows-smoke.ps1`.
+  The Unity Editor tests ran on Windows 11 with fake tools (149 passed, 0 failed, 18 skipped for missing assets):
+  `docs/reports/windows-editor-tests-2026-11-16.md`.
 - SA.Shape (SH4, wardrobe) is out of the playtest scope.
 
 ## Needs a person
