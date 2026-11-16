@@ -76,6 +76,8 @@ to do about it.
 - **Windows has not been run by a person.** The tools zip is checked statically and started on GitHub's Windows
   runner (`scripts/windows-smoke.ps1`), but no Generate has run on Windows. A Windows tester follows
   `docs/windows-tester-checklist.md`. The model runtime needs the Microsoft Visual C++ Redistributable 2015-2022 (x64).
+  The Unity Editor tests did run on Windows 11 in batch mode with fake tools
+  (`docs/reports/windows-editor-tests-2026-11-16.md`); that is not a person and not a Generate.
 - **macOS is not built.**
 - **CPU only.** Generation does not use the GPU; a slower CPU takes longer (see `docs/compatibility.md`).
 

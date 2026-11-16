@@ -317,7 +317,8 @@ In `<Timeline>_Generated/`, next to the timeline:
 
 Play the chain in the SA runtime with an **SA Chain Player** (drop the `_Chain` asset on it): **Whole** plays the one clip,
 **Piece By Piece** plays each block and in-between in turn and hands over to the next when one ends. An **SA Clip Player** with
-`<Timeline>_Chain.saclip` plays the whole chain too.
+`<Timeline>_Chain.saclip` plays the whole chain too. With more than one SA character in the scene, type the character's name (the object
+that has Shared Family Authoring) in the player's **Character** field; each player then drives the character it names.
 
 ### Seams
 
