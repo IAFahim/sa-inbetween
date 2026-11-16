@@ -25,8 +25,101 @@ namespace SA.Inbetween.Clips.Tests
             if (restoreTools == null) return;
             InbetweenSettings.ToolsFolder = restoreTools;
             restoreTools = null;
-            var root = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "sa-fake-tools");
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            Remove(Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "sa-fake-tools"));
+        }
+
+        const string GenerateProgram = @"using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+static class Program
+{
+    static int Main(string[] args)
+    {
+        string folder = AppDomain.CurrentDomain.BaseDirectory;
+        File.WriteAllText(Path.Combine(folder, ""generate.pid""), Process.GetCurrentProcess().Id.ToString());
+        string slow = Path.Combine(folder, ""generate.slow"");
+        if (File.Exists(slow)) Thread.Sleep(int.Parse(File.ReadAllText(slow).Trim()) * 1000);
+        return 0;
+    }
+}
+";
+
+        const string BakeProgram = @"using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
+static class Program
+{
+    static int Main(string[] args)
+    {
+        string folder = AppDomain.CurrentDomain.BaseDirectory;
+        if (args.Length > 0 && args[0] == ""pose"") return 3;
+        File.WriteAllText(Path.Combine(folder, ""bake.pid""), Process.GetCurrentProcess().Id.ToString());
+        File.WriteAllText(args[2], ""partial"");
+        string slow = Path.Combine(folder, ""bake.slow"");
+        if (File.Exists(slow)) Thread.Sleep(int.Parse(File.ReadAllText(slow).Trim()) * 1000);
+        File.Copy(Path.Combine(folder, ""valid.saclip""), args[2], true);
+        return 0;
+    }
+}
+";
+
+        internal static string WindowsCompiler => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe");
+
+        internal static void RequireFakeTools()
+        {
+            if (Application.platform == RuntimePlatform.LinuxEditor || Application.platform == RuntimePlatform.OSXEditor) return;
+            if (Application.platform != RuntimePlatform.WindowsEditor) Assert.Ignore("the fake tools are shell scripts");
+            if (!File.Exists(WindowsCompiler)) Assert.Ignore("on Windows the fake tools are built with " + WindowsCompiler + ", which this machine does not have");
+        }
+
+        static int ReadPid(string file)
+        {
+            try
+            {
+                return File.Exists(file) && int.TryParse(File.ReadAllText(file).Trim(), out var pid) ? pid : -1;
+            }
+            catch (IOException)
+            {
+                return -1;
+            }
+        }
+
+        static void StopLeftover(string file, string name)
+        {
+            var pid = ReadPid(file);
+            if (pid <= 0) return;
+            try
+            {
+                using var process = Process.GetProcessById(pid);
+                if (!string.Equals(process.ProcessName, name, StringComparison.OrdinalIgnoreCase)) return;
+                process.Kill();
+                process.WaitForExit(3000);
+            }
+            catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+            {
+            }
+        }
+
+        static void Remove(string folder)
+        {
+            if (Application.platform == RuntimePlatform.WindowsEditor && Directory.Exists(folder))
+            {
+                StopLeftover(Path.Combine(folder, "generate.pid"), "sa-inbetween");
+                StopLeftover(Path.Combine(folder, "bake.pid"), "sa-soma-bake");
+            }
+            for (var attempt = 0; Directory.Exists(folder); attempt++)
+            {
+                try
+                {
+                    Directory.Delete(folder, true);
+                }
+                catch (Exception e) when (attempt < 40 && (e is IOException || e is UnauthorizedAccessException))
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
         }
 
         internal sealed class FakeTools : IDisposable
@@ -36,10 +129,18 @@ namespace SA.Inbetween.Clips.Tests
             public FakeTools(int generateSeconds, int bakeSeconds)
             {
                 Root = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "sa-fake-tools");
-                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                Remove(Root);
                 Directory.CreateDirectory(Root);
-                Script("sa-inbetween", "#!/bin/sh\nd=\"$(dirname \"$0\")\"\necho $$ > \"$d/generate.pid\"\nif [ -f \"$d/generate.slow\" ]; then sleep \"$(cat \"$d/generate.slow\")\"; fi\nexit 0\n");
-                Script("sa-soma-bake", "#!/bin/sh\nd=\"$(dirname \"$0\")\"\nif [ \"$1\" = pose ]; then exit 3; fi\necho $$ > \"$d/bake.pid\"\nprintf partial > \"$3\"\nif [ -f \"$d/bake.slow\" ]; then sleep \"$(cat \"$d/bake.slow\")\"; fi\ncp \"$d/valid.saclip\" \"$3\"\nexit 0\n");
+                if (Application.platform == RuntimePlatform.WindowsEditor)
+                {
+                    Built("sa-inbetween", GenerateProgram);
+                    Built("sa-soma-bake", BakeProgram);
+                }
+                else
+                {
+                    Script("sa-inbetween", "#!/bin/sh\nd=\"$(dirname \"$0\")\"\necho $$ > \"$d/generate.pid\"\nif [ -f \"$d/generate.slow\" ]; then sleep \"$(cat \"$d/generate.slow\")\"; fi\nexit 0\n");
+                    Script("sa-soma-bake", "#!/bin/sh\nd=\"$(dirname \"$0\")\"\nif [ \"$1\" = pose ]; then exit 3; fi\necho $$ > \"$d/bake.pid\"\nprintf partial > \"$3\"\nif [ -f \"$d/bake.slow\" ]; then sleep \"$(cat \"$d/bake.slow\")\"; fi\ncp \"$d/valid.saclip\" \"$3\"\nexit 0\n");
+                }
                 File.WriteAllBytes(Path.Combine(Root, "mmm_v6_soma_fp32.onnx"), new byte[] { 1 });
                 File.WriteAllBytes(Path.Combine(Root, "humanoid-v1.safamily"), new byte[] { 1 });
                 File.WriteAllBytes(Path.Combine(Root, "soma_rest.pose"), new byte[] { 1 });
@@ -58,17 +159,36 @@ namespace SA.Inbetween.Clips.Tests
                 chmod?.WaitForExit();
             }
 
-            public int Pid(string stage)
+            void Built(string name, string source)
             {
-                var file = Path.Combine(Root, stage + ".pid");
-                return File.Exists(file) && int.TryParse(File.ReadAllText(file).Trim(), out var pid) ? pid : -1;
+                var cache = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Temp", "sa-fake-tools-built");
+                var program = Path.Combine(cache, name + ".exe");
+                if (!File.Exists(program))
+                {
+                    Directory.CreateDirectory(cache);
+                    var code = Path.Combine(cache, name + ".cs");
+                    File.WriteAllText(code, source);
+                    var info = new ProcessStartInfo(WindowsCompiler, "/nologo /optimize+ /target:exe /out:\"" + program + "\" \"" + code + "\"")
+                    {
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true
+                    };
+                    using var compiler = Process.Start(info);
+                    var report = compiler.StandardOutput.ReadToEnd();
+                    compiler.WaitForExit();
+                    Assert.AreEqual(0, compiler.ExitCode, "the fake tool " + name + " did not build: " + report);
+                }
+                File.Copy(program, Path.Combine(Root, name + ".exe"), true);
             }
+
+            public int Pid(string stage) => ReadPid(Path.Combine(Root, stage + ".pid"));
 
             public void Dispose()
             {
                 if (restoreTools != null) InbetweenSettings.ToolsFolder = restoreTools;
                 restoreTools = null;
-                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                Remove(Root);
             }
         }
 
@@ -105,6 +225,19 @@ namespace SA.Inbetween.Clips.Tests
 
         internal static bool Alive(int pid)
         {
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                if (pid <= 0) return false;
+                try
+                {
+                    using var process = Process.GetProcessById(pid);
+                    return !process.HasExited;
+                }
+                catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+                {
+                    return false;
+                }
+            }
             try
             {
                 return pid > 0 && Directory.Exists("/proc/" + pid) && !File.ReadAllText("/proc/" + pid + "/stat").Contains(") Z ");
@@ -324,7 +457,7 @@ namespace SA.Inbetween.Clips.Tests
         [UnityTest]
         public IEnumerator Generate_bakes_outside_Assets_and_one_undo_takes_it_back()
         {
-            if (Application.platform != RuntimePlatform.LinuxEditor && Application.platform != RuntimePlatform.OSXEditor) Assert.Ignore("the fake tools are shell scripts");
+            RequireFakeTools();
             Fresh();
             var pose = Pose();
             using var tools = new FakeTools(0, 3);
@@ -374,7 +507,7 @@ namespace SA.Inbetween.Clips.Tests
         [UnityTest]
         public IEnumerator Cancel_stops_the_tool_and_leaves_nothing_in_Assets()
         {
-            if (Application.platform != RuntimePlatform.LinuxEditor && Application.platform != RuntimePlatform.OSXEditor) Assert.Ignore("the fake tools are shell scripts");
+            RequireFakeTools();
             Fresh();
             var pose = Pose();
             using var tools = new FakeTools(0, 30);
@@ -403,7 +536,7 @@ namespace SA.Inbetween.Clips.Tests
         [UnityTest]
         public IEnumerator A_script_reload_while_generating_stops_the_tool_and_says_so_afterwards()
         {
-            if (Application.platform != RuntimePlatform.LinuxEditor && Application.platform != RuntimePlatform.OSXEditor) Assert.Ignore("the fake tools are shell scripts");
+            RequireFakeTools();
             Fresh();
             var pose = Pose();
             using var tools = new FakeTools(30, 0);

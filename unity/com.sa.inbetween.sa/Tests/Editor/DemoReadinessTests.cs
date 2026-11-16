@@ -17,12 +17,10 @@ namespace SA.Inbetween.Clips.Tests
     {
         const string JumpResult = "Assets/InbetweenDemo/MidAirJump.saclip";
 
-        static bool FakeToolsRun => Application.platform == RuntimePlatform.LinuxEditor || Application.platform == RuntimePlatform.OSXEditor;
-
         [UnityTest]
         public IEnumerator A_hung_step_is_stopped_at_the_step_limit_and_the_First_Bridge_window_says_so()
         {
-            if (!FakeToolsRun) Assert.Ignore("the fake tools are shell scripts");
+            PlaytestTests.RequireFakeTools();
             PlaytestTests.Fresh();
             var pose = PlaytestTests.Pose();
             var limit = InbetweenSettings.StepLimitSeconds;
@@ -63,7 +61,7 @@ namespace SA.Inbetween.Clips.Tests
         [UnityTest]
         public IEnumerator The_demo_backup_puts_the_finished_result_back_in_one_click()
         {
-            if (!FakeToolsRun) Assert.Ignore("the fake tools are shell scripts");
+            PlaytestTests.RequireFakeTools();
             if (AssetDatabase.IsValidFolder(DemoScene.Folder) || AssetDatabase.IsValidFolder(DemoBackup.GenerationDemoFolder) || Directory.Exists(DemoBackup.Root))
                 Assert.Ignore("this project already has a demo or a demo backup; this test would replace it");
             using var tools = new PlaytestTests.FakeTools(0, 0);
